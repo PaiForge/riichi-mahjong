@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HAI_KIND_IDS, HaiKind } from "./types.js";
+import { HAI_KIND_IDS, HaiKind, Tacha } from "./types.js";
 
 describe("HaiKindId (牌種ID)", () => {
   it("34種類の牌IDが定義されていること", () => {
@@ -25,6 +25,18 @@ describe("HaiKindId (牌種ID)", () => {
       const maxShanten: import("./types").ShantenNumber = 13;
       expect(tenpai).toBe(0);
       expect(maxShanten).toBe(13);
+    });
+  });
+
+  describe("Tacha (他家)", () => {
+    it("定義値が正しいこと", () => {
+      expect(Tacha.Shimocha).toBe(1);
+      expect(Tacha.Toimen).toBe(2);
+      expect(Tacha.Kamicha).toBe(3);
+    });
+
+    it("要素数が3つであること", () => {
+      expect(Object.keys(Tacha)).toHaveLength(3);
     });
   });
 });

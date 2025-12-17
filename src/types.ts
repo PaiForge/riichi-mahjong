@@ -69,3 +69,21 @@ export type ShantenNumber =
   | 11
   | 12
   | 13;
+
+/**
+ * 他家 (Tacha)
+ *
+ * 自分から見た他家の位置関係（相対席）。
+ * 副露（鳴き）の発生元などを表現するために使用する。
+ *
+ * - 1: 下家 (Shimocha) - 右側
+ * - 2: 対面 (Toimen) - 正面
+ * - 3: 上家 (Kamicha) - 左側
+ */
+export const Tacha = {
+  Shimocha: 1,
+  Toimen: 2,
+  Kamicha: 3,
+} as const;
+
+export type Tacha = (typeof Tacha)[keyof typeof Tacha];
