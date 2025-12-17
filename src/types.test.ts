@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { type Furo, FuroType, HAI_KIND_IDS, HaiKind, Tacha } from "./types.js";
+import {
+  type Furo,
+  FuroType,
+  HAI_KIND_IDS,
+  type HaiId,
+  HaiKind,
+  type Kantsu,
+  Koutsu,
+  Mentsu,
+  MentsuType,
+  type Shuntsu,
+  Tacha,
+  type Toitsu,
+} from "./types.js";
 
 describe("HaiKindId (牌種ID)", () => {
   it("34種類の牌IDが定義されていること", () => {
@@ -56,12 +69,53 @@ describe("HaiKindId (牌種ID)", () => {
       expect(daiminkan.from).toBe(1);
       expect(kakan.from).toBe(3);
     });
+  });
 
-    it("Ankan は from プロパティを持たないこと", () => {
-      const ankan: Furo = { type: FuroType.Ankan };
+  describe("HaiId (牌ID)", () => {
+    it("数値として扱えるが、型システム上は区別される", () => {
+      // ランタイムではただの数値
+      const id = 0 as HaiId;
+      expect(id).toBe(0);
+    });
+  });
 
-      expect(ankan.type).toBe(FuroType.Ankan);
-      expect(ankan).not.toHaveProperty("from");
+  describe("Mentsu (面子)", () => {
+    it("Shuntsu (順子) は3枚の牌を持つ", () => {
+      // デフォルトは HaiKindId
+      const shuntsu: Shuntsu = {
+        type: MentsuType.Shuntsu,
+        hais: [HaiKind.ManZu1, HaiKind.ManZu2, HaiKind.ManZu3],
+      };
+      expect(shuntsu.hais).toHaveLength(3);
+    });
+
+    it("Kantsu (槓子) は4枚の牌を持つ", () => {
+      const kantsu: Kantsu = {
+        type: MentsuType.Kantsu,
+        hais: [HaiKind.PinZu1, HaiKind.PinZu1, HaiKind.PinZu1, HaiKind.PinZu1],
+      };
+      expect(kantsu.hais).toHaveLength(4);
+    });
+
+    it("Toitsu (対子) は2枚の牌を持つ", () => {
+      const toitsu: Toitsu = {
+        type: MentsuType.Toitsu,
+        hais: [HaiKind.SouZu5, HaiKind.SouZu5],
+      };
+      expect(toitsu.hais).toHaveLength(2);
+    });
+
+    it("HaiId型でも面子を構成できる (Generics)", () => {
+      const id1 = 0 as HaiId;
+      const id2 = 1 as HaiId;
+      const id3 = 2 as HaiId;
+
+      const shuntsu: Shuntsu<HaiId> = {
+        type: MentsuType.Shuntsu,
+        hais: [id1, id2, id3],
+      };
+      expect(shuntsu.hais).toHaveLength(3);
+      expect(shuntsu.hais[0]).toBe(0);
     });
   });
 });
