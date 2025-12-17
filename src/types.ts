@@ -77,6 +77,25 @@ export const HaiKind = {
 export type HaiKind = (typeof HaiKind)[keyof typeof HaiKind];
 
 /**
+ * 牌種タイプ (HaiType)
+ */
+export const HaiType = {
+  Manzu: "Manzu",
+  Pinzu: "Pinzu",
+  Souzu: "Souzu",
+  Jihai: "Jihai",
+} as const;
+
+export type HaiType = (typeof HaiType)[keyof typeof HaiType];
+
+export type Suupai =
+  | typeof HaiType.Manzu
+  | typeof HaiType.Pinzu
+  | typeof HaiType.Souzu;
+
+export type Jihai = typeof HaiType.Jihai;
+
+/**
  * シャンテン数 (ShantenNumber)
  *
  * 和了までの手数 - 1 を表す数値。
