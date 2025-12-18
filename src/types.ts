@@ -273,3 +273,24 @@ export type IncompletedMentsu<T extends HaiKindId | HaiId = HaiKindId> =
 export type Mentsu<T extends HaiKindId | HaiId = HaiKindId> =
   | CompletedMentsu<T>
   | IncompletedMentsu<T>;
+
+/**
+ * 手牌 (Tehai)
+ *
+ * 純手牌と副露を合わせたもの。
+ * @template T 牌の型 (HaiKindId | HaiId)
+ */
+export interface Tehai<T extends HaiKindId | HaiId = HaiKindId> {
+  closed: T[];
+  exposed: CompletedMentsu<T>[];
+}
+
+/**
+ * ツモる前の手牌 (13枚)
+ */
+export type Tehai13<T extends HaiKindId | HaiId = HaiKindId> = Tehai<T>;
+
+/**
+ * ツモった後の手牌 (14枚)
+ */
+export type Tehai14<T extends HaiKindId | HaiId = HaiKindId> = Tehai<T>;
