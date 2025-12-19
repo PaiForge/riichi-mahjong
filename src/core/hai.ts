@@ -1,5 +1,5 @@
 import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types.js";
-import { asHaiKindId } from "../utils/assertions";
+import { asHaiId, asHaiKindId } from "../utils/assertions";
 
 /**
  * 牌種IDから牌種タイプを取得する
@@ -50,4 +50,27 @@ export function haiKindToNumber(kind: HaiKindId): number | undefined {
  */
 export function isSuupai(kind: HaiKindId): boolean {
   return kindIdToHaiType(kind) !== HaiType.Jihai;
+}
+
+/**
+ * HaiId または HaiKindId の配列を HaiKindId の配列に正規化する。
+ *
+ * 配列内に HaiId の範囲外 (34以上) の値が含まれている場合、すべての要素を HaiId とみなして変換を行う。
+ * すべての値が 0-33 の範囲内である場合、HaiKindId の配列であるとみなしてそのまま返す。
+ *
+ * NOTE: 萬子のみの手牌 (HaiId がすべて 0-33) の場合など、HaiId の配列であっても HaiKindId と誤認される可能性がある。
+ * HaiId を使用する場合は、可能な限りこの関数を使用せず、呼び出し元で明示的に HaiKindId に変換することを推奨する。
+ */
+// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+export function normalizeHaiIds(
+  values: readonly (HaiId | HaiKindId)[],
+): HaiKindId[] {
+  // ヒューリスティック: 1つでも34以上があれば HaiId とみなす
+  const isHaiId = values.some((v) => v >= 34);
+
+  if (isHaiId) {
+    return values.map((v) => haiIdToKindId(asHaiId(v)));
+  }
+
+  return values.map((v) => asHaiKindId(v));
 }
