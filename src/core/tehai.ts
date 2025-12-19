@@ -12,6 +12,17 @@ export function calculateTehaiCount<T extends HaiKindId | HaiId>(
 }
 
 /**
+ * 牌種ごとの枚数をカウントします。
+ */
+export function countHaiKind(hais: readonly HaiKindId[]): number[] {
+  const counts = Array.from({ length: 34 }, () => 0);
+  for (const hai of hais) {
+    counts[hai] = (counts[hai] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/**
  * 手牌がTehai13（有効枚数13枚）であるか検証します。
  * @throws {ShoushaiError} 枚数が不足している場合
  * @throws {TahaiError} 枚数が超過している場合

@@ -6,7 +6,7 @@ import { createTehai13 } from "../../../utils/test-helpers";
 
 describe("calculateChiitoitsuShanten", () => {
   it("通常の1シャンテンの手牌で正しく計算できること", () => {
-    // 11 22 33 44 55 6 7 (5対子, 7種類)
+    // 1萬 2萬 3萬 4萬 5萬 6萬 7萬 (5対子, 7種類)
     // shanten = 6 - 5 = 1
     const hais = [
       HaiKind.ManZu1,
@@ -27,7 +27,7 @@ describe("calculateChiitoitsuShanten", () => {
   });
 
   it("聴牌（0シャンテン）で正しく計算できること", () => {
-    // 11 22 33 44 55 66 7 (6対子)
+    // 1萬 2萬 3萬 4萬 5萬 6萬 7萬 (6対子)
     const hais = [
       HaiKind.ManZu1,
       HaiKind.ManZu1,
@@ -48,7 +48,18 @@ describe("calculateChiitoitsuShanten", () => {
 
   it("副露がある場合はInfinityを返すこと", () => {
     const tehai: Tehai13 = {
-      closed: [],
+      closed: [
+        HaiKind.ManZu2,
+        HaiKind.ManZu2,
+        HaiKind.ManZu2,
+        HaiKind.ManZu3,
+        HaiKind.ManZu3,
+        HaiKind.ManZu3,
+        HaiKind.ManZu4,
+        HaiKind.ManZu4,
+        HaiKind.ManZu4,
+        HaiKind.ManZu5,
+      ],
       exposed: [
         {
           type: MentsuType.Koutsu,
@@ -60,8 +71,8 @@ describe("calculateChiitoitsuShanten", () => {
   });
 
   it("同種牌4枚使いを1対子として扱うこと", () => {
-    // 1111 22 33 ...
-    // 1111 は 1対子 (Kind 1).
+    // 1萬 2萬 3萬 ... (1萬が4枚)
+    // 1萬 4枚 は 1対子 とみなす (Kind 1).
     const hais = [
       HaiKind.ManZu1,
       HaiKind.ManZu1,
@@ -84,7 +95,7 @@ describe("calculateChiitoitsuShanten", () => {
   });
 
   it("7種類未満の場合にペナルティを加算すること", () => {
-    // 11 22 33 44 55 66 6
+    // 1萬 2萬 3萬 4萬 5萬 6萬 ... (6萬が3枚)
     // 種類: 1,2,3,4,5,6. (6種類).
     // 対子: 6.
     // シャンテン = 6 - 6 + (7 - 6) = 1.

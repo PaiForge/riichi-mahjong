@@ -53,6 +53,32 @@ export function isSuupai(kind: HaiKindId): boolean {
 }
 
 /**
+ * 么九牌（1,9,字牌）の牌種IDセット
+ */
+export const YAOCHU_KIND_IDS = [
+  HaiKind.ManZu1,
+  HaiKind.ManZu9,
+  HaiKind.PinZu1,
+  HaiKind.PinZu9,
+  HaiKind.SouZu1,
+  HaiKind.SouZu9,
+  HaiKind.Ton,
+  HaiKind.Nan,
+  HaiKind.Sha,
+  HaiKind.Pei,
+  HaiKind.Haku,
+  HaiKind.Hatsu,
+  HaiKind.Chun,
+] as const;
+
+/**
+ * 么九牌（1,9,字牌）かどうかを判定する
+ */
+export function isYaochu(kind: HaiKindId): boolean {
+  return YAOCHU_KIND_IDS.some((k) => k === kind);
+}
+
+/**
  * HaiId または HaiKindId の配列を HaiKindId の配列に正規化する。
  *
  * 配列内に HaiId の範囲外 (34以上) の値が含まれている場合、すべての要素を HaiId とみなして変換を行う。
@@ -61,12 +87,22 @@ export function isSuupai(kind: HaiKindId): boolean {
  * NOTE: 萬子のみの手牌 (HaiId がすべて 0-33) の場合など、HaiId の配列であっても HaiKindId と誤認される可能性がある。
  * HaiId を使用する場合は、可能な限りこの関数を使用せず、呼び出し元で明示的に HaiKindId に変換することを推奨する。
  */
-// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+
+/**
+ *
+ */
 export function normalizeHaiIds(
+  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
   values: readonly (HaiId | HaiKindId)[],
 ): HaiKindId[] {
   // ヒューリスティック: 1つでも34以上があれば HaiId とみなす
-  const isHaiId = values.some((v) => v >= 34);
+  let isHaiId = false;
+  for (const v of values) {
+    if (v >= 34) {
+      isHaiId = true;
+      break;
+    }
+  }
 
   if (isHaiId) {
     return values.map((v) => haiIdToKindId(asHaiId(v)));

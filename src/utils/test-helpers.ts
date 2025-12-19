@@ -1,4 +1,4 @@
-import type { HaiId, HaiKindId, Tehai13 } from "../types";
+import type { HaiId, HaiKindId, Tehai, Tehai13 } from "../types";
 import { validateTehai13 } from "../core/tehai";
 
 /**
@@ -9,7 +9,7 @@ import { validateTehai13 } from "../core/tehai";
 export function createTehai13<T extends HaiKindId | HaiId>(
   closed: readonly T[],
 ): Tehai13<T> {
-  const tehai: Tehai13<T> = {
+  const tehai: Tehai<T> = {
     closed,
     exposed: [],
   };
