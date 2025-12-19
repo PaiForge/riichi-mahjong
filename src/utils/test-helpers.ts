@@ -1,4 +1,11 @@
-import type { HaiId, HaiKindId, Tehai, Tehai13 } from "../types";
+import type {
+  HaiId,
+  HaiKindId,
+  Tehai,
+  Tehai13,
+  Mentsu,
+  MentsuType,
+} from "../types";
 import { validateTehai13 } from "../core/tehai";
 
 /**
@@ -17,4 +24,15 @@ export function createTehai13<T extends HaiKindId | HaiId>(
   validateTehai13(tehai);
 
   return tehai;
+}
+
+/**
+ * テスト用の Mentsu オブジェクトを作成します。
+ */
+export function createMentsu<T extends HaiKindId | HaiId>(
+  type: MentsuType,
+  hais: readonly T[],
+): Mentsu<T> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return { type, hais } as unknown as Mentsu<T>;
 }
