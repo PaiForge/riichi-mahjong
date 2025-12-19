@@ -67,6 +67,6 @@ export function isValidToitsu(kindIds: readonly HaiKindId[]): boolean {
  * 塔子かどうかを検証する
  * 未実装
  */
-export function isValidTatsu(kindIds: readonly HaiKindId[]): boolean {
+export function isValidTatsu(_kindIds: readonly HaiKindId[]): boolean {
   throw new Error("Not implemented");
 }

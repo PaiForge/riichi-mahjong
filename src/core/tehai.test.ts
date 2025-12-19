@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ShoushaiError, TahaiError } from "../errors";
-import type { Kantsu, Shuntsu } from "../types";
+import type { CompletedMentsu, Kantsu, Shuntsu } from "../types";
 import { HaiKind, MentsuType } from "../types";
 import {
   isTehai13,
@@ -11,7 +11,7 @@ import {
 
 describe("Tehai Validation (手牌の検証)", () => {
   // Helper to create a dummy Tehai with N closed tiles
-  const createTehai = (closedCount: number, furos: any[] = []) => ({
+  const createTehai = (closedCount: number, furos: CompletedMentsu[] = []) => ({
     closed: Array(closedCount).fill(HaiKind.ManZu1),
     exposed: furos,
   });

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  type HaiId,
   HaiKind,
   type HaiKindId,
   type Kantsu,
@@ -9,7 +8,6 @@ import {
   type Shuntsu,
   type Toitsu,
 } from "../types.js";
-import { haiIdToKindId } from "./hai.js";
 import {
   isValidKantsu,
   isValidKoutsu,

@@ -1,5 +1,4 @@
-import { describe, expect, it } from "vitest";
-import { ShoushaiError, TahaiError } from "./errors";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   type Furo,
@@ -7,8 +6,9 @@ import {
   HAI_KIND_IDS,
   type HaiId,
   HaiKind,
-  type Kantsu,
+  type HaiKindId,
   MentsuType,
+  type ShantenNumber,
   type Shuntsu,
   Tacha,
   type Tehai,
@@ -17,26 +17,39 @@ import {
 describe("HaiKindId (牌種ID)", () => {
   it("34種類の牌IDが定義されていること", () => {
     expect(HAI_KIND_IDS).toHaveLength(34);
+    expect(HAI_KIND_IDS.at(0)).toBe(0);
+    expect(HAI_KIND_IDS.at(-1)).toBe(33);
   });
 
-  it("HaiKind 定数が正しいIDにマッピングされていること", () => {
-    expect(HaiKind.ManZu1).toBe(0);
-    expect(HaiKind.ManZu9).toBe(8);
-    expect(HaiKind.PinZu1).toBe(9);
-    expect(HaiKind.PinZu9).toBe(17);
-    expect(HaiKind.SouZu1).toBe(18);
-    expect(HaiKind.SouZu9).toBe(26);
-    expect(HaiKind.Ton).toBe(27);
-    expect(HaiKind.Chun).toBe(33);
+  it("境界値外の数値は HaiKindId 型として扱われないこと", () => {
+    expectTypeOf(0 as const).toExtend<HaiKindId>();
+    expectTypeOf(33 as const).toExtend<HaiKindId>();
+
+    expectTypeOf(-1).not.toExtend<HaiKindId>();
+    expectTypeOf(34).not.toExtend<HaiKindId>();
+  });
+
+  it("HaiKind 定数が正しい Literal Type として定義されていること", () => {
+    expectTypeOf(HaiKind.ManZu1).toEqualTypeOf<0>();
+    expectTypeOf(HaiKind.ManZu9).toEqualTypeOf<8>();
+    expectTypeOf(HaiKind.PinZu1).toEqualTypeOf<9>();
+    expectTypeOf(HaiKind.PinZu9).toEqualTypeOf<17>();
+    expectTypeOf(HaiKind.SouZu1).toEqualTypeOf<18>();
+    expectTypeOf(HaiKind.SouZu9).toEqualTypeOf<26>();
+    expectTypeOf(HaiKind.Ton).toEqualTypeOf<27>();
+    expectTypeOf(HaiKind.Chun).toEqualTypeOf<33>();
   });
 });
 
 describe("ShantenNumber (シャンテン数)", () => {
-  it("型としてインポート可能であること", () => {
-    const tenpai: import("./types").ShantenNumber = 0;
-    const maxShanten: import("./types").ShantenNumber = 13;
-    expect(tenpai).toBe(0);
-    expect(maxShanten).toBe(13);
+  it("定義内の数値は ShantenNumber 型として扱われること", () => {
+    expectTypeOf(0 as const).toExtend<ShantenNumber>();
+    expectTypeOf(13 as const).toExtend<ShantenNumber>();
+  });
+
+  it("境界値外の数値は ShantenNumber 型として扱われないこと", () => {
+    expectTypeOf(-1).not.toExtend<ShantenNumber>();
+    expectTypeOf(14).not.toExtend<ShantenNumber>();
   });
 });
 
@@ -53,25 +66,37 @@ describe("Tacha (他家)", () => {
 });
 
 describe("Furo (副露メタ情報)", () => {
-  it("Chi/Pon/Daiminkan/Kakan は from プロパティを持つこと", () => {
-    const chi: Furo = { type: FuroType.Chi, from: Tacha.Kamicha };
-    const pon: Furo = { type: FuroType.Pon, from: Tacha.Toimen };
-    const daiminkan: Furo = {
+  it("Chi/Pon/Daiminkan/Kakan は Furo 型として適合すること", () => {
+    expectTypeOf({ type: FuroType.Chi, from: Tacha.Kamicha }).toExtend<Furo>();
+    expectTypeOf({ type: FuroType.Pon, from: Tacha.Toimen }).toExtend<Furo>();
+    expectTypeOf({
       type: FuroType.Daiminkan,
       from: Tacha.Shimocha,
-    };
-    const kakan: Furo = { type: FuroType.Kakan, from: Tacha.Kamicha };
+    }).toExtend<Furo>();
+    expectTypeOf({
+      type: FuroType.Kakan,
+      from: Tacha.Kamicha,
+    }).toExtend<Furo>();
+  });
 
-    expect(chi.from).toBe(3);
-    expect(pon.from).toBe(2);
-    expect(daiminkan.from).toBe(1);
-    expect(kakan.from).toBe(3);
+  it("不正な構造は Furo 型として扱われないこと", () => {
+    // missing type
+    expectTypeOf({ from: Tacha.Kamicha }).not.toExtend<Furo>();
+    // missing from
+    expectTypeOf({ type: FuroType.Chi }).not.toExtend<Furo>();
+    // invalid type
+    expectTypeOf({
+      type: "InvalidFuro",
+      from: Tacha.Kamicha,
+    }).not.toExtend<Furo>();
   });
 });
 
 describe("HaiId (牌ID)", () => {
   it("数値として扱えるが、型システム上は区別される", () => {
     const id = 0 as HaiId;
+    expectTypeOf(id).toExtend<number>();
+    expectTypeOf(0).not.toEqualTypeOf<HaiId>(); // Brand型なので単純なnumberは代入不可（実際は代入可能かもしれないが、意図としてはチェックしたい）
     expect(id).toBe(0);
   });
 });
@@ -107,6 +132,9 @@ describe("Tehai (手牌)", () => {
       closed: [id4],
       exposed: [shuntsu],
     };
+
+    expectTypeOf(shuntsu).toExtend<Shuntsu<HaiId>>();
+    expectTypeOf(tehai).toExtend<Tehai<HaiId>>();
 
     expect(tehai.closed[0]).toBe(3);
     expect(tehai.exposed[0].hais[0]).toBe(0);
