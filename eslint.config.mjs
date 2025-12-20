@@ -20,7 +20,7 @@ export default tseslint.config(
                 ...globals.es2021,
             },
             parserOptions: {
-                project: ["./tsconfig.json"],
+                project: ["./tsconfig.eslint.json"],
                 tsconfigRootDir: import.meta.dirname,
             },
         },
@@ -79,6 +79,7 @@ export default tseslint.config(
         files: ["**/*.test.ts"],
         rules: {
             "@typescript-eslint/consistent-type-assertions": "off",
+            "@typescript-eslint/prefer-readonly-parameter-types": "off",
         },
     },
     prettier, // Must be last
