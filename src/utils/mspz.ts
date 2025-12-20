@@ -95,3 +95,66 @@ export function haiIdsToMspzString(
 
   return result;
 }
+
+/**
+ * MSPZ形式の文字列（例: "123m456p"）を解析して HaiKindId の配列に変換します。
+ * 主にテストデータの作成用途で使用します。
+ *
+ * @param mspz MSPZ形式の文字列
+ * @returns HaiKindId の配列
+ */
+export function mspzStringToHaiIds(mspz: string): HaiKindId[] {
+  const result: HaiKindId[] = [];
+  let currentNumbers: number[] = [];
+
+  for (const char of mspz) {
+    if (char >= "0" && char <= "9") {
+      currentNumbers.push(parseInt(char, 10));
+    } else {
+      // Suffix handling
+      let base: HaiKindId | undefined;
+
+      switch (char) {
+        case "m":
+          base = HaiKind.ManZu1;
+          break;
+        case "p":
+          base = HaiKind.PinZu1;
+          break;
+        case "s":
+          base = HaiKind.SouZu1;
+          break;
+        case "z":
+          base = HaiKind.Ton;
+          break;
+        default:
+          // 無視するかエラーにするか。ここではテスト用なので無視する実装とするが、
+          // 不正な文字は処理されない。
+          currentNumbers = []; // Clear buffer to be safe
+          continue;
+      }
+
+      for (const num of currentNumbers) {
+        if (char === "z") {
+          // 字牌: 1=東(27), 2=南(28), ... 7=中(33)
+          if (num >= 1 && num <= 7) {
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            result.push((base + num - 1) as HaiKindId);
+          }
+        } else {
+          // 数牌: 1-9. 1=ManZu1(0), 9=ManZu9(8)
+          // num=0 is often used for Red 5, but let's treat 0 as 5 (aka generic 5 handling) or ignore for now?
+          // User context: simple shanten test. Usually 0 is Aka.
+          // For now, let's treat 1-9 strict.
+          if (num >= 1) {
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            result.push((base + num - 1) as HaiKindId);
+          }
+        }
+      }
+      currentNumbers = [];
+    }
+  }
+
+  return result;
+}

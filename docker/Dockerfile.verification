@@ -1,0 +1,9 @@
+FROM python:3.9-slim
+
+# Install the reference implementation
+RUN pip install mahjong==1.4.0
+
+WORKDIR /app
+
+# The entrypoint will be overridden by the runner, but this is a good default
+CMD ["bash"]
