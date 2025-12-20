@@ -1,6 +1,6 @@
 import type { HaiId, HaiKindId, Tehai13 } from "../../../types";
 import { normalizeHaiIds, isYaochu } from "../../../core/hai";
-import { validateTehai13 } from "../../../core/tehai";
+import { countHaiKind, validateTehai13 } from "../../../core/tehai";
 
 /**
  * 国士無双のシャンテン数を計算します。
@@ -30,25 +30,29 @@ export function calculateKokushiShanten<T extends HaiKindId | HaiId>(
   }
 
   const normalizedClosed = normalizeHaiIds(tehai.closed);
+  const dist = countHaiKind(normalizedClosed);
 
   // 么九牌の種類数をカウント
   // 同時に、么九牌の対子が存在するかもチェック
-  const yaochuCounts = new Map<HaiKindId, number>();
+  let uniqueYaochuCount = 0;
   let hasYaochuPair = false;
 
-  for (const kind of normalizedClosed) {
+  for (let i = 0; i < dist.length; i++) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const kind = i as HaiKindId;
     if (!isYaochu(kind)) {
       continue;
     }
-    const currentCount = (yaochuCounts.get(kind) ?? 0) + 1;
-    yaochuCounts.set(kind, currentCount);
 
-    if (currentCount >= 2) {
-      hasYaochuPair = true;
+    const count = dist[i];
+    if (count !== undefined && count > 0) {
+      uniqueYaochuCount++;
+      if (count >= 2) {
+        hasYaochuPair = true;
+      }
     }
   }
 
-  const uniqueYaochuCount = yaochuCounts.size;
   const pairBonus = hasYaochuPair ? 1 : 0;
 
   // シャンテン数 = 13 - (種類の数) - (対子ボーナス)

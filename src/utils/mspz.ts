@@ -1,19 +1,29 @@
 /* eslint-disable @typescript-eslint/prefer-readonly-parameter-types */
-import { HaiId, HaiKind, HaiKindId } from "../types";
+import { ShoushaiError, TahaiError } from "../errors";
+import { HaiId, HaiKind, HaiKindDistribution, HaiKindId } from "../types";
 import { haiKindToNumber, normalizeHaiIds } from "../core/hai";
 
 /**
  * 13枚の牌ID配列を 34種の牌カウント配列（整数配列）に変換します。
- * @throws {Error} 牌の数が13枚でない場合
+ * @throws {ShoushaiError} 牌の数が13枚より少ない場合
+ * @throws {TahaiError} 牌の数が13枚より多い場合
  */
 export function haiIdsToCounts34(
   hais: readonly (HaiKindId | HaiId)[],
-): number[] {
-  if (hais.length !== 13) {
-    throw new Error(`Invalid number of tiles: expected 13, got ${hais.length}`);
+): HaiKindDistribution {
+  if (hais.length < 13) {
+    throw new ShoushaiError(
+      `Invalid number of tiles: expected 13, got ${hais.length}`,
+    );
+  }
+  if (hais.length > 13) {
+    throw new TahaiError(
+      `Invalid number of tiles: expected 13, got ${hais.length}`,
+    );
   }
 
-  const counts = Array.from({ length: 34 }, () => 0);
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const counts = Array.from({ length: 34 }, () => 0) as unknown as number[];
   const kinds = normalizeHaiIds(hais);
 
   for (const kind of kinds) {
@@ -21,7 +31,8 @@ export function haiIdsToCounts34(
     counts[kind]!++;
   }
 
-  return counts;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return counts as unknown as HaiKindDistribution;
 }
 
 /**
@@ -39,7 +50,7 @@ export function haiIdsToMspzString(
   const manzu = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   for (let i = HaiKind.ManZu1; i <= HaiKind.ManZu9; i++) {
-    const count = counts[i] ?? 0;
+    const count = counts[i];
     for (let j = 0; j < count; j++) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       manzu.push(haiKindToNumber(i as HaiKindId));
@@ -53,7 +64,7 @@ export function haiIdsToMspzString(
   const pinzu = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   for (let i = HaiKind.PinZu1; i <= HaiKind.PinZu9; i++) {
-    const count = counts[i] ?? 0;
+    const count = counts[i];
     for (let j = 0; j < count; j++) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       pinzu.push(haiKindToNumber(i as HaiKindId));
@@ -67,7 +78,7 @@ export function haiIdsToMspzString(
   const souzu = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   for (let i = HaiKind.SouZu1; i <= HaiKind.SouZu9; i++) {
-    const count = counts[i] ?? 0;
+    const count = counts[i];
     for (let j = 0; j < count; j++) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       souzu.push(haiKindToNumber(i as HaiKindId));
@@ -81,7 +92,7 @@ export function haiIdsToMspzString(
   const jihai = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   for (let i = HaiKind.Ton; i <= HaiKind.Chun; i++) {
-    const count = counts[i] ?? 0;
+    const count = counts[i];
     for (let j = 0; j < count; j++) {
       // 字牌は 1-7 で表すことが多い (Testing tool such as tenhou-log uses this)
       // 東=1, 南=2, 西=3, 北=4, 白=5, 發=6, 中=7

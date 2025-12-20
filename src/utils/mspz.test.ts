@@ -75,11 +75,13 @@ describe("mspz utils", () => {
 
     it("入力配列の長さが13でない場合、エラーをスローすること", () => {
       const tooFew = [HaiKind.ManZu1, HaiKind.ManZu1];
-      expect(() => haiIdsToCounts34(tooFew)).toThrow("Invalid number of tiles");
+      expect(() => haiIdsToCounts34(tooFew)).toThrow(
+        /Invalid number of tiles: expected 13, got 2/,
+      );
 
       const tooMany = Array(14).fill(HaiKind.ManZu1);
       expect(() => haiIdsToCounts34(tooMany)).toThrow(
-        "Invalid number of tiles",
+        /Invalid number of tiles: expected 13, got 14/,
       );
     });
   });

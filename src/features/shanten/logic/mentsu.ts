@@ -16,6 +16,9 @@ export function calculateMentsuShanten<T extends HaiKindId | HaiId>(
 
   const normalizedClosed = normalizeHaiIds(tehai.closed);
   const counts = countHaiKind(normalizedClosed);
+  // Mutation is required for the algorithm, so we convert to a mutable number array
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const mutableCounts = [...counts] as number[];
   const exposedCount = tehai.exposed.length;
 
   // 基本シャンテン数 (8 - 2 * 面子数)
@@ -23,20 +26,20 @@ export function calculateMentsuShanten<T extends HaiKindId | HaiId>(
 
   // 1. 雀頭がある場合
   for (let i = 0; i < 34; i++) {
-    if ((counts[i] ?? 0) >= 2) {
-      counts[i] = (counts[i] ?? 0) - 2;
-      const { m, t } = searchMentsu(counts);
+    if ((mutableCounts[i] ?? 0) >= 2) {
+      mutableCounts[i] = (mutableCounts[i] ?? 0) - 2;
+      const { m, t } = searchMentsu(mutableCounts);
       const currentMentsu = exposedCount + m;
       const effectiveTaatsu = Math.min(4 - currentMentsu, t);
       const shanten = 8 - 2 * currentMentsu - effectiveTaatsu - 1;
       minShanten = Math.min(minShanten, shanten);
-      counts[i] = (counts[i] ?? 0) + 2;
+      mutableCounts[i] = (mutableCounts[i] ?? 0) + 2;
     }
   }
 
   // 2. 雀頭がない場合
   {
-    const { m, t } = searchMentsu(counts);
+    const { m, t } = searchMentsu(mutableCounts);
     const currentMentsu = exposedCount + m;
     const effectiveTaatsu = Math.min(4 - currentMentsu, t);
     const shanten = 8 - 2 * currentMentsu - effectiveTaatsu;

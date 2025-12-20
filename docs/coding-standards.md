@@ -63,3 +63,8 @@ export type Direction = typeof Direction[keyof typeof Direction];
 ### 引数の Readonly
 **ルール:** 配列やオブジェクトを引数として受け取る際は、可能な限り `readonly` 修飾子（`readonly T[]` や `Readonly<T>`）を付与してください。
 **理由:** 関数内での意図しないミューテーション（副作用）を防ぐため。Biome などのリンターでは完全な強制が難しいため、規約として定めます。
+
+## エラーハンドリング (Error Handling)
+### カスタム例外の使用
+**ルール:** ドメイン固有の異常系（少牌、多牌など）には、汎用的な `Error` ではなく `src/errors.ts` に定義されたカスタム例外（`ShoushaiError`, `TahaiError` 等）を使用してください。
+**理由:** エラーの種類に応じた適切なハンドリング（キャッチ、ログ出力、リカバリ）を可能にするため。また、エラーの発生原因をコード上で明確にするため。

@@ -11,6 +11,40 @@ export const HAI_KIND_IDS = [
   22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
 ] as const;
 
+// Utility for fixed-length tuple
+type TupleOf<
+  T,
+  N extends number,
+  R extends unknown[] = [],
+> = R["length"] extends N ? R : TupleOf<T, N, [T, ...R]>;
+
+/**
+ * 牌の種類の総数 (34)
+ */
+export type HaiKindCount = (typeof HAI_KIND_IDS)["length"];
+
+/**
+ * 特定の種類の牌の所持数 (0-4枚)
+ * 各種類の牌は最大4枚まで存在します。
+ */
+export type HaiQuantity = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * 全34種類の牌の所持数分布配列。
+ * インデックスは HaiKindId (0-33) に対応します。
+ * 各要素はその種類の牌の所持数 (0-4) です。
+ *
+ * @example
+ * // "113m 1z" (MPSZ形式) に対応
+ * const dist: HaiKindDistribution = [
+ *   2, 0, 1, 0, 0, 0, 0, 0, 0, // 萬子 (1m x2, 3m x1)
+ *   0, 0, 0, 0, 0, 0, 0, 0, 0, // 筒子
+ *   0, 0, 0, 0, 0, 0, 0, 0, 0, // 索子
+ *   1, 0, 0, 0, 0, 0, 0        // 字牌 (1z x1)
+ * ];
+ */
+export type HaiKindDistribution = Readonly<TupleOf<HaiQuantity, HaiKindCount>>;
+
 /**
  * 物理的な牌の一意な識別子 (HaiId)
  *

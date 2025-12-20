@@ -1,5 +1,12 @@
 import { ShoushaiError, TahaiError } from "../errors";
-import type { HaiId, HaiKindId, Tehai, Tehai13, Tehai14 } from "../types";
+import type {
+  HaiId,
+  HaiKindDistribution,
+  HaiKindId,
+  Tehai,
+  Tehai13,
+  Tehai14,
+} from "../types";
 
 /**
  * 手牌の有効枚数を計算します。
@@ -14,12 +21,14 @@ export function calculateTehaiCount<T extends HaiKindId | HaiId>(
 /**
  * 牌種ごとの枚数をカウントします。
  */
-export function countHaiKind(hais: readonly HaiKindId[]): number[] {
-  const counts = Array.from({ length: 34 }, () => 0);
+export function countHaiKind(hais: readonly HaiKindId[]): HaiKindDistribution {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const counts = Array.from({ length: 34 }, () => 0) as unknown as number[];
   for (const hai of hais) {
     counts[hai] = (counts[hai] ?? 0) + 1;
   }
-  return counts;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return counts as unknown as HaiKindDistribution;
 }
 
 /**
