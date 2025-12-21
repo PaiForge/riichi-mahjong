@@ -328,3 +328,75 @@ export type Tehai13<T extends HaiKindId | HaiId = HaiKindId> = Tehai<T>;
  * ツモった後の手牌 (14枚)
  */
 export type Tehai14<T extends HaiKindId | HaiId = HaiKindId> = Tehai<T>;
+
+// ... types existing ...
+
+/**
+ * 役牌 (Yakuhai)
+ *
+ * 構造的に成立する三元牌。
+ * ※場風・自風は状況役（Bakaze, Jikaze）として別途定義するためここには含めない。
+ */
+export type Yakuhai = "Haku" | "Hatsu" | "Chun";
+
+/**
+ * 構造的な役 (StructuralYaku)
+
+ *
+ * 構造的な役（手牌の構成のみで成立する役）の識別子。
+ * 偶然役（嶺上開花など）や状況役（場風、自風、立直など）は含まない。
+ */
+export type StructuralYaku =
+  | "Tanyao" // 断幺九
+  | "Pinfu" // 平和
+  | "Iipeikou" // 一盃口
+  | Yakuhai // 役牌 (白, 發, 中)
+  | "SanshokuDoujun" // 三色同順
+  | "Itsu" // 一気通貫
+  | "Chanta" // 混全帯幺九
+  | "Chiitoitsu" // 七対子
+  | "Toitoi" // 対々和
+  | "Sanankou" // 三暗刻
+  | "Sankantsu" // 三槓子
+  | "SanshokuDoukou" // 三色同刻
+  | "Honroutou" // 混老頭
+  | "Shousangen" // 小三元
+  | "Honitsu" // 混一色
+  | "Junchan" // 純全帯幺九
+  | "Ryanpeikou" // 二盃口
+  | "Chinitsu" // 清一色
+  | "KokushiMusou" // 国士無双
+  | "Suuankou" // 四暗刻
+  | "Daisangen" // 大三元
+  | "Shousuushii" // 小四喜
+  | "Daisuushii" // 大四喜
+  | "Tsuuiisou" // 字一色
+  | "Chinroutou" // 清老頭
+  | "Ryuuiisou" // 緑一色
+  | "ChuurenPoutou" // 九蓮宝燈
+  | "Suukantsu"; // 四槓子
+
+/**
+ * 役の飜数定義
+ */
+export interface YakuHanConfig {
+  /** 門前時の飜数 */
+  readonly closed: number;
+  /** 鳴きあり時の飜数 (0なら不成立) */
+  readonly open: number;
+}
+
+/**
+ * 役ID (YakuName)
+ *
+ * 全ての役の識別子ユニオン。
+ */
+export type YakuName = StructuralYaku;
+
+/**
+ * 役判定結果 (YakuResult)
+ *
+ * 成立した役と、その飜数のペアのリスト。
+ * 役が一つも成立しない場合は空配列となる。
+ */
+export type YakuResult = readonly [YakuName, number][];
