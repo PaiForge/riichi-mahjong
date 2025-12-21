@@ -26,6 +26,11 @@ export type Direction = typeof Direction[keyof typeof Direction];
 **ルール:** `英動詞` + `ローマ字名詞` の形式としてください（例: `calculateAgari`, `decomposeTehai`）。
 **理由:** 操作（英語）と対象（ドメイン語）を明確に区別し、可読性を高めるため。
 
+### ファイル名 (File Naming)
+**ルール:** ファイル名は **ケバブケース (kebab-case)** を使用してください（例: `test-helpers.ts`, `user-profile.ts`）。
+**理由:** OSごとのファイルシステム（Case-sensitive vs Case-insensitive）による問題を回避し、npmエコシステムや一般的なTypeScriptプロジェクトとの整合性を保つため。
+
+
 ## ドキュメンテーション (Documentation)
 ### ユビキタス言語の明記
 **ルール:** TSDoc コメント内には、対応する**ユビキタス言語（日本語のドメイン用語）**を必ず明記してください。
