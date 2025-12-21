@@ -1,6 +1,7 @@
-import type { HaiKindId, Tehai13 } from "../../../types";
+import type { Tehai13 } from "../../../types";
 import { isYaochu } from "../../../core/hai";
 import { countHaiKind, validateTehai13 } from "../../../core/tehai";
+import { asHaiKindId } from "../../../utils/assertions";
 
 /**
  * 国士無双のシャンテン数を計算します。
@@ -35,8 +36,7 @@ export function calculateKokushiShanten(tehai: Tehai13): number {
   let hasYaochuPair = false;
 
   for (let i = 0; i < dist.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const kind = i as HaiKindId;
+    const kind = asHaiKindId(i);
     if (!isYaochu(kind)) {
       continue;
     }

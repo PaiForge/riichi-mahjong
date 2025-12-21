@@ -1,3 +1,4 @@
+import { asHaiKindId } from "../utils/assertions";
 import { ShoushaiError, TahaiError } from "../errors";
 import { HaiId, HaiKind, HaiKindDistribution, HaiKindId } from "../types";
 import { haiIdToKindId, haiKindToNumber } from "../core/hai";
@@ -21,14 +22,13 @@ export function haiKindIdsToDistribution(
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const counts = Array.from({ length: 34 }, () => 0) as unknown as number[];
+  const counts = Array.from({ length: 34 }, () => 0);
 
   for (const kind of hais) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    counts[kind]!++;
+    counts[kind] = (counts[kind] ?? 0) + 1;
   }
 
+  // Tupleへの変換はアサーションが必要だが、生成ロジックが保証しているため安全
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return counts as unknown as HaiKindDistribution;
 }
@@ -39,6 +39,7 @@ export function haiKindIdsToDistribution(
  * @throws {TahaiError} 牌の数が13枚より多い場合
  */
 export function haiIdsToDistribution(
+  // Branded type makes linter think it's mutable object, but it's primitive number.
   // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
   hais: readonly HaiId[],
 ): HaiKindDistribution {
@@ -57,13 +58,13 @@ export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
   let result = "";
 
   // 萬子
-  const manzu = [];
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  for (let i = HaiKind.ManZu1; i <= HaiKind.ManZu9; i++) {
-    const count = counts[i];
+  const manzu: number[] = [];
+  for (let i = 0; i < 9; i++) {
+    const kind = asHaiKindId(HaiKind.ManZu1 + i);
+    const count = counts[kind];
     for (let j = 0; j < count; j++) {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      manzu.push(haiKindToNumber(i as HaiKindId));
+      const num = haiKindToNumber(kind);
+      if (num !== undefined) manzu.push(num);
     }
   }
   if (manzu.length > 0) {
@@ -71,13 +72,13 @@ export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
   }
 
   // 筒子
-  const pinzu = [];
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  for (let i = HaiKind.PinZu1; i <= HaiKind.PinZu9; i++) {
-    const count = counts[i];
+  const pinzu: number[] = [];
+  for (let i = 0; i < 9; i++) {
+    const kind = asHaiKindId(HaiKind.PinZu1 + i);
+    const count = counts[kind];
     for (let j = 0; j < count; j++) {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      pinzu.push(haiKindToNumber(i as HaiKindId));
+      const num = haiKindToNumber(kind);
+      if (num !== undefined) pinzu.push(num);
     }
   }
   if (pinzu.length > 0) {
@@ -85,13 +86,13 @@ export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
   }
 
   // 索子
-  const souzu = [];
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  for (let i = HaiKind.SouZu1; i <= HaiKind.SouZu9; i++) {
-    const count = counts[i];
+  const souzu: number[] = [];
+  for (let i = 0; i < 9; i++) {
+    const kind = asHaiKindId(HaiKind.SouZu1 + i);
+    const count = counts[kind];
     for (let j = 0; j < count; j++) {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      souzu.push(haiKindToNumber(i as HaiKindId));
+      const num = haiKindToNumber(kind);
+      if (num !== undefined) souzu.push(num);
     }
   }
   if (souzu.length > 0) {
@@ -99,14 +100,13 @@ export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
   }
 
   // 字牌
-  const jihai = [];
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  for (let i = HaiKind.Ton; i <= HaiKind.Chun; i++) {
-    const count = counts[i];
+  const jihai: number[] = [];
+  for (let i = 0; i < 7; i++) {
+    const kind = asHaiKindId(HaiKind.Ton + i);
+    const count = counts[kind];
     for (let j = 0; j < count; j++) {
-      // 字牌は 1-7 で表すことが多い (Testing tool such as tenhou-log uses this)
-      // 東=1, 南=2, 西=3, 北=4, 白=5, 發=6, 中=7
-      const num = i - HaiKind.Ton + 1;
+      // 字牌は 1-7 で表すことが多い
+      const num = i + 1;
       jihai.push(num);
     }
   }
@@ -149,27 +149,21 @@ export function mspzStringToHaiKindIds(mspz: string): HaiKindId[] {
           base = HaiKind.Ton;
           break;
         default:
-          // 無視するかエラーにするか。ここではテスト用なので無視する実装とするが、
-          // 不正な文字は処理されない。
-          currentNumbers = []; // Clear buffer to be safe
+          // 無視する
+          currentNumbers = [];
           continue;
       }
 
       for (const num of currentNumbers) {
         if (char === "z") {
-          // 字牌: 1=東(27), 2=南(28), ... 7=中(33)
+          // 字牌: 1=東(27), ... 7=中(33)
           if (num >= 1 && num <= 7) {
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            result.push((base + num - 1) as HaiKindId);
+            result.push(asHaiKindId(base + num - 1));
           }
         } else {
-          // 数牌: 1-9. 1=ManZu1(0), 9=ManZu9(8)
-          // num=0 is often used for Red 5, but let's treat 0 as 5 (aka generic 5 handling) or ignore for now?
-          // User context: simple shanten test. Usually 0 is Aka.
-          // For now, let's treat 1-9 strict.
+          // 数牌: 1-9
           if (num >= 1) {
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            result.push((base + num - 1) as HaiKindId);
+            result.push(asHaiKindId(base + num - 1));
           }
         }
       }

@@ -22,8 +22,7 @@ export function calculateTehaiCount<T extends HaiKindId | HaiId>(
  * 牌種ごとの枚数をカウントします。
  */
 export function countHaiKind(hais: readonly HaiKindId[]): HaiKindDistribution {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const counts = Array.from({ length: 34 }, () => 0) as unknown as number[];
+  const counts = Array.from({ length: 34 }, () => 0);
   for (const hai of hais) {
     counts[hai] = (counts[hai] ?? 0) + 1;
   }

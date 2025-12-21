@@ -14,8 +14,7 @@ export function calculateMentsuShanten(tehai: Tehai13): number {
 
   const counts = countHaiKind(tehai.closed);
   // Mutation is required for the algorithm, so we convert to a mutable number array
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const mutableCounts = [...counts] as number[];
+  const mutableCounts: number[] = Array.from(counts);
   const exposedCount = tehai.exposed.length;
 
   // 基本シャンテン数 (8 - 2 * 面子数)
