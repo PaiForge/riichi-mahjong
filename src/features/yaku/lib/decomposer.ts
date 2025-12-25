@@ -3,21 +3,11 @@ import type {
   HaiKindId,
   Shuntsu,
   Koutsu,
-  Toitsu,
   CompletedMentsu,
 } from "../../../types";
 import { countHaiKind } from "../../../core/tehai";
 import { isTuple4 } from "../../../utils/assertions";
-
-export interface HouraStructure {
-  readonly fourMentsu: readonly [
-    CompletedMentsu,
-    CompletedMentsu,
-    CompletedMentsu,
-    CompletedMentsu,
-  ];
-  readonly jantou: Toitsu;
-}
+import type { HouraStructure } from "../types";
 
 /**
  * 手牌を標準形（4面子1雀頭）に構造化する。
@@ -84,8 +74,8 @@ export function decomposeTehaiToMentsu(tehai: Tehai14): HouraStructure[] {
 /**
  * 閉じた手牌の残りを面子に分解する再帰関数
  */
-// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
 function decomposeClosedMentsu(
+  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
   counts: number[],
   requiredCount: number,
 ): CompletedMentsu[][] {

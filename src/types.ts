@@ -308,6 +308,17 @@ export type Mentsu<T extends HaiKindId | HaiId = HaiKindId> =
   | CompletedMentsu<T>
   | IncompletedMentsu<T>;
 
+/** 自風・場風を表す牌 (東・南・西・北) */
+export type Kazehai =
+  | typeof HaiKind.Ton
+  | typeof HaiKind.Nan
+  | typeof HaiKind.Sha
+  | typeof HaiKind.Pei;
+
+export type HaiIsYaocyu<ID extends HaiKindId | HaiId> = ID extends 0 | 8 | 9
+  ? true
+  : false;
+
 /**
  * 手牌 (Tehai)
  *
@@ -377,11 +388,11 @@ export type StructuralYaku =
   | "Suukantsu"; // 四槓子
 
 /**
- * 役の飜数 (Han)
+ * 役の飜数 (Hansu)
  *
  * 1, 2, 3, 5(流し満貫/清一色喰い下がり), 6(清一色), 13(役満), 26(ダブル役満)
  */
-export type Han = 1 | 2 | 3 | 5 | 6 | 13 | 26;
+export type Hansu = 1 | 2 | 3 | 5 | 6 | 13 | 26;
 
 /** 待ちの形 */
 export type MachiType =
@@ -406,9 +417,16 @@ export interface HouraStructure {
  */
 export interface YakuHanConfig {
   /** 門前時の飜数 */
-  readonly closed: Han;
-  /** 鳴きあり時の飜数 (0なら不成立) */
-  readonly open: Han | 0;
+  readonly closed: Hansu;
+  /**
+   * 鳴きあり時の飜数 (0なら不成立)
+   *
+   * @remarks
+   * この値が 0 の場合、その役は**門前限定（Menzen-only）**であることを意味します。
+   * 役判定ロジックにおいては、この値が 0 でかつ手牌が副露されている場合、
+   * 役の条件を満たしていても不成立とみなされます。
+   */
+  readonly open: Hansu | 0;
 }
 
 /**
@@ -424,4 +442,4 @@ export type YakuName = StructuralYaku;
  * 成立した役と、その飜数のペアのリスト。
  * 役が一つも成立しない場合は空配列となる。
  */
-export type YakuResult = readonly [YakuName, Han][];
+export type YakuResult = readonly [YakuName, Hansu][];

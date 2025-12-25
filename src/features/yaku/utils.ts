@@ -1,4 +1,9 @@
-import type { Tehai14 } from "../../types";
+import {
+  HaiKind,
+  type HaiKindId,
+  type Kazehai,
+  type Tehai14,
+} from "../../types";
 
 /**
  * 手牌が門前（メンゼン）かどうかを判定する。
@@ -21,4 +26,18 @@ export function isMenzen(tehai: Tehai14): boolean {
   return tehai.exposed.every((m) => {
     return m.type === "Kantsu" && !m.furo;
   });
+}
+/**
+ * 指定された牌が風牌かどうかを判定する。
+ *
+ * @param id 判定対象の牌種ID
+ * @returns 風牌（東・南・西・北）であれば true
+ */
+export function isKazehai(id: HaiKindId): id is Kazehai {
+  return (
+    id === HaiKind.Ton ||
+    id === HaiKind.Nan ||
+    id === HaiKind.Sha ||
+    id === HaiKind.Pei
+  );
 }

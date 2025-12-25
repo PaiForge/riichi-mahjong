@@ -47,3 +47,19 @@ export class TahaiError extends MahjongError {
     Object.setPrototypeOf(this, TahaiError.prototype);
   }
 }
+
+/**
+ * 引数が不正な場合のエラー
+ * 必要なパラメータが不足している、または不正な値の場合にスローされます。
+ */
+export class MahjongArgumentError extends MahjongError {
+  /**
+   *
+   */
+  constructor(message: string) {
+    super(message);
+    this.name = "MahjongArgumentError";
+
+    Object.setPrototypeOf(this, MahjongArgumentError.prototype);
+  }
+}
