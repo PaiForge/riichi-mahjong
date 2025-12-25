@@ -14,6 +14,15 @@ import {
   mspzStringToHaiKindIds,
   asMspz,
 } from "./mspz";
+import { isValidShuntsu } from "../core/mentsu";
+import { isTuple2, isTuple3 } from "./assertions";
+import type {
+  Shuntsu,
+  Koutsu,
+  Toitsu,
+  CompletedMentsu,
+  HouraStructure,
+} from "../types";
 
 /**
  * テスト用の Tehai13 オブジェクトを作成します。
@@ -77,4 +86,81 @@ export function createTehai(mspzString: string): Tehai14 {
  */
 export function createHaiKindIds(mspzString: string): HaiKindId[] {
   return mspzStringToHaiKindIds(asMspz(mspzString));
+}
+
+/**
+ * テスト用の順子 (Shuntsu) を作成します。
+ * isValidShuntsu によるバリデーションを行います。
+ */
+/**
+ * テスト用の順子 (Shuntsu) を作成します。
+ * isValidShuntsu によるバリデーションを行います。
+ */
+export function createShuntsu(mspz: string): Shuntsu {
+  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+
+  // Use core validation
+  if (!isValidShuntsu(ids)) {
+    throw new Error(`Invalid Shuntsu: ${mspz}`);
+  }
+
+  // isValidShuntsu ensures it is a valid Tuple3 of HaiKindId
+  /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+  const validIds = ids as unknown as [HaiKindId, HaiKindId, HaiKindId];
+
+  return {
+    type: "Shuntsu",
+    hais: validIds,
+  };
+}
+
+/**
+ * テスト用の刻子 (Koutsu) を作成します。
+ */
+export function createKoutsu(mspz: string): Koutsu {
+  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  if (!isTuple3(ids)) throw new Error(`Invalid Koutsu: ${mspz}`);
+  return {
+    type: "Koutsu",
+    hais: ids,
+  };
+}
+
+/**
+ * テスト用の対子 (Toitsu) を作成します。
+ */
+export function createToitsu(mspz: string): Toitsu {
+  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  if (!isTuple2(ids)) throw new Error(`Invalid Toitsu: ${mspz}`);
+  return {
+    type: "Toitsu",
+    hais: ids,
+  };
+}
+
+/**
+ * テスト用の HaiKindId を取得します。
+ */
+export function getHaiKindId(mspz: string): HaiKindId {
+  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  if (ids.length === 0) throw new Error(`Invalid HaiKindId: ${mspz}`);
+  const id = ids[0];
+  if (id === undefined) throw new Error(`Internal Error: id is undefined`);
+  return id;
+}
+
+/**
+ * テスト用のモック手牌 (HouraStructure) を作成します。
+ * 指定された面子と雀頭を使用し、残りはダミーの順子で埋めます。
+ */
+export function createMockHand(
+  targetMentsu: CompletedMentsu,
+  jantou: Toitsu,
+): HouraStructure {
+  // Fill rest with dummy
+  const dummyShuntsu = createShuntsu("123s");
+  return {
+    fourMentsu: [targetMentsu, dummyShuntsu, dummyShuntsu, dummyShuntsu],
+    jantou,
+  };
 }
