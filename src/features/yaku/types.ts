@@ -5,9 +5,23 @@ import type {
   HouraStructure,
   YakuHanConfig,
   Kazehai,
+  Shuntsu,
+  Koutsu,
+  Kantsu,
+  Toitsu,
+  Mentsu,
 } from "../../types";
 
-export type { HouraStructure, YakuHanConfig, Kazehai };
+export type {
+  HouraStructure,
+  YakuHanConfig,
+  Kazehai,
+  Shuntsu,
+  Koutsu,
+  Kantsu,
+  Toitsu,
+  Mentsu,
+};
 
 export interface HouraContext {
   /** 手牌が門前かどうか（暗槓が含まれていても門前扱い） */

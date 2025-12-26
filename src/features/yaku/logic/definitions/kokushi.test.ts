@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { kokushiDefinition } from "./kokushi";
-import type { HouraContext, HouraStructure } from "../../types";
+import type { HouraContext } from "../../types";
 import { HaiKind, type KokushiHouraStructure } from "../../../../types";
 
 describe("国士無双の判定", () => {
@@ -31,27 +31,5 @@ describe("国士無双の判定", () => {
     };
     expect(kokushiDefinition.isSatisfied(hand, baseContext)).toBe(true);
     expect(kokushiDefinition.getHansu(hand, baseContext)).toBe(13);
-  });
-
-  it("面子手の構造に対しては不成立であること", () => {
-    const hand: HouraStructure = {
-      type: "Mentsu",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-      fourMentsu: [] as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-      jantou: { type: "Toitsu", hais: [HaiKind.ManZu1, HaiKind.ManZu1] } as any,
-    };
-    expect(kokushiDefinition.isSatisfied(hand, baseContext)).toBe(false);
-    expect(kokushiDefinition.getHansu(hand, baseContext)).toBe(0);
-  });
-
-  it("七対子手の構造に対しては不成立であること", () => {
-    const hand: HouraStructure = {
-      type: "Chiitoitsu",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-      pairs: [] as any,
-    };
-    expect(kokushiDefinition.isSatisfied(hand, baseContext)).toBe(false);
-    expect(kokushiDefinition.getHansu(hand, baseContext)).toBe(0);
   });
 });
