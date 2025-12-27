@@ -363,7 +363,7 @@ export type StructuralYaku =
   | "Iipeikou" // 一盃口
   | Yakuhai // 役牌 (白, 發, 中)
   | "SanshokuDoujun" // 三色同順
-  | "Itsu" // 一気通貫
+  | "Ikkitsuukan" // 一気通貫
   | "Chanta" // 混全帯幺九
   | "Chiitoitsu" // 七対子
   | "Toitoi" // 対々和

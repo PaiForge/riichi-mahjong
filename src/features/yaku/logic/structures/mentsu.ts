@@ -1,5 +1,5 @@
 import type { CompletedMentsu, MentsuHouraStructure } from "../../../../types";
-import { countHaiKind } from "../../../../core/tehai";
+import { validateTehai14, countHaiKind } from "../../../../core/tehai";
 import { isTuple4 } from "../../../../utils/assertions";
 import type { Tehai14, HaiKindId, Shuntsu, Koutsu } from "../../../../types";
 
@@ -27,6 +27,8 @@ import type { Tehai14, HaiKindId, Shuntsu, Koutsu } from "../../../../types";
 export function decomposeTehaiForMentsu(
   tehai: Tehai14,
 ): MentsuHouraStructure[] {
+  validateTehai14(tehai);
+
   // HaiKindDistributionはreadonlyなので、可変配列に複製する
   const counts = [...countHaiKind(tehai.closed)];
   const results: MentsuHouraStructure[] = [];

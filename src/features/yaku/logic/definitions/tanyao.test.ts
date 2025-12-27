@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { tanyaoDefinition } from "./tanyao";
 import { createTehai } from "../../../../utils/test-helpers";
 import { decomposeTehaiForMentsu } from "../structures/mentsu";
-import { HaiKind } from "../../../../types";
+import { HaiKind, type MentsuHouraStructure } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("タンヤオの判定", () => {
@@ -16,8 +16,7 @@ describe("タンヤオの判定", () => {
     const tehai = createTehai("234m234p234s678s88p");
     // decomposeTehaiForMentsu は配列を返すが、この構成なら1つだけのはず
     const hands = decomposeTehaiForMentsu(tehai);
-    const hand = hands[0];
-    if (!hand) throw new Error("面子分解に失敗しました");
+    const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tanyaoDefinition.isSatisfied(hand, baseContext)).toBe(true);
     expect(tanyaoDefinition.getHansu(hand, baseContext)).toBe(1);
@@ -27,8 +26,7 @@ describe("タンヤオの判定", () => {
     // 234m 234p 234s 88p [678s] (Chi)
     const tehai = createTehai("234m234p234s88p[678s]");
     const hands = decomposeTehaiForMentsu(tehai);
-    const hand = hands[0];
-    if (!hand) throw new Error("面子分解に失敗しました");
+    const hand = hands[0] as unknown as MentsuHouraStructure;
 
     const context = { ...baseContext, isMenzen: false };
 
@@ -40,8 +38,7 @@ describe("タンヤオの判定", () => {
     // 123m 234p 234s 678s 88p (123mがNG)
     const tehai = createTehai("123m234p234s678s88p");
     const hands = decomposeTehaiForMentsu(tehai);
-    const hand = hands[0];
-    if (!hand) throw new Error("面子分解に失敗しました");
+    const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tanyaoDefinition.isSatisfied(hand, baseContext)).toBe(false);
     expect(tanyaoDefinition.getHansu(hand, baseContext)).toBe(0);
@@ -51,8 +48,7 @@ describe("タンヤオの判定", () => {
     // 234m 234p 234s 678s 99p (99pがNG)
     const tehai = createTehai("234m234p234s678s99p");
     const hands = decomposeTehaiForMentsu(tehai);
-    const hand = hands[0];
-    if (!hand) throw new Error("面子分解に失敗しました");
+    const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tanyaoDefinition.isSatisfied(hand, baseContext)).toBe(false);
     expect(tanyaoDefinition.getHansu(hand, baseContext)).toBe(0);
@@ -62,8 +58,7 @@ describe("タンヤオの判定", () => {
     // 234m 999p 234s 678s 88p (999pがNG)
     const tehai = createTehai("234m999p234s678s88p");
     const hands = decomposeTehaiForMentsu(tehai);
-    const hand = hands[0];
-    if (!hand) throw new Error("面子分解に失敗しました");
+    const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tanyaoDefinition.isSatisfied(hand, baseContext)).toBe(false);
     expect(tanyaoDefinition.getHansu(hand, baseContext)).toBe(0);
@@ -73,8 +68,7 @@ describe("タンヤオの判定", () => {
     // 234m 234p 234s 678s 11z (東が雀頭)
     const tehai = createTehai("234m234p234s678s11z");
     const hands = decomposeTehaiForMentsu(tehai);
-    const hand = hands[0];
-    if (!hand) throw new Error("面子分解に失敗しました");
+    const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tanyaoDefinition.isSatisfied(hand, baseContext)).toBe(false);
     expect(tanyaoDefinition.getHansu(hand, baseContext)).toBe(0);
