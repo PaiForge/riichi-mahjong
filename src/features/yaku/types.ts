@@ -32,6 +32,8 @@ export interface HouraContext {
   readonly bakaze?: Kazehai | undefined;
   /** 自風牌 */
   readonly jikaze?: Kazehai | undefined;
+  /** ツモ和了かどうか（暗刻系役の判定などに使用） */
+  readonly isTsumo?: boolean;
 }
 
 export interface Yaku {
