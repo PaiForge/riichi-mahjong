@@ -14,6 +14,12 @@ export type {
   CompletedMentsu,
   Tehai,
   Tehai13,
+  Tehai14,
+  YakuResult,
+  Mentsu,
+  IncompletedMentsu,
 } from "./types";
 
 export { calculateShanten } from "./features/shanten";
+export { getUkeire } from "./features/machi";
+export { detectYakuFromTehai } from "./features/yaku";

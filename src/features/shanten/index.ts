@@ -4,6 +4,12 @@ import { calculateChiitoitsuShanten } from "./logic/chiitoitsu";
 import { calculateKokushiShanten } from "./logic/kokushi";
 import { calculateMentsuTeShanten } from "./logic/mentsu-te";
 
+export {
+  calculateChiitoitsuShanten,
+  calculateKokushiShanten,
+  calculateMentsuTeShanten,
+};
+
 /**
  * シャンテン数を計算します。
  * 面子手、七対子、国士無双のシャンテン数のうち最小値を返します。

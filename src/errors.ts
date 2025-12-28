@@ -24,7 +24,7 @@ export class ShoushaiError extends MahjongError {
   /**
    *
    */
-  constructor(message: string) {
+  constructor(message = "手牌が規定枚数（13枚）より少ないです。") {
     super(message);
     this.name = "ShoushaiError";
 
@@ -40,7 +40,7 @@ export class TahaiError extends MahjongError {
   /**
    *
    */
-  constructor(message: string) {
+  constructor(message = "手牌が規定枚数（13枚）より多いです。") {
     super(message);
     this.name = "TahaiError";
 

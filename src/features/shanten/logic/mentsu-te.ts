@@ -1,16 +1,16 @@
-import type { Tehai13 } from "../../../types";
+import type { Tehai } from "../../../types";
 
-import { countHaiKind, validateTehai13 } from "../../../core/tehai";
+import { countHaiKind, validateTehai } from "../../../core/tehai";
 
 /**
  * 面子手（4面子1雀頭）のシャンテン数を計算する
  *
- * @param tehai 手牌 (13枚)
+ * @param tehai 手牌 (13枚 or 14枚)
  * @returns シャンテン数
  */
-export function calculateMentsuTeShanten(tehai: Tehai13): number {
+export function calculateMentsuTeShanten(tehai: Tehai): number {
   // 防御的プログラミング
-  validateTehai13(tehai);
+  validateTehai(tehai);
 
   const counts = countHaiKind(tehai.closed);
   // Mutation is required for the algorithm, so we convert to a mutable number array

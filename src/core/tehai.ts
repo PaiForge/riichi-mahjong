@@ -40,14 +40,10 @@ export function validateTehai13<T extends HaiKindId | HaiId>(
 ): void {
   const count = calculateTehaiCount(tehai);
   if (count < 13) {
-    throw new ShoushaiError(
-      `Tehai13は13枚である必要がありますが、${count}枚見つかりました。`,
-    );
+    throw new ShoushaiError();
   }
   if (count > 13) {
-    throw new TahaiError(
-      `Tehai13は13枚である必要がありますが、${count}枚見つかりました。`,
-    );
+    throw new TahaiError();
   }
 }
 
@@ -61,14 +57,29 @@ export function validateTehai14<T extends HaiKindId | HaiId>(
 ): void {
   const count = calculateTehaiCount(tehai);
   if (count < 14) {
-    throw new ShoushaiError(
-      `Tehai14は14枚である必要がありますが、${count}枚見つかりました。`,
-    );
+    throw new ShoushaiError();
   }
   if (count > 14) {
-    throw new TahaiError(
-      `Tehai14は14枚である必要がありますが、${count}枚見つかりました。`,
-    );
+    throw new TahaiError();
+  }
+}
+
+/**
+ * 手牌がTehai13またはTehai14（有効枚数が13または14枚）であるか検証します。
+ * シャンテン計算や待ち判定など、13枚/14枚の区別なく手牌として扱いたい場合に使用します。
+ *
+ * @throws {ShoushaiError} 枚数が不足している場合 (< 13)
+ * @throws {TahaiError} 枚数が超過している場合 (> 14)
+ */
+export function validateTehai<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+): void {
+  const count = calculateTehaiCount(tehai);
+  if (count < 13) {
+    throw new ShoushaiError();
+  }
+  if (count > 14) {
+    throw new TahaiError();
   }
 }
 
