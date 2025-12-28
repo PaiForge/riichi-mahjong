@@ -5,7 +5,7 @@ import type {
   YakuName,
   Hansu,
 } from "../../types";
-import { decomposeTehai } from "./logic/structures";
+import { getHouraStructures } from "./logic/structures";
 import { isMenzen, isKazehai } from "./utils";
 import { ALL_YAKU_DEFINITIONS } from "./logic/definitions";
 import type { HouraContext } from "./types";
@@ -40,7 +40,7 @@ export function detectYakuFromTehai(
   let maxHan = -1;
 
   // 2. 手牌の構造分解（面子手、七対子、国士無双）と役判定
-  const structuralInterpretations = decomposeTehai(tehai);
+  const structuralInterpretations = getHouraStructures(tehai);
 
   for (const hand of structuralInterpretations) {
     const currentResult: [YakuName, Hansu][] = [];

@@ -2,7 +2,7 @@ import type { Tehai13 } from "../../types";
 import { validateTehai13 } from "../../core/tehai";
 import { calculateChiitoitsuShanten } from "./logic/chiitoitsu";
 import { calculateKokushiShanten } from "./logic/kokushi";
-import { calculateMentsuShanten } from "./logic/mentsu";
+import { calculateMentsuTeShanten } from "./logic/mentsu-te";
 
 /**
  * シャンテン数を計算します。
@@ -26,7 +26,7 @@ export function calculateShanten(
     ? calculateChiitoitsuShanten(tehai)
     : Infinity;
   const kokushiShanten = useKokushi ? calculateKokushiShanten(tehai) : Infinity;
-  const mentsuShanten = calculateMentsuShanten(tehai);
+  const mentsuShanten = calculateMentsuTeShanten(tehai);
 
   return Math.min(chiitoitsuShanten, kokushiShanten, mentsuShanten);
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { pinfuDefinition } from "./pinfu";
 import { createTehai } from "../../../../utils/test-helpers";
-import { decomposeTehaiForMentsu } from "../structures/mentsu";
+import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import { HaiKind, type MentsuHouraStructure } from "../../../../types";
 import type { HouraContext } from "../../types";
 import { MahjongArgumentError } from "../../../../errors";
@@ -17,7 +17,7 @@ describe("平和の判定", () => {
   it("場風が指定されていない場合はエラーを投げること", () => {
     // 123m 456m 789p 234s 99s
     const tehai = createTehai("123m456m789p234s99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     const context = { ...baseContext, bakaze: undefined };
@@ -28,7 +28,7 @@ describe("平和の判定", () => {
 
   it("自風が指定されていない場合はエラーを投げること", () => {
     const tehai = createTehai("123m456m789p234s99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = { ...baseContext, jikaze: undefined };
     expect(() => pinfuDefinition.isSatisfied(hand, context)).toThrow(
@@ -38,7 +38,7 @@ describe("平和の判定", () => {
 
   it("条件を満たす場合、正しく判定されること", () => {
     const tehai = createTehai("123m456m789p234s99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = {
       ...baseContext,
@@ -51,7 +51,7 @@ describe("平和の判定", () => {
 
   it("門前でない場合は成立しないこと", () => {
     const tehai = createTehai("123m456m789p234s99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = {
       ...baseContext,
@@ -64,7 +64,7 @@ describe("平和の判定", () => {
 
   it("雀頭が三元牌の場合は成立しないこと", () => {
     const tehai = createTehai("123m456m789p234s55z"); // 白
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = { ...baseContext, agariHai: HaiKind.SouZu4 };
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(false);
@@ -73,7 +73,7 @@ describe("平和の判定", () => {
 
   it("雀頭が場風の場合は成立しないこと", () => {
     const tehai = createTehai("123m456m789p234s11z"); // 東
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = { ...baseContext, agariHai: HaiKind.SouZu4 };
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(false);
@@ -82,7 +82,7 @@ describe("平和の判定", () => {
 
   it("雀頭が自風の場合は成立しないこと", () => {
     const tehai = createTehai("123m456m789p234s22z"); // 南
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = { ...baseContext, agariHai: HaiKind.SouZu4 };
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(false);
@@ -91,7 +91,7 @@ describe("平和の判定", () => {
 
   it("雀頭がオタ風の場合は成立すること", () => {
     const tehai = createTehai("123m456m789p234s33z"); // 西
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = { ...baseContext, agariHai: HaiKind.SouZu4 };
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(true);
@@ -100,7 +100,7 @@ describe("平和の判定", () => {
 
   it("待ちが両面ではない場合は成立しないこと", () => {
     const tehai = createTehai("123m456m789p234s99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context = { ...baseContext, agariHai: HaiKind.SouZu3 }; // 3s
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(false);

@@ -1,14 +1,25 @@
 import { describe, it, expect } from "vitest";
-import { decomposeTehai } from "./index";
+import { getHouraStructures } from "./index";
 import { createTehai } from "../../../../utils/test-helpers";
 import { CompletedMentsu, HouraStructure, MentsuType } from "../../../../types";
 
-describe("decomposeTehai (Unified)", () => {
-  describe("多義的な手牌 (Ambiguous Hands)", () => {
+describe("getHouraStructures (Unified)", () => {
+  describe("和了形が一通りにしか解釈できない手牌", () => {
+    it("標準的な平和形が1通りの構造としてのみ解釈されること", () => {
+      // 123m 456p 789s 123s 99m
+      const hand = createTehai("123m456p789s123s99m");
+      const results = getHouraStructures(hand);
+
+      expect(results.length).toBe(1);
+      expect(results[0]?.type).toBe("Mentsu");
+    });
+  });
+
+  describe("和了形が複数の構造で解釈できる手牌", () => {
     it("三連刻形（111222333）が複数の構造として解釈できること", () => {
       // 111m 222m 333m 456p 99s
       const hand = createTehai("111m222m333m456p99s");
-      const results = decomposeTehai(hand);
+      const results = getHouraStructures(hand);
 
       expect(results.length).toBeGreaterThan(1);
 
@@ -39,7 +50,7 @@ describe("decomposeTehai (Unified)", () => {
       // 七対子: 22,33,44,22,33,44,55
       // 二盃口(面子手): 234,234,234,234,55
       const hand = createTehai("223344m223344p55s");
-      const results = decomposeTehai(hand);
+      const results = getHouraStructures(hand);
 
       expect(results.length).toBeGreaterThan(1);
 
@@ -48,6 +59,31 @@ describe("decomposeTehai (Unified)", () => {
 
       expect(hasChiitoitsu).toBe(true);
       expect(hasMentsu).toBe(true);
+    });
+
+    it("一盃口形が頭の位置によって2通りの構造（頭待ちは単騎、順子は両面など）に解釈できること", () => {
+      // 22334455m 123p 123s
+      // 解釈1: 22m(雀頭) + 345m + 345m (一盃口) + 123p + 123s
+      // 解釈2: 55m(雀頭) + 234m + 234m (一盃口) + 123p + 123s
+      const hand = createTehai("22334455m123p123s");
+      const results = getHouraStructures(hand);
+
+      expect(results.length).toBeGreaterThanOrEqual(2);
+
+      const hasHead2m = results.some((r) => {
+        if (r.type !== "Mentsu") return false;
+        // 2m = ManZu2 = 1
+        return r.jantou.hais[0] === 1;
+      });
+
+      const hasHead5m = results.some((r) => {
+        if (r.type !== "Mentsu") return false;
+        // 5m = ManZu5 = 4
+        return r.jantou.hais[0] === 4;
+      });
+
+      expect(hasHead2m).toBe(true);
+      expect(hasHead5m).toBe(true);
     });
   });
 });

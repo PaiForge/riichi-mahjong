@@ -9,7 +9,7 @@ import { isYaochu } from "../../../../core/hai";
 /**
  * 手牌を国士無双（13種の么九牌＋雀頭）として構造化する。
  */
-export function decomposeTehaiForKokushi(
+export function getHouraStructuresForKokushi(
   tehai: Tehai14,
 ): KokushiHouraStructure[] {
   // 国士無双は門前のみ

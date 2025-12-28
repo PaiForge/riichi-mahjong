@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { decomposeTehaiForMentsu } from "./mentsu";
+import { getHouraStructuresForMentsuTe } from "./mentsu-te";
 import { createTehai, createHaiKindIds } from "../../../../utils/test-helpers";
 import { MentsuType, CompletedMentsu } from "../../../../types";
 
-describe("decomposeTehaiForMentsu", () => {
+describe("getHouraStructuresForMentsuTe", () => {
   describe("門前手 (Menzen)", () => {
     it("平和の和了を構造化できること", () => {
       // 123m 234p 567s 789s 11z
       const hand = createTehai("123m234p567s789s11z");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
       const result = results[0];
@@ -54,7 +54,7 @@ describe("decomposeTehaiForMentsu", () => {
     it("チーを含む手を構造化できること", () => {
       // 123m 456s 789s 22m [456p] (Chi)
       const hand = createTehai("123m456s789s22m[456p]");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
       const result = results[0];
@@ -83,7 +83,7 @@ describe("decomposeTehaiForMentsu", () => {
     it("ポン（刻子副露）を含む手を構造化できること", () => {
       // 123m 456s 789s 22m [888p] (Pon)
       const hand = createTehai("123m456s789s22m[888p]");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
       const result = results[0];
@@ -105,7 +105,7 @@ describe("decomposeTehaiForMentsu", () => {
     it("大明槓を含む手を構造化できること", () => {
       // 123m 456s 789p 22m [2222s] (Daiminkan)
       const hand = createTehai("123m456s789p22m[2222s]");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
       const result = results[0];
@@ -131,7 +131,7 @@ describe("decomposeTehaiForMentsu", () => {
       // 暗槓は表記上 (1111z) のように表され、exposed リストに入るが furo 情報を持たない（または区別される）
       // 123m 456s 789s 22m (1111z)
       const hand = createTehai("123m456s789s22m(1111z)");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
       const result = results[0];
@@ -158,7 +158,7 @@ describe("decomposeTehaiForMentsu", () => {
       // 役なしの例: 鳴きあり、役牌なし、么九牌含み
       // 123m 789m 123p 11s [789s] (Chi)
       const hand = createTehai("123m789m123p11s[789s]");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
       const result = results[0];
@@ -182,13 +182,13 @@ describe("decomposeTehaiForMentsu", () => {
   describe("特殊形 (Special Hands - Negative Test)", () => {
     it("七対子形は4面子1雀頭に構造化できず空配列を返すこと", () => {
       const hand = createTehai("11m22m33m44p55p66s77s");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
       expect(results).toHaveLength(0);
     });
 
     it("国士無双形は4面子1雀頭に構造化できず空配列を返すこと", () => {
       const hand = createTehai("19m19p19s1234567z1m");
-      const results = decomposeTehaiForMentsu(hand);
+      const results = getHouraStructuresForMentsuTe(hand);
       expect(results).toHaveLength(0);
     });
   });

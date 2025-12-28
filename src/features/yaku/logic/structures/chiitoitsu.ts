@@ -9,7 +9,7 @@ import { countHaiKind } from "../../../../core/tehai";
 /**
  * 手牌を七対子（7つの対子）として構造化する。
  */
-export function decomposeTehaiForChiitoitsu(
+export function getHouraStructuresForChiitoitsu(
   tehai: Tehai14,
 ): ChiitoitsuHouraStructure[] {
   // 七対子は門前のみ（定義によっては鳴きも許容する場合があるが、一般的には門前）

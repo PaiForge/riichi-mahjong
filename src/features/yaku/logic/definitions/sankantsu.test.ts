@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sankantsuDefinition } from "./sankantsu";
 import { createTehai } from "../../../../utils/test-helpers";
-import { decomposeTehaiForMentsu } from "../structures/mentsu";
+import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import { HaiKind, type MentsuHouraStructure } from "../../../../types";
 import type { HouraContext } from "../../types";
 
@@ -21,7 +21,7 @@ describe("三槓子（サンカンツ）の判定", () => {
 
     // [1111m], [2222p], [3333s], 123m, 99p
     const tehai = createTehai("123m99p[1111m][2222p][3333s]");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(sankantsuDefinition.isSatisfied(hand, mockContext)).toBe(true);
@@ -31,7 +31,7 @@ describe("三槓子（サンカンツ）の判定", () => {
   it("槓子が2つしかない場合は不成立", () => {
     // [1111m], [2222p], 333s, 123m, 99p
     const tehai = createTehai("123m99p333s[1111m][2222p]");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(sankantsuDefinition.isSatisfied(hand, mockContext)).toBe(false);

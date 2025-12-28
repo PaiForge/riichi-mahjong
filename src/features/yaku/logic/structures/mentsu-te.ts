@@ -24,7 +24,7 @@ import type { Tehai14, HaiKindId, Shuntsu, Koutsu } from "../../../../types";
  * @param tehai 和了形の手牌
  * @returns 可能な構造化パターンのリスト。構造化できない場合は空配列。
  */
-export function decomposeTehaiForMentsu(
+export function getHouraStructuresForMentsuTe(
   tehai: Tehai14,
 ): MentsuHouraStructure[] {
   validateTehai14(tehai);

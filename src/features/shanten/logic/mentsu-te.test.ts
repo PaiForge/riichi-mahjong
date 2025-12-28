@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { calculateMentsuShanten } from "./mentsu";
+import { calculateMentsuTeShanten } from "./mentsu-te";
 import { HaiKind, MentsuType, type CompletedMentsu } from "../../../types";
 import { createTehai13, createMentsu } from "../../../utils/test-helpers";
 
-describe("calculateMentsuShanten", () => {
+describe("calculateMentsuTeShanten", () => {
   it("聴牌を判定できること", () => {
     // 例: 111 222 333 444 5 (スッタン) -> 0
     const tenpaiTehai = createTehai13([
@@ -21,7 +21,7 @@ describe("calculateMentsuShanten", () => {
       HaiKind.SouZu3,
       HaiKind.SouZu9,
     ]);
-    expect(calculateMentsuShanten(tenpaiTehai)).toBe(0);
+    expect(calculateMentsuTeShanten(tenpaiTehai)).toBe(0);
   });
 
   it("1シャンテンを判定できること", () => {
@@ -42,7 +42,7 @@ describe("calculateMentsuShanten", () => {
       HaiKind.PinZu8,
       HaiKind.SouZu9,
     ]);
-    expect(calculateMentsuShanten(tehai)).toBe(1);
+    expect(calculateMentsuTeShanten(tehai)).toBe(1);
   });
 
   it("2シャンテンを判定できること", () => {
@@ -61,7 +61,7 @@ describe("calculateMentsuShanten", () => {
       HaiKind.Ton,
       HaiKind.Ton,
     ]);
-    expect(calculateMentsuShanten(tehai)).toBe(2);
+    expect(calculateMentsuTeShanten(tehai)).toBe(2);
   });
 
   it("副露がある場合の計算ができること", () => {
@@ -86,7 +86,7 @@ describe("calculateMentsuShanten", () => {
         ]) as CompletedMentsu,
       ],
     };
-    expect(calculateMentsuShanten(tehai)).toBe(1);
+    expect(calculateMentsuTeShanten(tehai)).toBe(1);
   });
 
   it("七対子聴牌だが面子手としてはシャンテン数が悪い場合", () => {
@@ -112,7 +112,7 @@ describe("calculateMentsuShanten", () => {
     // T=5 (残り5対子) -> 有効3 (M=0, H=1 -> 残り4ブロック中3つまで)
     // ではなく、H=1の場合、残りブロック枠=4なので T=4まで有効。
     // Shanten = 8 - 0 - 4 - 1 = 3
-    expect(calculateMentsuShanten(tehai)).toBe(3);
+    expect(calculateMentsuTeShanten(tehai)).toBe(3);
   });
 
   it("国士無双聴牌だが面子手としてはシャンテン数が悪い場合", () => {
@@ -137,7 +137,7 @@ describe("calculateMentsuShanten", () => {
     // H=0 (対子なし)
     // T=0 (塔子なし)
     // Shanten = 8 - 0 - 0 - 0 = 8
-    expect(calculateMentsuShanten(tehai)).toBe(8);
+    expect(calculateMentsuTeShanten(tehai)).toBe(8);
   });
 
   it("塔子オーバーのケース (2446形など)", () => {
@@ -161,6 +161,6 @@ describe("calculateMentsuShanten", () => {
     // Remaining blocks = 2.
     // T valid = 2.
     // Shanten = 8 - 4 - 2 - 1 = 1.
-    expect(calculateMentsuShanten(tehai)).toBe(1);
+    expect(calculateMentsuTeShanten(tehai)).toBe(1);
   });
 });

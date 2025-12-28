@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { suuankouDefinition } from "./suuankou";
 import { createTehai } from "../../../../utils/test-helpers";
-import { decomposeTehaiForMentsu } from "../structures/mentsu";
+import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import { HaiKind, type MentsuHouraStructure } from "../../../../types";
 import type { HouraContext } from "../../types";
 
@@ -21,7 +21,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
   it("ツモ和了の場合、4つの暗刻があれば成立し、13飜（役満）であること", () => {
     // 111m 222m 333m 444m 99s (ツモ)
     const tehai = createTehai("111m222m333m444m99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(suuankouDefinition.isSatisfied(hand, mockContextTsumo)).toBe(true);
@@ -35,7 +35,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu9,
     };
     const tehai = createTehai("111m222m333m444m99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
@@ -49,7 +49,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu9,
     };
     const tehai = createTehai("111m222m333m444m99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
@@ -67,7 +67,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
     };
     const tehai = createTehai("111m222m333m444m99s");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(false);

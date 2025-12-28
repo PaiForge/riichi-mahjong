@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { tsuuiisouDefinition } from "./tsuuiisou";
 import { createTehai } from "../../../../utils/test-helpers";
-import { decomposeTehaiForMentsu } from "../structures/mentsu";
+import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import {
   HaiKind,
   type MentsuHouraStructure,
@@ -18,7 +18,7 @@ describe("字一色（ツーイーソー）の判定", () => {
   it("全ての牌が字牌の場合（面子手）、成立すること", () => {
     // 111z(東), 222z(南), 333z(西), 444z(北), 55z(白)
     const tehai = createTehai("111z222z333z444z55z");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tsuuiisouDefinition.isSatisfied(hand, mockContext)).toBe(true);
@@ -28,7 +28,7 @@ describe("字一色（ツーイーソー）の判定", () => {
   it("副露していても成立すること", () => {
     // 111z(東), 222z(南), 555z(白), 66z(發), [777z](中ポン)
     const tehai = createTehai("111z222z555z66z[777z]");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
     const context: HouraContext = { ...mockContext, isMenzen: false };
 
@@ -59,7 +59,7 @@ describe("字一色（ツーイーソー）の判定", () => {
   it("数牌（1・9牌）が含まれる場合（混老頭）は不成立", () => {
     // 111m, 111z, 222z, 333z, 44z (1mが含まれる)
     const tehai = createTehai("111m111z222z333z44z");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(tsuuiisouDefinition.isSatisfied(hand, mockContext)).toBe(false);

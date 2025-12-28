@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { honroutouDefinition } from "./honroutou";
 import { createTehai } from "../../../../utils/test-helpers";
-import { decomposeTehaiForMentsu } from "../structures/mentsu";
+import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import {
   HaiKind,
   type MentsuHouraStructure,
@@ -23,7 +23,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   it("対々和形で条件を満たす場合、成立すること", () => {
     // 111m 999p 111s 999s 11z
     const tehai = createTehai("111m999p111s999s11z");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
@@ -33,7 +33,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   it("鳴きありでも成立すること", () => {
     // 111m 999p 111s 11z [999s] (Pon)
     const tehai = createTehai("111m999p111s11z[999s]");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextOpen)).toBe(true);
@@ -61,7 +61,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   it("順子が含まれる場合は不成立（ホンチャン）", () => {
     // 123m 999p 111s 999s 11z (123mがNG)
     const tehai = createTehai("123m999p111s999s11z");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
@@ -72,7 +72,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   it("字牌が含まれない場合は不成立（清老頭）", () => {
     // 111m 999p 111s 999s 11m (11mがNG)
     const tehai = createTehai("111m999p111s999s11m");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
@@ -83,7 +83,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   it("中張牌が含まれる場合は不成立", () => {
     // 111m 222p 111s 999s 11z (222pがNG)
     const tehai = createTehai("111m222p111s999s11z");
-    const hands = decomposeTehaiForMentsu(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(

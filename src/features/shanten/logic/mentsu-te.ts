@@ -8,7 +8,7 @@ import { countHaiKind, validateTehai13 } from "../../../core/tehai";
  * @param tehai 手牌 (13枚)
  * @returns シャンテン数
  */
-export function calculateMentsuShanten(tehai: Tehai13): number {
+export function calculateMentsuTeShanten(tehai: Tehai13): number {
   // 防御的プログラミング
   validateTehai13(tehai);
 
