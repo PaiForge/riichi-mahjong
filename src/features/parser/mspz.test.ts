@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseExtendedMspz, isExtendedMspz, isMspz, asMspz } from "./mspz";
-import { HaiKind } from "../types";
+import { HaiKind } from "../../types";
 
 describe("Standard MSPZ", () => {
   describe("isMspz", () => {

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { detectYakuFromTehai } from "./index";
-import { createTehai } from "../../utils/test-helpers";
-import { mspzStringToHaiKindIds, asMspz } from "../../utils/mspz";
+import { createTehai, getHaiKindId } from "../../utils/test-helpers";
 import { HaiKind } from "../../types";
 
 describe("手牌からの役判定 (detectYakuFromTehai) - 統合テスト", () => {
@@ -14,8 +13,7 @@ describe("手牌からの役判定 (detectYakuFromTehai) - 統合テスト", () 
       // あがり牌が両面待ちでなければ平和にならない。
       // 例: 234m 234p 234s 67s [8s]ツモ -> 678s完成 (両面)
       const hand = createTehai("234m234p234s678s88p");
-      const agari = mspzStringToHaiKindIds(asMspz("8s"))[0];
-      if (agari === undefined) throw new Error("Agari hai not found");
+      const agari = getHaiKindId("8s");
 
       const result = detectYakuFromTehai(hand, agari, HaiKind.Ton, HaiKind.Nan);
 
@@ -29,8 +27,7 @@ describe("手牌からの役判定 (detectYakuFromTehai) - 統合テスト", () 
       // これは七対子の形でもあるが、二盃口と七対子は同じ牌姿でも牌の数え方が違うため、基本的に複合しない
       // より高い飜数の二盃口として判定されるべき
       const hand = createTehai("223344m223344p55z");
-      const agari = mspzStringToHaiKindIds(asMspz("2m"))[0];
-      if (agari === undefined) throw new Error("Agari hai not found");
+      const agari = getHaiKindId("2m");
 
       const result = detectYakuFromTehai(hand, agari, HaiKind.Ton, HaiKind.Nan);
 
@@ -43,8 +40,7 @@ describe("手牌からの役判定 (detectYakuFromTehai) - 統合テスト", () 
   describe("七対子 (Chiitoitsu)", () => {
     it("複合役（七対子・混一色）が判定できること", () => {
       const hand = createTehai("11m33m55m77m99m11z22z");
-      const agari = mspzStringToHaiKindIds(asMspz("1m"))[0];
-      if (agari === undefined) throw new Error("Agari hai not found");
+      const agari = getHaiKindId("1m");
 
       const result = detectYakuFromTehai(hand, agari, HaiKind.Ton, HaiKind.Nan);
 
@@ -56,8 +52,7 @@ describe("手牌からの役判定 (detectYakuFromTehai) - 統合テスト", () 
   describe("国士無双 (KokushiMusou)", () => {
     it("国士無双が判定できること", () => {
       const hand = createTehai("19m19p19s1234567z1m");
-      const agari = mspzStringToHaiKindIds(asMspz("1m"))[0];
-      if (agari === undefined) throw new Error("Agari hai not found");
+      const agari = getHaiKindId("1m");
 
       const result = detectYakuFromTehai(hand, agari, HaiKind.Ton, HaiKind.Nan);
 

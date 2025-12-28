@@ -23,3 +23,4 @@ export type {
 export { calculateShanten } from "./features/shanten";
 export { getUkeire } from "./features/machi";
 export { detectYakuFromTehai } from "./features/yaku";
+export { parseMspzToTehai, parseExtendedMspzToTehai } from "./features/parser";

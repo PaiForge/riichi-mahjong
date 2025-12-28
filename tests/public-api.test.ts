@@ -55,4 +55,30 @@ describe("公開APIのエクスポート", () => {
       expect(true).toBe(true);
     });
   });
+
+  describe("Parser (parseMspzToTehai / parseExtendedMspzToTehai)", () => {
+    it("関数としてエクスポートされていること", () => {
+      expect(PublicApi.parseMspzToTehai).toBeDefined();
+      expect(typeof PublicApi.parseMspzToTehai).toBe("function");
+
+      expect(PublicApi.parseExtendedMspzToTehai).toBeDefined();
+      expect(typeof PublicApi.parseExtendedMspzToTehai).toBe("function");
+    });
+
+    it("parseMspzToTehai が期待される型シグネチャを満たすこと", () => {
+      PublicApi.parseMspzToTehai satisfies (
+        input: string,
+      ) => PublicApi.Tehai13 | PublicApi.Tehai14; // Returns Tehai generic
+
+      expect(true).toBe(true);
+    });
+
+    it("parseExtendedMspzToTehai が期待される型シグネチャを満たすこと", () => {
+      PublicApi.parseExtendedMspzToTehai satisfies (
+        input: string,
+      ) => PublicApi.Tehai13 | PublicApi.Tehai14;
+
+      expect(true).toBe(true);
+    });
+  });
 });

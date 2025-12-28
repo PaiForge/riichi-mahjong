@@ -1,4 +1,4 @@
-# Extended MSPZ Specification
+# Extended MSPZ の仕様
 
 **Extended MSPZ** は、標準的なMSPZ形式（`123m456p...`）を拡張し、副露（鳴き）や暗槓を含む手牌構造を単一の文字列で表現するための独自仕様です。
 
@@ -21,7 +21,7 @@
 
 ### 2. 副露 (Open Meld) - `[...]`
 
-副露（チー、ポン、大明槓）は、構成する牌を角括弧 `[]` で囲んで表現します。
+副露（チー、ポン、大明槓）は、構成する牌を角括弧 `[]` で囲んで表現します。  
 面子の種類（順子、刻子、槓子）は、牌の構成から自動的に判定されます。
 
 #### チー (Shuntsu)
@@ -44,7 +44,7 @@
 
 ### 3. 暗槓 (Closed Quad) - `(...)`
 
-暗槓は、構成する4枚の牌を丸括弧 `(...)` で囲んで表現します。
+暗槓は、構成する4枚の牌を丸括弧 `(...)` で囲んで表現します。  
 暗槓は手牌構成上は「副露（Exposed）」の一部として扱われることが多いですが、機能的には「門前（Closed）」の性質も持ちます。
 
 -   例: `(1111z)`
@@ -52,7 +52,8 @@
 
 ## 複合例
 
-複数の要素を組み合わせて記述できます。順序は問いませんが、可読性のために純手牌を先に、副露を後ろに記述することを推奨します。
+複数の要素を組み合わせて記述できます。  
+順序は問いませんが、可読性のために純手牌を先に、副露を後ろに記述することを推奨します。
 
 -   **例1 (タンヤオ)**:
     `22m33p44s[555m][666p]`
@@ -77,16 +78,37 @@
 
 ## API
 
-`src/utils/mspz.ts` モジュールにて、以下の関数が提供されます。
+本ライブラリは、MSPZ形式の文字列を手牌オブジェクトに変換するための関数を公開しています。
 
--   `isExtendedMspz(input: string): boolean`
-    -   文字列が拡張MSPZ形式を含んでいるか判定します。
--   `parseExtendedMspz(input: string): ParseResult`
-    -   拡張MSPZ文字列を解析し、純手牌と副露のオブジェクトを返します。
+### `parseMspzToTehai(input: string): Tehai`
+
+標準的なMSPZ文字列（例: `"123m456p..."`）を解析して `Tehai` オブジェクトを返します。  
+副露牌は含まれず、全ての牌は `closed` プロパティに格納されます。
+
+### `parseExtendedMspzToTehai(input: string): Tehai`
+
+拡張MSPZ文字列（例: `"123m[456p]..."`）を解析して `Tehai` オブジェクトを返します。  
+`[...]` や `(...)` で囲まれた部分は `exposed` プロパティ（副露）として格納されます。
+
+### `isExtendedMspz(input: string): boolean`
+
+文字列が拡張MSPZ形式を含んでいるか（`[` または `(` を含むか）を判定します。
+
+---
+
+使用例:
+
+```typescript
+import { parseExtendedMspzToTehai } from "riichi-mahjong";
+
+const tehai = parseExtendedMspzToTehai("123m[456p]");
+// tehai.closed: [1m, 2m, 3m]
+// tehai.exposed: [ { type: "Koutsu", hais: [4p, 4p, 4p], ... } ]
+```
 
 ### 鳴き元のデフォルト (Default Tacha)
 
-拡張MSPZ形式では、鳴き元（誰から鳴いたか）を現時点では指定できません。
+拡張MSPZ形式では、鳴き元（誰から鳴いたか）を現時点では指定できません。  
 そのため、パーサーは以下のデフォルト値を適用します。
 
 -   **チー**: `Kamicha` (上家)

@@ -1,5 +1,5 @@
-import { asHaiKindId, isTuple3, isTuple4 } from "../utils/assertions";
-import { ShoushaiError, TahaiError } from "../errors";
+import { asHaiKindId, isTuple3, isTuple4 } from "../../utils/assertions";
+import { ShoushaiError, TahaiError } from "../../errors";
 import {
   CompletedMentsu,
   FuroType,
@@ -12,8 +12,8 @@ import {
   MentsuType,
   Shuntsu,
   Tacha,
-} from "../types";
-import { haiIdToKindId, haiKindToNumber } from "../core/hai";
+} from "../../types";
+import { haiIdToKindId, haiKindToNumber } from "../../core/hai";
 
 // 1つ以上の数字 + 1つのサフィックス (m, p, s, z)
 const BLOCK_PATTERN = "\\d+[mpsz]";

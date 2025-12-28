@@ -10,10 +10,9 @@ import type {
 import { validateTehai13 } from "../core/tehai";
 import {
   isExtendedMspz,
-  parseExtendedMspz,
-  mspzStringToHaiKindIds,
-  asMspz,
-} from "./mspz";
+  parseExtendedMspzToTehai,
+  parseMspzToTehai,
+} from "../features/parser";
 import { isValidShuntsu } from "../core/mentsu";
 import { isTuple2, isTuple3 } from "./assertions";
 import type {
@@ -62,19 +61,11 @@ export function createMentsu<T extends HaiKindId | HaiId>(
  */
 export function createTehai(mspzString: string): Tehai14 {
   if (isExtendedMspz(mspzString)) {
-    const result = parseExtendedMspz(mspzString);
-    return {
-      closed: result.closed,
-      exposed: result.exposed,
-    };
+    return parseExtendedMspzToTehai(mspzString);
   }
 
   // 通常のMSPZ形式の場合
-  const ids = mspzStringToHaiKindIds(asMspz(mspzString));
-  return {
-    closed: ids,
-    exposed: [],
-  };
+  return parseMspzToTehai(mspzString);
 }
 
 /**
@@ -85,7 +76,8 @@ export function createTehai(mspzString: string): Tehai14 {
  * @returns HaiKindId の配列
  */
 export function createHaiKindIds(mspzString: string): HaiKindId[] {
-  return mspzStringToHaiKindIds(asMspz(mspzString));
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return parseMspzToTehai(mspzString).closed as HaiKindId[];
 }
 
 /**
@@ -97,7 +89,8 @@ export function createHaiKindIds(mspzString: string): HaiKindId[] {
  * isValidShuntsu によるバリデーションを行います。
  */
 export function createShuntsu(mspz: string): Shuntsu {
-  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const ids = parseMspzToTehai(mspz).closed as HaiKindId[];
 
   // Use core validation
   if (!isValidShuntsu(ids)) {
@@ -118,7 +111,8 @@ export function createShuntsu(mspz: string): Shuntsu {
  * テスト用の刻子 (Koutsu) を作成します。
  */
 export function createKoutsu(mspz: string): Koutsu {
-  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const ids = parseMspzToTehai(mspz).closed as HaiKindId[];
   if (!isTuple3(ids)) throw new Error(`Invalid Koutsu: ${mspz}`);
   return {
     type: "Koutsu",
@@ -130,7 +124,8 @@ export function createKoutsu(mspz: string): Koutsu {
  * テスト用の対子 (Toitsu) を作成します。
  */
 export function createToitsu(mspz: string): Toitsu {
-  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const ids = parseMspzToTehai(mspz).closed as HaiKindId[];
   if (!isTuple2(ids)) throw new Error(`Invalid Toitsu: ${mspz}`);
   return {
     type: "Toitsu",
@@ -142,7 +137,8 @@ export function createToitsu(mspz: string): Toitsu {
  * テスト用の HaiKindId を取得します。
  */
 export function getHaiKindId(mspz: string): HaiKindId {
-  const ids = mspzStringToHaiKindIds(asMspz(mspz));
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const ids = parseMspzToTehai(mspz).closed as HaiKindId[];
   if (ids.length === 0) throw new Error(`Invalid HaiKindId: ${mspz}`);
   const id = ids[0];
   if (id === undefined) throw new Error(`Internal Error: id is undefined`);
