@@ -1,16 +1,20 @@
-import type {
-  Tehai14,
-  YakuResult,
-  HaiKindId,
-  YakuName,
-  Hansu,
-} from "../../types";
+import type { Tehai14, HaiKindId } from "../../types";
+import type { YakuResult, YakuName, Hansu } from "./types";
+
 import { getHouraStructures } from "./logic/structures";
 import { isMenzen, isKazehai } from "./utils";
 import { ALL_YAKU_DEFINITIONS } from "./logic/definitions";
 import type { HouraContext } from "./types";
 
-export type { HouraStructure } from "./types";
+export type {
+  HouraStructure,
+  YakuResult,
+  YakuName,
+  Hansu,
+  TehaiYaku,
+  YakuHanConfig,
+  Yakuhai,
+} from "./types";
 export * from "./logic";
 
 /**

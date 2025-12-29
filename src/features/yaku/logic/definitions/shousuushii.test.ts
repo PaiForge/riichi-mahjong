@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { shousuushiiDefinition } from "./shousuushii";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind, type MentsuHouraStructure } from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("小四喜（ショウスーシー）の判定", () => {

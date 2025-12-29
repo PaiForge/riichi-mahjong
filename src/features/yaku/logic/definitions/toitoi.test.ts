@@ -2,11 +2,8 @@ import { describe, it, expect } from "vitest";
 import { toitoiDefinition } from "./toitoi";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import {
-  HaiKind,
-  type HouraStructure,
-  type MentsuHouraStructure,
-} from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure, HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("対々和（トイトイ）の判定", () => {

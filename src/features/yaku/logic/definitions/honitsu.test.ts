@@ -2,11 +2,8 @@ import { describe, it, expect } from "vitest";
 import { honitsuDefinition } from "./honitsu";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import {
-  HaiKind,
-  type MentsuHouraStructure,
-  type HouraStructure,
-} from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure, HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("混一色（ホンイツ）の判定", () => {

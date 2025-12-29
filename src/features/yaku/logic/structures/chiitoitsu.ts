@@ -1,9 +1,5 @@
-import type {
-  ChiitoitsuHouraStructure,
-  Tehai14,
-  HaiKindId,
-  Toitsu,
-} from "../../../../types";
+import type { Tehai14, HaiKindId, Toitsu } from "../../../../types";
+import type { ChiitoitsuHouraStructure } from "../../types";
 import { countHaiKind } from "../../../../core/tehai";
 
 /**

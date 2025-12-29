@@ -1,4 +1,13 @@
-import type { HouraStructure, HaiKindId, MachiType, Shuntsu } from "../types";
+import type { HaiKindId, Shuntsu } from "../types";
+import type { HouraStructure } from "../features/yaku/types";
+
+/** 待ちの形 */
+export type MachiType =
+  | "Tanki" // 単騎待ち
+  | "Shanpon" // 双碰待ち (シャボ)
+  | "Ryanmen" // 両面待ち
+  | "Kanchan" // 嵌張待ち
+  | "Penchan"; // 辺張待ち
 
 /**
  * 手牌構造と和了牌から待ちの形を判定する

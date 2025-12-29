@@ -1,8 +1,5 @@
-import type {
-  KokushiHouraStructure,
-  Tehai14,
-  HaiKindId,
-} from "../../../../types";
+import type { Tehai14, HaiKindId } from "../../../../types";
+import type { KokushiHouraStructure } from "../../types";
 import { countHaiKind } from "../../../../core/tehai";
 import { isYaochu } from "../../../../core/hai";
 

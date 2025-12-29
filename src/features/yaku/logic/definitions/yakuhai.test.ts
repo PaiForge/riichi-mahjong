@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { hakuDefinition, hatsuDefinition, chunDefinition } from "./yakuhai";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind, type MentsuHouraStructure } from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("役牌（三元牌）の判定", () => {

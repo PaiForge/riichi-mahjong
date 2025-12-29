@@ -1,4 +1,4 @@
-import { YakuHanConfig, YakuName, HouraStructure } from "../../types";
+import type { YakuHanConfig, YakuName, HouraStructure } from "./types";
 import { YakuDefinition, HouraContext } from "./types";
 
 /**

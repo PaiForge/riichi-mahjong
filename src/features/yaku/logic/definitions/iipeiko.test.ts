@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { iipeikoDefinition } from "./iipeiko";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind, type MentsuHouraStructure } from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("一盃口の判定", () => {

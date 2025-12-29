@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { getHouraStructures } from "./index";
 import { createTehai } from "../../../../utils/test-helpers";
-import { CompletedMentsu, HouraStructure, MentsuType } from "../../../../types";
+import { CompletedMentsu, MentsuType } from "../../../../types";
+import type { HouraStructure } from "../../types";
 
 describe("getHouraStructures (Unified)", () => {
   describe("和了形が一通りにしか解釈できない手牌", () => {

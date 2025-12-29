@@ -2,11 +2,8 @@ import { describe, it, expect } from "vitest";
 import { tsuuiisouDefinition } from "./tsuuiisou";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import {
-  HaiKind,
-  type MentsuHouraStructure,
-  type HouraStructure,
-} from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure, HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("字一色（ツーイーソー）の判定", () => {

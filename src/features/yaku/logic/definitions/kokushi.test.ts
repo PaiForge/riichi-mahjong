@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { kokushiDefinition } from "./kokushi";
 import type { HouraContext } from "../../types";
-import { HaiKind, type KokushiHouraStructure } from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { KokushiHouraStructure } from "../../types";
 
 describe("国士無双の判定", () => {
   const baseContext: HouraContext = {

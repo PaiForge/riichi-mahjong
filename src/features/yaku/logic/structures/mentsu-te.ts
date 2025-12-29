@@ -1,4 +1,5 @@
-import type { CompletedMentsu, MentsuHouraStructure } from "../../../../types";
+import type { CompletedMentsu } from "../../../../types";
+import type { MentsuHouraStructure } from "../../types";
 import { validateTehai14, countHaiKind } from "../../../../core/tehai";
 import { isTuple4 } from "../../../../utils/assertions";
 import type { Tehai14, HaiKindId, Shuntsu, Koutsu } from "../../../../types";

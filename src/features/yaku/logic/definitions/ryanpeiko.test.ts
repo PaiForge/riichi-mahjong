@@ -2,11 +2,8 @@ import { describe, it, expect } from "vitest";
 import { ryanpeikouDefinition } from "./ryanpeiko";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import {
-  HaiKind,
-  type MentsuHouraStructure,
-  type HouraStructure,
-} from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure, HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("二盃口（リャンペーコー）の判定", () => {

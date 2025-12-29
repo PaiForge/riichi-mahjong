@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { daisuushiiDefinition } from "./daisuushii";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind, type MentsuHouraStructure } from "../../../../types";
+import { HaiKind } from "../../../../types";
+import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("大四喜（ダイスーシー）の判定", () => {

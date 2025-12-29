@@ -1,4 +1,5 @@
-import type { Tehai14, HouraStructure } from "../../../../types";
+import type { Tehai14 } from "../../../../types";
+import type { HouraStructure } from "../../types";
 import { getHouraStructuresForMentsuTe } from "./mentsu-te";
 import { getHouraStructuresForChiitoitsu } from "./chiitoitsu";
 import { getHouraStructuresForKokushi } from "./kokushi";
