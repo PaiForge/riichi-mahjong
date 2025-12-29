@@ -29,6 +29,8 @@ export function detectYaku(
   agariHai: HaiKindId,
   bakaze?: HaiKindId,
   jikaze?: HaiKindId,
+  doraMarkers?: readonly HaiKindId[],
+  uraDoraMarkers?: readonly HaiKindId[],
 ): YakuResult {
   // 1. 基本情報の抽出
   const isMenzenValue = isMenzen(tehai);
@@ -38,6 +40,8 @@ export function detectYaku(
     agariHai,
     bakaze: bakaze !== undefined && isKazehai(bakaze) ? bakaze : undefined,
     jikaze: jikaze !== undefined && isKazehai(jikaze) ? jikaze : undefined,
+    doraMarkers: doraMarkers ?? [],
+    uraDoraMarkers: uraDoraMarkers ?? [],
   };
 
   let bestResult: YakuResult = [];

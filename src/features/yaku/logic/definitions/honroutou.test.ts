@@ -9,12 +9,14 @@ import type { HouraContext } from "../../types";
 describe("混老頭（ホンロウトウ）の判定", () => {
   const mockContextMenzen: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   const mockContextOpen: HouraContext = {
     isMenzen: false,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("対々和形で条件を満たす場合、成立すること", () => {

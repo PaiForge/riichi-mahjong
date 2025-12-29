@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("字一色（ツーイーソー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.Ton, // Dummy
+    agariHai: HaiKind.Ton,
+    doraMarkers: [], // Dummy
   };
 
   it("全ての牌が字牌の場合（面子手）、成立すること", () => {

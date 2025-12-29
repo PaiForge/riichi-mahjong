@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("大三元（ダイサンゲン）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("白・發・中の刻子が全て揃っている場合、成立すること", () => {

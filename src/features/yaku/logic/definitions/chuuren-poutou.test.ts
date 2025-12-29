@@ -9,12 +9,14 @@ import type { HouraContext } from "../../types";
 describe("九蓮宝燈（チューレンポートー）の判定", () => {
   const mockContextMenzen: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   const mockContextOpen: HouraContext = {
     isMenzen: false,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("1112345678999 + 1枚の形（純正九蓮宝燈含む）で成立すること", () => {

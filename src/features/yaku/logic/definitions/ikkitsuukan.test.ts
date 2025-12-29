@@ -9,12 +9,14 @@ import type { HouraContext } from "../../types";
 describe("一気通貫の判定", () => {
   const mockContextMenzen: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   const mockContextOpen: HouraContext = {
     isMenzen: false,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("門前で一気通貫が成立する場合、2飜であること", () => {

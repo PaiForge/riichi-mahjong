@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("役牌（三元牌）の判定", () => {
   const baseContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu4, // Irrelevant for Yakuhai check usually, but needed for context
+    agariHai: HaiKind.ManZu4,
+    doraMarkers: [],
   };
 
   it("白が成立する場合（刻子）", () => {

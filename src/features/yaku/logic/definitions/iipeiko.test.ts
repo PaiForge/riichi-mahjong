@@ -9,12 +9,14 @@ import type { HouraContext } from "../../types";
 describe("一盃口の判定", () => {
   const mockContextMenzen: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   const mockContextOpen: HouraContext = {
     isMenzen: false,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("条件を満たす場合、正しく判定されること", () => {

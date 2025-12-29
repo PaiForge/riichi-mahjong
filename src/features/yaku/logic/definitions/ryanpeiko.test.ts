@@ -9,12 +9,14 @@ import type { HouraContext } from "../../types";
 describe("二盃口（リャンペーコー）の判定", () => {
   const mockContextMenzen: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   const mockContextOpen: HouraContext = {
     isMenzen: false,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("標準的な二盃口が成立する場合（独立した2組の一盃口）、3飜であること", () => {

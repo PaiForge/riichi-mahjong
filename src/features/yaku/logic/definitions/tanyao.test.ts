@@ -10,6 +10,7 @@ describe("タンヤオの判定", () => {
   const baseContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu4,
+    doraMarkers: [],
   };
 
   it("タンヤオが成立する場合（門前）", () => {

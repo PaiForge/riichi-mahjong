@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("小四喜（ショウスーシー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.Ton, // Dummy
+    agariHai: HaiKind.Ton,
+    doraMarkers: [], // Dummy
   };
 
   it("東・南・西の刻子と、北の雀頭がある場合、成立すること", () => {

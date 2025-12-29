@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("三色同刻（サンショクドウコウ）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("萬子・筒子・索子の同じ数字の刻子がある場合、成立すること", () => {

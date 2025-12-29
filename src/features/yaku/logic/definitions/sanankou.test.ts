@@ -9,13 +9,15 @@ import type { HouraContext } from "../../types";
 describe("三暗刻（サンアンコウ）の判定", () => {
   const mockContextTsumo: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
     isTsumo: true,
   };
 
   const mockContextRon: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
     isTsumo: false,
   };
 
@@ -35,6 +37,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
     const context: HouraContext = {
       ...mockContextRon,
       agariHai: HaiKind.ManZu1,
+      doraMarkers: [],
     };
     const tehai = createTehai("111m222m333p456s99s");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -51,6 +54,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
     const context: HouraContext = {
       ...mockContextRon,
       agariHai: HaiKind.ManZu1,
+      doraMarkers: [],
     };
     const tehai = createTehai("111m222m333m444p99s");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -65,6 +69,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
     const context: HouraContext = {
       ...mockContextRon,
       agariHai: HaiKind.SouZu1,
+      doraMarkers: [],
     };
     const tehai = createTehai("111m222m333m456p11s");
     const hands = getHouraStructuresForMentsuTe(tehai);

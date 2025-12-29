@@ -8,6 +8,7 @@ describe("国士無双の判定", () => {
   const baseContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    doraMarkers: [],
   };
 
   it("国士無双形の構造に対して成立すること", () => {

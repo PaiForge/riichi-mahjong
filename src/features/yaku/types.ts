@@ -142,6 +142,16 @@ export interface HouraContext {
   readonly jikaze?: Kazehai | undefined;
   /** ツモ和了かどうか（暗刻系役の判定などに使用） */
   readonly isTsumo?: boolean;
+
+  /**
+   * ドラ表示牌 (表ドラ) のリスト
+   */
+  readonly doraMarkers: readonly HaiKindId[];
+
+  /**
+   * 裏ドラ表示牌のリスト (リーチ時のみ有効)
+   */
+  readonly uraDoraMarkers?: readonly HaiKindId[];
 }
 
 export interface Yaku {

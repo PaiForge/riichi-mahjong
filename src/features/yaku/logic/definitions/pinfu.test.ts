@@ -10,7 +10,8 @@ import { MahjongArgumentError } from "../../../../errors";
 describe("平和の判定", () => {
   const baseContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu4, // デフォルトのあがり牌
+    agariHai: HaiKind.ManZu4,
+    doraMarkers: [], // デフォルトのあがり牌
     bakaze: HaiKind.Ton,
     jikaze: HaiKind.Nan,
   };
@@ -44,6 +45,7 @@ describe("平和の判定", () => {
     const context = {
       ...baseContext,
       agariHai: HaiKind.SouZu4,
+      doraMarkers: [],
     };
 
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(true);
@@ -58,6 +60,7 @@ describe("平和の判定", () => {
       ...baseContext,
       isMenzen: false,
       agariHai: HaiKind.SouZu4,
+      doraMarkers: [],
     };
     expect(pinfuDefinition.isSatisfied(hand, context)).toBe(false);
     expect(pinfuDefinition.getHansu(hand, context)).toBe(0);

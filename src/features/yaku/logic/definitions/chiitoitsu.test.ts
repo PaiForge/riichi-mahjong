@@ -6,7 +6,8 @@ import { HaiKind } from "../../../../types";
 describe("七対子", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("手牌構造が七対子の場合、条件を満たすこと", () => {

@@ -13,6 +13,7 @@ describe("calculateFu", () => {
     agariHai: HaiKind.ManZu1,
     bakaze: HaiKind.Ton,
     jikaze: HaiKind.Ton,
+    doraMarkers: [HaiKind.ManZu1], // Default dora marker
   };
 
   const getStruct = (

@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("四槓子（スーカンツ）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("槓子が4つある場合、成立すること", () => {

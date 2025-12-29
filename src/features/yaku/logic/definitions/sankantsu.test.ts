@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("三槓子（サンカンツ）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("槓子が3つある場合、成立すること", () => {

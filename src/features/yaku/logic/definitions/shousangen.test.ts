@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("小三元（ショウサンゲン）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("白・發の刻子と、中の対子がある場合、成立すること", () => {

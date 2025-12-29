@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("対々和（トイトイ）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.ManZu1, // Dummy
+    agariHai: HaiKind.ManZu1,
+    doraMarkers: [], // Dummy
   };
 
   it("全ての面子が刻子の場合、成立すること", () => {

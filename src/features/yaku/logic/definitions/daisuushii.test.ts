@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("大四喜（ダイスーシー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.Ton, // Dummy
+    agariHai: HaiKind.Ton,
+    doraMarkers: [], // Dummy
   };
 
   it("東・南・西・北の全ての刻子がある場合、成立すること", () => {

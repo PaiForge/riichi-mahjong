@@ -9,7 +9,8 @@ import type { HouraContext } from "../../types";
 describe("緑一色（リューイーソー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
-    agariHai: HaiKind.SouZu2, // Dummy
+    agariHai: HaiKind.SouZu2,
+    doraMarkers: [], // Dummy
   };
 
   it("全ての牌が緑色牌（23468s, 發）の場合、成立すること", () => {
