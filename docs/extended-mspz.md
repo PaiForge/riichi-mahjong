@@ -80,12 +80,12 @@
 
 本ライブラリは、MSPZ形式の文字列を手牌オブジェクトに変換するための関数を公開しています。
 
-### `parseMspzToTehai(input: string): Tehai`
+### `parseMspz(input: string): Tehai`
 
 標準的なMSPZ文字列（例: `"123m456p..."`）を解析して `Tehai` オブジェクトを返します。  
 副露牌は含まれず、全ての牌は `closed` プロパティに格納されます。
 
-### `parseExtendedMspzToTehai(input: string): Tehai`
+### `parseExtendedMspz(input: string): Tehai`
 
 拡張MSPZ文字列（例: `"123m[456p]..."`）を解析して `Tehai` オブジェクトを返します。  
 `[...]` や `(...)` で囲まれた部分は `exposed` プロパティ（副露）として格納されます。
@@ -99,9 +99,9 @@
 使用例:
 
 ```typescript
-import { parseExtendedMspzToTehai } from "riichi-mahjong";
+import { parseExtendedMspz } from "riichi-mahjong";
 
-const tehai = parseExtendedMspzToTehai("123m[456p]");
+const tehai = parseExtendedMspz("123m[456p]");
 // tehai.closed: [1m, 2m, 3m]
 // tehai.exposed: [ { type: "Koutsu", hais: [4p, 4p, 4p], ... } ]
 ```

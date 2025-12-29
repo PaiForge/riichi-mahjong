@@ -20,7 +20,7 @@ export * from "./logic";
  * @param agariHai 和了牌
  * @returns 成立した役と飜数のリスト（最も高得点となる解釈の結果）
  */
-export function detectYakuFromTehai(
+export function detectYaku(
   tehai: Tehai14,
   agariHai: HaiKindId,
   bakaze?: HaiKindId,

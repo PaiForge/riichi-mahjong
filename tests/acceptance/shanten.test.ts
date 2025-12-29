@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { calculateShanten, parseMspzToTehai } from "../../src/index";
+import { calculateShanten, parseMspz } from "../../src/index";
 
 // ============================================================================
 // テストケース定義 (MSPZ文字列, 期待されるシャンテン数)
@@ -90,7 +90,7 @@ describe("相互検証: シャンテン数計算 (mahjongライブラリ使用)"
   // テストケースを動的に生成
   CASES.forEach(([mpsz, expected], index) => {
     it(`${mpsz} -> ${expected} シャンテン`, () => {
-      const tehai = parseMspzToTehai(mpsz);
+      const tehai = parseMspz(mpsz);
       // 現在の calculateShanten は13枚の手牌のみをサポート
       if (tehai.closed.length + tehai.exposed.length !== 13) {
         console.warn(

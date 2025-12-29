@@ -144,7 +144,7 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
 
   // closed部分を結合してパース
   const fullClosedMspz = closedParts.join("");
-  const closedIds = mspzStringToHaiKindIds(asMspz(fullClosedMspz));
+  const closedIds = parseMspzToHaiKindIds(asMspz(fullClosedMspz));
 
   return {
     closed: closedIds,
@@ -175,7 +175,7 @@ function parseMentsuFromExtendedMspz(
   }
 
   // 中身は標準MSPZ形式である必要がある
-  const ids = mspzStringToHaiKindIds(asMspz(content));
+  const ids = parseMspzToHaiKindIds(asMspz(content));
   if (ids.length === 0) {
     throw new Error("Empty mentsu specification");
   }
@@ -249,7 +249,7 @@ function parseMentsuFromExtendedMspz(
  * @throws {ShoushaiError} 牌の数が13枚より少ない場合
  * @throws {TahaiError} 牌の数が13枚より多い場合
  */
-export function haiKindIdsToDistribution(
+export function createDistribution(
   hais: readonly HaiKindId[],
 ): HaiKindDistribution {
   if (hais.length < 13) {
@@ -285,7 +285,7 @@ export function haiIdsToDistribution(
   hais: readonly HaiId[],
 ): HaiKindDistribution {
   const kinds = hais.map(haiIdToKindId);
-  return haiKindIdsToDistribution(kinds);
+  return createDistribution(kinds);
 }
 
 /**
@@ -295,7 +295,7 @@ export function haiIdsToDistribution(
  * @throws {TahaiError} 牌の数が13枚より多い場合
  */
 export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
-  const counts = haiKindIdsToDistribution(hais);
+  const counts = createDistribution(hais);
   let result = "";
 
   // 萬子
@@ -380,7 +380,7 @@ export function asMspz(input: string): MspzString {
  * @param mspz MSPZ形式の文字列
  * @returns HaiKindId の配列
  */
-export function mspzStringToHaiKindIds(mspz: MspzString): HaiKindId[] {
+export function parseMspzToHaiKindIds(mspz: MspzString): HaiKindId[] {
   const result: HaiKindId[] = [];
   let currentNumbers: number[] = [];
 

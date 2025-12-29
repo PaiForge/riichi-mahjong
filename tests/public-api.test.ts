@@ -36,16 +36,16 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
-  describe("detectYakuFromTehai", () => {
+  describe("detectYaku", () => {
     it("関数としてエクスポートされていること", () => {
-      expect(PublicApi.detectYakuFromTehai).toBeDefined();
-      expect(typeof PublicApi.detectYakuFromTehai).toBe("function");
+      expect(PublicApi.detectYaku).toBeDefined();
+      expect(typeof PublicApi.detectYaku).toBe("function");
     });
 
     it("期待される型シグネチャを満たすこと", () => {
       // NOTE: Tehai14 は Tehai<T> (default HaiKindId) のエイリアス
       // 型パラメータは実装に合わせて HaiKindId | HaiId ではなくデフォルト(HaiKindId)を利用する
-      PublicApi.detectYakuFromTehai satisfies (
+      PublicApi.detectYaku satisfies (
         tehai: PublicApi.Tehai14,
         agariHai: HaiKindId,
         bakaze?: HaiKindId,
@@ -56,25 +56,25 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
-  describe("Parser (parseMspzToTehai / parseExtendedMspzToTehai)", () => {
+  describe("Parser (parseMspz / parseExtendedMspz)", () => {
     it("関数としてエクスポートされていること", () => {
-      expect(PublicApi.parseMspzToTehai).toBeDefined();
-      expect(typeof PublicApi.parseMspzToTehai).toBe("function");
+      expect(PublicApi.parseMspz).toBeDefined();
+      expect(typeof PublicApi.parseMspz).toBe("function");
 
-      expect(PublicApi.parseExtendedMspzToTehai).toBeDefined();
-      expect(typeof PublicApi.parseExtendedMspzToTehai).toBe("function");
+      expect(PublicApi.parseExtendedMspz).toBeDefined();
+      expect(typeof PublicApi.parseExtendedMspz).toBe("function");
     });
 
-    it("parseMspzToTehai が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseMspzToTehai satisfies (
+    it("parseMspz が期待される型シグネチャを満たすこと", () => {
+      PublicApi.parseMspz satisfies (
         input: string,
       ) => PublicApi.Tehai13 | PublicApi.Tehai14; // Returns Tehai generic
 
       expect(true).toBe(true);
     });
 
-    it("parseExtendedMspzToTehai が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseExtendedMspzToTehai satisfies (
+    it("parseExtendedMspz が期待される型シグネチャを満たすこと", () => {
+      PublicApi.parseExtendedMspz satisfies (
         input: string,
       ) => PublicApi.Tehai13 | PublicApi.Tehai14;
 

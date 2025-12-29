@@ -1,6 +1,6 @@
 import {
-  parseExtendedMspz,
-  mspzStringToHaiKindIds,
+  parseExtendedMspz as internalParseExtendedMspz,
+  parseMspzToHaiKindIds,
   asMspz,
   asExtendedMspz,
 } from "./mspz";
@@ -16,8 +16,8 @@ export { isExtendedMspz } from "./mspz";
  * @param input MSPZ形式の文字列
  * @returns 手牌オブジェクト
  */
-export function parseMspzToTehai(input: string): Tehai {
-  const ids = mspzStringToHaiKindIds(asMspz(input));
+export function parseMspz(input: string): Tehai {
+  const ids = parseMspzToHaiKindIds(asMspz(input));
   return {
     closed: ids,
     exposed: [],
@@ -31,11 +31,8 @@ export function parseMspzToTehai(input: string): Tehai {
  * @param input 拡張MSPZ形式の文字列
  * @returns 手牌オブジェクト
  */
-export function parseExtendedMspzToTehai(input: string): Tehai {
+export function parseExtendedMspz(input: string): Tehai {
   // parseExtendedMspz returns { closed: HaiKindId[], exposed: CompletedMentsu[] }
   // which is compatible with Tehai interface.
-  return parseExtendedMspz(asExtendedMspz(input));
+  return internalParseExtendedMspz(asExtendedMspz(input));
 }
-
-// Re-export utility for raw IDs if needed internally, but prefer the above for public API.
-// export { mspzStringToHaiKindIds };
