@@ -1,5 +1,5 @@
-import type { HaiKindId } from "../types.js";
-import { haiKindToNumber, isSuupai, kindIdToHaiType } from "./hai.js";
+import type { HaiKindId } from "../types";
+import { haiKindToNumber, isSuupai, kindIdToHaiType } from "./hai";
 import { isTuple2, isTuple3, isTuple4 } from "../utils/assertions";
 
 // バリデーションロジックは「HaiKindId の配列」に対して行うものと定義する。

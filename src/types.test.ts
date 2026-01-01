@@ -12,7 +12,7 @@ import {
   type Shuntsu,
   Tacha,
   type Tehai,
-} from "./types.js";
+} from "./types";
 
 describe("HaiKindId (牌種ID)", () => {
   it("34種類の牌IDが定義されていること", () => {

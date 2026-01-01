@@ -2,6 +2,11 @@
 
 リーチ麻雀のロジック（シャンテン数計算、点数計算など）を提供するTypeScriptライブラリです。
 
+> [!NOTE]
+> This package is **Pure ESM**. Please use `import` (not `require`) to use this library.
+<br>
+本パッケージは **Pure ESM** です。利用する際は `require` ではなく `import` を使用してください。
+
 ## 前提条件 (Prerequisites)
 
 開発やテスト実行には以下のツールが必要です。
@@ -14,7 +19,7 @@
 依存パッケージをインストールします。
 
 ```bash
-npm install
+npm install @pai-forge/riichi-mahjong
 ```
 
 ## テストの実行 (Running Tests)

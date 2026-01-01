@@ -1,4 +1,4 @@
-import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types.js";
+import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types";
 import { asHaiKindId } from "../utils/assertions";
 
 /**

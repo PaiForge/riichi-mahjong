@@ -8,14 +8,14 @@ import {
   type Shuntsu,
   type Tatsu,
   type Toitsu,
-} from "../types.js";
+} from "../types";
 import {
   isValidKantsu,
   isValidKoutsu,
   isValidShuntsu,
   isValidTatsu,
   isValidToitsu,
-} from "./mentsu.js";
+} from "./mentsu";
 
 describe("isValidShuntsu", () => {
   it("有効な順子はバリデーションを通る", () => {

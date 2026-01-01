@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { type HaiId, HaiKind, HaiType } from "../types.js";
+import { type HaiId, HaiKind, HaiType } from "../types";
 import {
   haiIdToKindId,
   haiKindToNumber,
   isSuupai,
   kindIdToHaiType,
-} from "./hai.js";
+} from "./hai";
 
 describe("kindIdToHaiType", () => {
   it("萬子のIDを正しく判定できる", () => {

@@ -1,19 +1,39 @@
 {
-  "name": "riichi-mahjong",
-  "version": "0.0.1",
-  "main": "index.js",
+  "name": "@pai-forge/riichi-mahjong",
+  "version": "0.1.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PaiForge/riichi-mahjong.git"
+  },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "scripts": {
     "test": "vitest src",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
     "prepare": "husky"
   },
-  "keywords": [],
+  "keywords": [
+    "mahjong",
+    "riichi",
+    "game"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Riichi Mahjong Logic Library",
   "devDependencies": {
     "@types/node": "^25.0.3",
     "eslint": "^9.39.2",
