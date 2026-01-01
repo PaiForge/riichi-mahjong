@@ -1,5 +1,8 @@
 # Riichi Mahjong Library
 
+[![npm version](https://img.shields.io/npm/v/@pai-forge/riichi-mahjong)](https://www.npmjs.com/package/@pai-forge/riichi-mahjong)
+
+
 リーチ麻雀のロジック（シャンテン数計算、点数計算など）を提供するTypeScriptライブラリです。
 
 > [!NOTE]
