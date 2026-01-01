@@ -1,4 +1,4 @@
-import type { HouraStructure, HouraContext } from "../yaku/types";
+import type { HouraStructure, HouraContext } from "../../../yaku/types";
 import type { FuResult } from "./types";
 import { calculateChiitoitsuFu } from "./lib/chiitoitsu";
 import { calculateKokushiFu } from "./lib/kokushi";

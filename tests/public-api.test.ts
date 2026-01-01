@@ -56,6 +56,22 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
+  describe("calculateScore", () => {
+    it("関数としてエクスポートされていること", () => {
+      expect(PublicApi.calculateScore).toBeDefined();
+      expect(typeof PublicApi.calculateScore).toBe("function");
+    });
+
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.calculateScore satisfies (
+        tehai: PublicApi.Tehai14,
+        config: PublicApi.ScoreCalculationConfig,
+      ) => PublicApi.ScoreResult;
+
+      expect(true).toBe(true);
+    });
+  });
+
   describe("Parser (parseMspz / parseExtendedMspz)", () => {
     it("関数としてエクスポートされていること", () => {
       expect(PublicApi.parseMspz).toBeDefined();

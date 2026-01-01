@@ -1,9 +1,9 @@
-import type { FuResult, FuDetails } from "../types";
-import type { HouraContext } from "../../yaku/types";
-import type { MentsuHouraStructure } from "../../yaku/types";
-import { isYaochu } from "../../../core/hai";
-import { HaiKind } from "../../../types";
-import { classifyMachi } from "../../../core/machi";
+import type { FuResult } from "../types";
+import type { HouraContext } from "../../../../yaku/types";
+import type { MentsuHouraStructure } from "../../../../yaku/types";
+import { isYaochu } from "../../../../../core/hai";
+import { HaiKind } from "../../../../../types";
+import { classifyMachi } from "../../../../../core/machi";
 import {
   FU_BASE,
   FU_KOUTSU,
@@ -27,7 +27,7 @@ export function calculateMentsuFu(
   context: HouraContext,
   isPinfu: boolean,
 ): FuResult {
-  const details: FuDetails = {
+  const details = {
     base: FU_BASE.NORMAL,
     mentsu: 0,
     jantou: 0,

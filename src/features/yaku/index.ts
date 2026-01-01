@@ -1,9 +1,9 @@
 import type { Tehai14, HaiKindId } from "../../types";
 import type { YakuResult, YakuName, Hansu } from "./types";
 
-import { getHouraStructures } from "./logic/structures";
+import { getHouraStructures } from "./lib/structures";
 import { isMenzen, isKazehai } from "./utils";
-import { ALL_YAKU_DEFINITIONS } from "./logic/definitions";
+import { ALL_YAKU_DEFINITIONS } from "./lib/definitions";
 import type { HouraContext } from "./types";
 
 export type {
@@ -15,7 +15,7 @@ export type {
   YakuHanConfig,
   Yakuhai,
 } from "./types";
-export * from "./logic";
+export * from "./lib";
 
 /**
  * 手牌の構造役を検出する
@@ -31,6 +31,7 @@ export function detectYaku(
   jikaze?: HaiKindId,
   doraMarkers?: readonly HaiKindId[],
   uraDoraMarkers?: readonly HaiKindId[],
+  isTsumo?: boolean,
 ): YakuResult {
   // 1. 基本情報の抽出
   const isMenzenValue = isMenzen(tehai);
@@ -42,6 +43,7 @@ export function detectYaku(
     jikaze: jikaze !== undefined && isKazehai(jikaze) ? jikaze : undefined,
     doraMarkers: doraMarkers ?? [],
     uraDoraMarkers: uraDoraMarkers ?? [],
+    isTsumo,
   };
 
   let bestResult: YakuResult = [];

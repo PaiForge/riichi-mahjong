@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { calculateFu } from "./index";
-import { createTehai } from "../../utils/test-helpers";
-import { getHouraStructures } from "../yaku/logic/structures";
-import { HaiKind } from "../../types";
-import type { HouraContext } from "../yaku/types";
-import type { HouraStructure } from "../yaku/types";
+import { createTehai } from "../../../../utils/test-helpers";
+import { getHouraStructures } from "../../../yaku/lib/structures";
+import { HaiKind } from "../../../../types";
+import type { HouraContext } from "../../../yaku/types";
+import type { HouraStructure } from "../../../yaku/types";
 
 describe("calculateFu", () => {
   const baseContext: HouraContext = {

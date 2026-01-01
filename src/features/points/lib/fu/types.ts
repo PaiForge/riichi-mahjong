@@ -10,28 +10,28 @@ export interface FuDetails {
    * 一般的な和了形: 20符
    * 七対子: 25符
    */
-  base: 20 | 25;
+  readonly base: 20 | 25;
 
   /**
    * 面子符の合計 (MentsuFu)
    *
    * 刻子・槓子による加算符。順子は0符。
    */
-  mentsu: number;
+  readonly mentsu: number;
 
   /**
    * 雀頭符 (JantouFu)
    *
    * 役牌の対子による加算符。
    */
-  jantou: number;
+  readonly jantou: number;
 
   /**
    * 待ち符 (MachiFu)
    *
    * 単騎・嵌張・辺張待ちによる加算符（2符）。
    */
-  machi: number;
+  readonly machi: number;
 
   /**
    * 和了符 (AgariFu)
@@ -39,7 +39,7 @@ export interface FuDetails {
    * ツモ和了: 2符
    * 門前ロン: 10符
    */
-  agari: number;
+  readonly agari: number;
 }
 
 /**
@@ -52,10 +52,10 @@ export interface FuResult {
    * 内訳の合計を10符単位で切り上げたもの。
    * (例: 22符 -> 30符)
    */
-  total: number;
+  readonly total: number;
 
   /**
    * 計算の内訳
    */
-  details: FuDetails;
+  readonly details: FuDetails;
 }

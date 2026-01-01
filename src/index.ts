@@ -2,7 +2,7 @@
  * Riichi Mahjong Library
  */
 
-export { HaiKind, Tacha, FuroType, MentsuType } from "./types";
+export { HaiKind, Tacha, FuroType, MentsuType, HaiType } from "./types";
 
 export type {
   HaiId,
@@ -24,3 +24,8 @@ export { calculateShanten } from "./features/shanten";
 export { getUkeire } from "./features/machi";
 export { detectYaku } from "./features/yaku";
 export { parseMspz, parseExtendedMspz } from "./features/parser";
+export { calculateScore } from "./features/points";
+export type {
+  ScoreResult,
+  ScoreCalculationConfig,
+} from "./features/points/types";

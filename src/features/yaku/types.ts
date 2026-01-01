@@ -53,7 +53,8 @@ export type TehaiYaku =
   | "Chinroutou" // 清老頭
   | "Ryuuiisou" // 緑一色
   | "ChuurenPoutou" // 九蓮宝燈
-  | "Suukantsu"; // 四槓子
+  | "Suukantsu" // 四槓子
+  | "MenzenTsumo"; // 門前清自摸和
 
 /**
  * 役の飜数 (Hansu)
@@ -141,7 +142,7 @@ export interface HouraContext {
   /** 自風牌 */
   readonly jikaze?: Kazehai | undefined;
   /** ツモ和了かどうか（暗刻系役の判定などに使用） */
-  readonly isTsumo?: boolean;
+  readonly isTsumo?: boolean | undefined;
 
   /**
    * ドラ表示牌 (表ドラ) のリスト
