@@ -19,7 +19,7 @@ describe("純全帯幺九（ジュンチャン）の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("門前でジュンチャンが成立する場合、3飜であること", () => {
+  it("門前でジュンチャンが成立する場合、3翻であること", () => {
     // 123m 123p 789s 999p 11m
     const tehai = createTehai("123m123p789s999p11m");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -29,7 +29,7 @@ describe("純全帯幺九（ジュンチャン）の判定", () => {
     expect(junchanDefinition.getHansu(hand, mockContextMenzen)).toBe(3);
   });
 
-  it("副露してジュンチャンが成立する場合、2飜であること", () => {
+  it("副露してジュンチャンが成立する場合、2翻であること", () => {
     // 123m 123p 789s [999p] (pon) 11m
     const tehai = createTehai("123m123p789s11m[999p]");
     const hands = getHouraStructuresForMentsuTe(tehai);

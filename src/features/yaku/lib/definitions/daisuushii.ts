@@ -12,7 +12,7 @@ import { HaiKind, type HaiKindId } from "../../../../types";
 const DAISUUSHII_YAKU: Yaku = {
   name: "Daisuushii",
   han: {
-    // TODO: ダブル役満（26飜）とするかはルールによるため、一旦通常の役満として実装
+    // TODO: ダブル役満（26翻）とするかはルールによるため、一旦通常の役満として実装
     open: 13,
     closed: 13,
   } satisfies YakuHanConfig,

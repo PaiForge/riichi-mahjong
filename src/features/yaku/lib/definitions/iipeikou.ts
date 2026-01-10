@@ -15,7 +15,7 @@ const IIPEIKO_YAKU: Yaku = {
   } satisfies YakuHanConfig,
 };
 
-const checkIipeiko = (hand: HouraStructure): boolean => {
+const checkIipeikou = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
     return false;
   }
@@ -63,7 +63,7 @@ const checkIipeiko = (hand: HouraStructure): boolean => {
   return false;
 };
 
-export const iipeikoDefinition: YakuDefinition = createYakuDefinition(
+export const iipeikouDefinition: YakuDefinition = createYakuDefinition(
   IIPEIKO_YAKU,
-  checkIipeiko,
+  checkIipeikou,
 );

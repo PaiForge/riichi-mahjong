@@ -1,7 +1,7 @@
 import { tanyaoDefinition } from "./tanyao";
 import { pinfuDefinition } from "./pinfu";
-import { iipeikoDefinition } from "./iipeiko";
-import { ryanpeikouDefinition } from "./ryanpeiko";
+import { iipeikouDefinition } from "./iipeikou";
+import { ryanpeikouDefinition } from "./ryanpeikou";
 import { sanankouDefinition } from "./sanankou";
 import { suuankouDefinition } from "./suuankou";
 import { sankantsuDefinition } from "./sankantsu";
@@ -31,8 +31,8 @@ import type { YakuDefinition } from "../../types";
 
 export * from "./tanyao";
 export * from "./pinfu";
-export * from "./iipeiko";
-export * from "./ryanpeiko";
+export * from "./iipeikou";
+export * from "./ryanpeikou";
 export * from "./sanankou";
 export * from "./suuankou";
 export * from "./sankantsu";
@@ -61,7 +61,7 @@ export * from "./yakuhai";
 export const ALL_YAKU_DEFINITIONS: YakuDefinition[] = [
   tanyaoDefinition,
   pinfuDefinition,
-  iipeikoDefinition,
+  iipeikouDefinition,
   ryanpeikouDefinition,
   sanankouDefinition,
   suuankouDefinition,

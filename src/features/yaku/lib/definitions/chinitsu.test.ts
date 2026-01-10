@@ -19,7 +19,7 @@ describe("清一色（チンイツ）の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("萬子のチンイツ（門前）が成立する場合、6飜であること", () => {
+  it("萬子のチンイツ（門前）が成立する場合、6翻であること", () => {
     // 123m 456m 789m 111m 22m
     const tehai = createTehai("123m456m789m111m22m");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -29,7 +29,7 @@ describe("清一色（チンイツ）の判定", () => {
     expect(chinitsuDefinition.getHansu(hand, mockContextMenzen)).toBe(6);
   });
 
-  it("筒子のチンイツ（副露）が成立する場合、5飜であること", () => {
+  it("筒子のチンイツ（副露）が成立する場合、5翻であること", () => {
     // 123p 456p 789p [111p] 22p (Pon)
     const tehai = createTehai("123p456p789p22p[111p]");
     const hands = getHouraStructuresForMentsuTe(tehai);
