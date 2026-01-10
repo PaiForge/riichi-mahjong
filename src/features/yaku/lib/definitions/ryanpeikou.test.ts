@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ryanpeikouDefinition } from "./ryanpeiko";
+import { ryanpeikouDefinition } from "./ryanpeikou";
 import { createTehai } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import { HaiKind } from "../../../../types";
@@ -77,7 +77,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     if (!validHand) throw new Error("分解失敗");
 
     // factoryの実装上、isSatisfiedは構造チェックのみを行うためtrueを返す可能性がある。
-    // 一盃口(iipeiko.test.ts)と同様に、getHansuが0になることを確認する。
+    // 一盃口(iipeikou.test.ts)と同様に、getHansuが0になることを確認する。
     expect(
       ryanpeikouDefinition.getHansu(
         validHand as unknown as MentsuHouraStructure,
