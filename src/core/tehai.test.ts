@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ShoushaiError, TahaiError } from "../errors";
-import type { CompletedMentsu, Kantsu, Shuntsu } from "../types";
+import {
+  DuplicatedHaiIdError,
+  InvalidHaiQuantityError,
+  ShoushaiError,
+  TahaiError,
+} from "../errors";
+import type { CompletedMentsu, HaiKindId, Kantsu, Shuntsu } from "../types";
 import { HaiKind, MentsuType } from "../types";
 import {
   isTehai13,
@@ -11,8 +16,14 @@ import {
 
 describe("Tehai Validation (手牌の検証)", () => {
   // Helper to create a dummy Tehai with N closed tiles
+  // Helper to create a dummy Tehai with N closed tiles
+  // using sequential tiles to avoid "InvalidHaiQuantityError"
+  // Start from offset 18 (SouZu1) to avoid overlap with dummyMentsu/dummyKantsu (ManZu)
   const createTehai = (closedCount: number, furos: CompletedMentsu[] = []) => ({
-    closed: Array(closedCount).fill(HaiKind.ManZu1),
+    closed: Array.from(
+      { length: closedCount },
+      (_, i) => ((i + 18) % 34) as HaiKindId,
+    ),
     exposed: furos,
   });
 
@@ -99,6 +110,113 @@ describe("Tehai Validation (手牌の検証)", () => {
         validateTehai14(tehai);
       }).toThrow(TahaiError);
       expect(isTehai14(tehai)).toBe(false);
+    });
+  });
+  describe("Consistency (整合性チェック)", () => {
+    it("同一の牌種が5枚以上ある場合に InvalidHaiQuantityError がスローされること", () => {
+      // 1m が5枚
+      const tehai1m5 = {
+        closed: [
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu2,
+          HaiKind.ManZu3,
+          HaiKind.ManZu4,
+          HaiKind.ManZu5,
+          HaiKind.ManZu6,
+          HaiKind.ManZu7,
+          HaiKind.ManZu8,
+          HaiKind.ManZu9,
+        ],
+        exposed: [],
+      };
+      expect(() => {
+        validateTehai13(tehai1m5);
+      }).toThrow(InvalidHaiQuantityError);
+    });
+
+    it("Tehai14でも同一の牌種が5枚以上ある場合に InvalidHaiQuantityError がスローされること", () => {
+      const tehai1m5_14 = {
+        closed: [
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu2,
+          HaiKind.ManZu3,
+          HaiKind.ManZu4,
+          HaiKind.ManZu5,
+          HaiKind.ManZu6,
+          HaiKind.ManZu7,
+          HaiKind.ManZu8,
+          HaiKind.ManZu9,
+          HaiKind.PinZu1, // 14th tile
+        ],
+        exposed: [],
+      };
+      expect(() => {
+        validateTehai14(tehai1m5_14);
+      }).toThrow(InvalidHaiQuantityError);
+    });
+
+    it("HaiId指定で重複IDがある場合に DuplicatedHaiIdError がスローされること", () => {
+      // 物理牌ID 0 (1m) が2枚
+      // 全体が13枚になるようにする
+      const tehaiDup = {
+        closed: [
+          0, // 1m
+          0, // 1m (duplicated)
+          100, // SouZu high ID (activates HaiId mode)
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+        ],
+        exposed: [],
+      };
+      expect(() => {
+        // @ts-expect-error Testing HaiId numbers directly
+        validateTehai13(tehaiDup);
+      }).toThrow(DuplicatedHaiIdError);
+    });
+
+    it("HaiKindIdモードでは重複IDエラーは出ず、枚数チェックのみ行われること", () => {
+      // 全て33以下のIDだが、意図的に数値として渡す
+      // しかし、33以下のみだとHaiKindIdとみなされるため、重複IDチェックはスキップされる
+      // (KindIdとして正当ならOK)
+      const tehaiLow = {
+        closed: [
+          0,
+          0, // 1m x2 (OK)
+          0,
+          0, // 1m x2 (Total 4, OK)
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          3,
+        ],
+        exposed: [],
+      };
+
+      expect(() => {
+        // @ts-expect-error Testing numbers
+        validateTehai13(tehaiLow);
+      }).not.toThrow();
     });
   });
 });
