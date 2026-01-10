@@ -1,4 +1,9 @@
-import { ShoushaiError, TahaiError } from "../errors";
+import {
+  DuplicatedHaiIdError,
+  InvalidHaiQuantityError,
+  ShoushaiError,
+  TahaiError,
+} from "../errors";
 import type {
   HaiId,
   HaiKindDistribution,
@@ -45,12 +50,15 @@ export function validateTehai13<T extends HaiKindId | HaiId>(
   if (count > 13) {
     throw new TahaiError();
   }
+  validateHaiConsistency(tehai);
 }
 
 /**
  * 手牌がTehai14（有効枚数14枚）であるか検証します。
  * @throws {ShoushaiError} 枚数が不足している場合
  * @throws {TahaiError} 枚数が超過している場合
+ * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
+ * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
  */
 export function validateTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
@@ -62,6 +70,7 @@ export function validateTehai14<T extends HaiKindId | HaiId>(
   if (count > 14) {
     throw new TahaiError();
   }
+  validateHaiConsistency(tehai);
 }
 
 /**
@@ -70,6 +79,8 @@ export function validateTehai14<T extends HaiKindId | HaiId>(
  *
  * @throws {ShoushaiError} 枚数が不足している場合 (< 13)
  * @throws {TahaiError} 枚数が超過している場合 (> 14)
+ * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
+ * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
  */
 export function validateTehai<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
@@ -80,6 +91,73 @@ export function validateTehai<T extends HaiKindId | HaiId>(
   }
   if (count > 14) {
     throw new TahaiError();
+  }
+  validateHaiConsistency(tehai);
+}
+
+/**
+ * 手牌の整合性を検証します。
+ * - 物理的な牌ID (`HaiId`) が使われている場合、重複チェックを行います。
+ * - 牌種ID (`HaiKindId`) の場合（または変換後）、同一牌種が5枚以上ないかチェックします。
+ *
+ * @throws {DuplicatedHaiIdError}
+ * @throws {InvalidHaiQuantityError}
+ */
+function validateHaiConsistency<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+): void {
+  const allHais: number[] = [
+    ...tehai.closed,
+    ...tehai.exposed.flatMap((m) => m.hais),
+  ];
+
+  // 1. Check for physical HaiId usage (any id > 33)
+  // HaiKindId is 0-33. Any value > 33 implies HaiId (0-135).
+  // Note: Low HaiIds (0-33) are ambiguous, but if mix of high and low exists, it's HaiId.
+  // If only low values exist, we can't strictly distinguish, but treating as KindId is safe
+  // unless the user provided [0, 0] intending HaiId 0 and HaiId 0.
+  // However, normally HaiKindId 0 is ManZu1.
+  // Strategy: If MAX(id) > 33, treat as HaiId.
+  const isHaiIdMode = allHais.some((h) => h > 33);
+
+  if (isHaiIdMode) {
+    // Check for duplicate HaiIds
+    const uniqueIds = new Set(allHais);
+    if (uniqueIds.size !== allHais.length) {
+      throw new DuplicatedHaiIdError();
+    }
+  }
+
+  // 2. Check for Kind quantity (max 4 per kind)
+  const counts = new Map<number, number>();
+  for (const hai of allHais) {
+    // If HaiId mode, convert to KindId
+    // If KindId mode, use as is
+    // import { haiIdToKindId } from "./hai"; <--- Need to import or implement logic
+    // Since we are in core/tehai, and core/hai depends on types.
+    // Let's defer strict conversion.
+    // For now, assume generic T validation behavior.
+    // But we need `haiIdToKindId`.
+    // Let's implement logic inline or use import.
+    // Circular dependency risk? core/tehai -> core/hai.
+    // core/hai imports types. core/tehai imports types. Should be fine.
+    // But I need to import it at top of file.
+
+    // Using inline logic to avoid circular deps if any (though likely safe)
+    // 0-35 -> 0-8, etc.
+    let kind: number = hai;
+    if (hai > 33) {
+      if (hai < 36) kind = Math.floor(hai / 4);
+      else if (hai < 72) kind = Math.floor((hai - 36) / 4) + 9;
+      else if (hai < 108) kind = Math.floor((hai - 72) / 4) + 18;
+      else kind = Math.floor((hai - 108) / 4) + 27;
+    }
+
+    const current = counts.get(kind) ?? 0;
+    if (current + 1 > 4) {
+      throw new InvalidHaiQuantityError();
+    }
+    counts.set(kind, current + 1);
   }
 }
 
