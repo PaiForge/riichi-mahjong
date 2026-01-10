@@ -28,7 +28,7 @@ export type {
   ScoreLevel,
   ScorePayment,
   ScoreCalculationConfig,
-} from "./features/points/types";
+} from "./features/score/types";
 
 // =============================================================================
 // Errors
@@ -104,6 +104,6 @@ export { parseMspz, parseExtendedMspz } from "./features/parser";
 export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 
 // =============================================================================
-// Features - Points
+// Features - Score
 // =============================================================================
-export { calculateScore } from "./features/points";
+export { calculateScore } from "./features/score";

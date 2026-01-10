@@ -7,7 +7,7 @@ import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
 import { isMenzen } from "../yaku/utils";
 import {
-  BASE_POINT_LIMIT,
+  BASE_SCORE_LIMIT,
   HAN_BAIMAN,
   HAN_HANEMAN,
   HAN_MANGAN,
@@ -143,7 +143,7 @@ export function calculateBasicScore(
   } else if (totalHan >= HAN_HANEMAN) {
     level = "Haneman";
     basePoints = SCORE_BASE_HANEMAN;
-  } else if (totalHan >= HAN_MANGAN || basePoints >= BASE_POINT_LIMIT) {
+  } else if (totalHan >= HAN_MANGAN || basePoints >= BASE_SCORE_LIMIT) {
     level = "Mangan";
     basePoints = SCORE_BASE_MANGAN;
   }

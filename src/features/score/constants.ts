@@ -31,4 +31,4 @@ export const HAS_DOUBLE_YAKUMAN = 26;
 // 切り上げ満貫の閾値 (30符4翻 = 1920 -> 2000? 60符3翻=1920)
 // 一般的には 2000点(子) / 3000点(親) が満貫の最低点（ベース）
 // 符計算による基本点が 2000 を超えたら満貫
-export const BASE_POINT_LIMIT = 2000;
+export const BASE_SCORE_LIMIT = 2000;

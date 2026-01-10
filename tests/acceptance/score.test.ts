@@ -4,7 +4,7 @@ import { resolve } from "path";
 import {
   calculateScore,
   type ScoreCalculationConfig,
-} from "../../src/features/points";
+} from "../../src/features/score";
 import { createTehai } from "../../src/utils/test-helpers";
 import { HaiKind } from "../../src/types";
 
