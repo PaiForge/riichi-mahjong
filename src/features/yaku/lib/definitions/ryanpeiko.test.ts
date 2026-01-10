@@ -19,7 +19,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("標準的な二盃口が成立する場合（独立した2組の一盃口）、3飜であること", () => {
+  it("標準的な二盃口が成立する場合（独立した2組の一盃口）、3翻であること", () => {
     // 112233m 445566p 99s
     const tehai = createTehai("112233m445566p99s");
     const hands = getHouraStructuresForMentsuTe(tehai);

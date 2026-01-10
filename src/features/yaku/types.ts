@@ -57,7 +57,7 @@ export type TehaiYaku =
   | "MenzenTsumo"; // 門前清自摸和
 
 /**
- * 役の飜数 (Hansu)
+ * 役の翻数 (Hansu)
  *
  * 1, 2, 3, 5(流し満貫/清一色喰い下がり), 6(清一色), 13(役満), 26(ダブル役満)
  */
@@ -101,13 +101,13 @@ export type HouraStructure =
   | KokushiHouraStructure;
 
 /**
- * 役の飜数定義
+ * 役の翻数定義
  */
 export interface YakuHanConfig {
-  /** 門前時の飜数 */
+  /** 門前時の翻数 */
   readonly closed: Hansu;
   /**
-   * 鳴きあり時の飜数 (0なら不成立)
+   * 鳴きあり時の翻数 (0なら不成立)
    *
    * @remarks
    * この値が 0 の場合、その役は**門前限定（Menzen-only）**であることを意味します。
@@ -127,7 +127,7 @@ export type YakuName = TehaiYaku;
 /**
  * 役判定結果 (YakuResult)
  *
- * 成立した役と、その飜数のペアのリスト。
+ * 成立した役と、その翻数のペアのリスト。
  * 役が一つも成立しない場合は空配列となる。
  */
 export type YakuResult = readonly [YakuName, Hansu][];
@@ -157,10 +157,10 @@ export interface HouraContext {
 
 export interface Yaku {
   readonly name: YakuName;
-  /** 飜数 (喰い下がり考慮) */
+  /** 翻数 (喰い下がり考慮) */
   readonly han: {
-    readonly open: Hansu | 0; // 鳴きあり時の飜数 (0なら不成立)
-    readonly closed: Hansu; // 門前時の飜数
+    readonly open: Hansu | 0; // 鳴きあり時の翻数 (0なら不成立)
+    readonly closed: Hansu; // 門前時の翻数
   };
 }
 

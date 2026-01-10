@@ -29,7 +29,7 @@ describe("一盃口の判定", () => {
     expect(iipeikoDefinition.getHansu(hand, mockContextMenzen)).toBe(1);
   });
 
-  it("鳴きがある場合、条件を満たしていても飜数が0であること", () => {
+  it("鳴きがある場合、条件を満たしていても翻数が0であること", () => {
     // 123m 123m 456p 22z [555s]
     const tehai = createTehai("123m123m456p22z[555s]");
     const hands = getHouraStructuresForMentsuTe(tehai);

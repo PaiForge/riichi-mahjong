@@ -17,11 +17,11 @@ export interface ScoreCalculationConfig {
 
 export type ScoreLevel =
   | "Normal"
-  | "Mangan" // 満貫: 5飜 or 4飜30符以上
-  | "Haneman" // 跳満: 6-7飜
-  | "Baiman" // 倍満: 8-10飜
-  | "Sanbaiman" // 三倍満: 11-12飜
-  | "Yakuman" // 役満 (13飜以上 または 特殊役)
+  | "Mangan" // 満貫: 5翻 or 4翻30符以上
+  | "Haneman" // 跳満: 6-7翻
+  | "Baiman" // 倍満: 8-10翻
+  | "Sanbaiman" // 三倍満: 11-12翻
+  | "Yakuman" // 役満 (13翻以上 または 特殊役)
   | "DoubleYakuman" // ダブル役満
   | "TripleYakuman"; // トリプル役満 (理論上)
 

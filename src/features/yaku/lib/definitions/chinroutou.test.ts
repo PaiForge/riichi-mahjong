@@ -19,7 +19,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("条件を満たす場合、役満（13飜）であること", () => {
+  it("条件を満たす場合、役満（13翻）であること", () => {
     // 111m 999m 111p 999p 11s
     const tehai = createTehai("111m999m111p999p11s");
     const hands = getHouraStructuresForMentsuTe(tehai);

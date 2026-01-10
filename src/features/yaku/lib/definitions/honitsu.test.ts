@@ -19,7 +19,7 @@ describe("混一色（ホンイツ）の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("萬子のホンイツ（門前）が成立する場合、3飜であること", () => {
+  it("萬子のホンイツ（門前）が成立する場合、3翻であること", () => {
     // 123m 456m 789m 111z 22z
     const tehai = createTehai("123m456m789m111z22z");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -29,7 +29,7 @@ describe("混一色（ホンイツ）の判定", () => {
     expect(honitsuDefinition.getHansu(hand, mockContextMenzen)).toBe(3);
   });
 
-  it("筒子のホンイツ（副露）が成立する場合、2飜であること", () => {
+  it("筒子のホンイツ（副露）が成立する場合、2翻であること", () => {
     // 123p 456p 789p 22z [111z] (Pon)
     const tehai = createTehai("123p456p789p22z[111z]");
     const hands = getHouraStructuresForMentsuTe(tehai);

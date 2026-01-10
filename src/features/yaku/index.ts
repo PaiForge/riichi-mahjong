@@ -22,7 +22,7 @@ export * from "./lib";
  *
  * @param tehai 判定対象の手牌
  * @param agariHai 和了牌
- * @returns 成立した役と飜数のリスト（最も高得点となる解釈の結果）
+ * @returns 成立した役と翻数のリスト（最も高得点となる解釈の結果）
  */
 export function detectYaku(
   tehai: Tehai14,
@@ -71,7 +71,7 @@ export function detectYaku(
         // しかしここでは YakuhaiDefinition が汎用的になっている。
         // ユーザー要望の simple refactor に従い、getHansu が返す値をそのまま1つの役として扱う。
         // ただし Yakuhai の getHansu は (open * count) を返しているので、
-        // ダブ東なら 2飜 の役が1つ、という扱いになる。
+        // ダブ東なら 2翻 の役が1つ、という扱いになる。
         currentResult.push([definition.yaku.name, hansu]);
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         currentHan += hansu as number;

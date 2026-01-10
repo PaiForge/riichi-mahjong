@@ -21,7 +21,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
     isTsumo: false,
   };
 
-  it("ツモ和了の場合、4つの暗刻があれば成立し、13飜（役満）であること", () => {
+  it("ツモ和了の場合、4つの暗刻があれば成立し、13翻（役満）であること", () => {
     // 111m 222m 333m 444m 99s (ツモ)
     const tehai = createTehai("111m222m333m444m99s");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -31,7 +31,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
     expect(suuankouDefinition.getHansu(hand, mockContextTsumo)).toBe(13);
   });
 
-  it("単騎待ちロン和了の場合、ダブル役満（26飜）であること", () => {
+  it("単騎待ちロン和了の場合、ダブル役満（26翻）であること", () => {
     // 111m 222m 333m 444m 9s (ロン 9s)
     const context: HouraContext = {
       ...mockContextRon,
@@ -46,7 +46,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
     expect(suuankouDefinition.getHansu(hand, context)).toBe(26);
   });
 
-  it("単騎待ちツモ和了の場合も、ダブル役満（26飜）であること", () => {
+  it("単騎待ちツモ和了の場合も、ダブル役満（26翻）であること", () => {
     // 111m 222m 333m 444m 9s (ツモ 9s)
     const context: HouraContext = {
       ...mockContextTsumo,

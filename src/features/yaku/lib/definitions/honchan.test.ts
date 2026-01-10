@@ -19,7 +19,7 @@ describe("混全帯幺九（ホンチャン）の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("門前でホンチャンが成立する場合、2飜であること", () => {
+  it("門前でホンチャンが成立する場合、2翻であること", () => {
     // 123m 123p 789s 999p 11z
     const tehai = createTehai("123m123p789s999p11z");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -29,7 +29,7 @@ describe("混全帯幺九（ホンチャン）の判定", () => {
     expect(honchanDefinition.getHansu(hand, mockContextMenzen)).toBe(2);
   });
 
-  it("副露してホンチャンが成立する場合、1飜であること", () => {
+  it("副露してホンチャンが成立する場合、1翻であること", () => {
     // 123m 123p 789s [999p] (pon) 11z
     const tehai = createTehai("123m123p789s11z[999p]");
     const hands = getHouraStructuresForMentsuTe(tehai);
