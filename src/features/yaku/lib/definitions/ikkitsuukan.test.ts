@@ -19,7 +19,7 @@ describe("一気通貫の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("門前で一気通貫が成立する場合、2飜であること", () => {
+  it("門前で一気通貫が成立する場合、2翻であること", () => {
     // 123m 456m 789m 123p 99p
     const tehai = createTehai("123m456m789m123p99p");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -31,7 +31,7 @@ describe("一気通貫の判定", () => {
     expect(ikkitsuukanDefinition.getHansu(hand, mockContextMenzen)).toBe(2);
   });
 
-  it("鳴きありで一気通貫が成立する場合、1飜であること", () => {
+  it("鳴きありで一気通貫が成立する場合、1翻であること", () => {
     // 123p 456p 123s 99s [789p] (chi)
     const tehai = createTehai("123p456p123s99s[789p]");
     const hands = getHouraStructuresForMentsuTe(tehai);

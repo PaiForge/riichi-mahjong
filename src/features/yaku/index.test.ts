@@ -25,7 +25,7 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
     it("二盃口が判定でき、七対子とは複合しないこと", () => {
       // 二盃口形: 223344m 223344p 55z
       // これは七対子の形でもあるが、二盃口と七対子は同じ牌姿でも牌の数え方が違うため、基本的に複合しない
-      // より高い飜数の二盃口として判定されるべき
+      // より高い翻数の二盃口として判定されるべき
       const hand = createTehai("223344m223344p55z");
       const agari = getHaiKindId("2m");
 
@@ -45,7 +45,7 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
       const result = detectYaku(hand, agari, HaiKind.Ton, HaiKind.Nan);
 
       expect(result).toContainEqual(["Chiitoitsu", 2]);
-      expect(result).toContainEqual(["Honitsu", 3]); // 混一色は食い下がりあるが、七対子は門前役なので3飜のはず
+      expect(result).toContainEqual(["Honitsu", 3]); // 混一色は食い下がりあるが、七対子は門前役なので3翻のはず
     });
   });
 

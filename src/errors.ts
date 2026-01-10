@@ -63,3 +63,35 @@ export class MahjongArgumentError extends MahjongError {
     Object.setPrototypeOf(this, MahjongArgumentError.prototype);
   }
 }
+
+/**
+ * 牌IDが重複している場合のエラー
+ * (物理的な牌IDは一意である必要があります)
+ */
+export class DuplicatedHaiIdError extends MahjongError {
+  /**
+   *
+   */
+  constructor(message = "牌IDが重複しています。") {
+    super(message);
+    this.name = "DuplicatedHaiIdError";
+
+    Object.setPrototypeOf(this, DuplicatedHaiIdError.prototype);
+  }
+}
+
+/**
+ * 牌の枚数が不正な場合のエラー
+ * (同種の牌は最大4枚までです)
+ */
+export class InvalidHaiQuantityError extends MahjongError {
+  /**
+   *
+   */
+  constructor(message = "同種の牌が5枚以上存在します。") {
+    super(message);
+    this.name = "InvalidHaiQuantityError";
+
+    Object.setPrototypeOf(this, InvalidHaiQuantityError.prototype);
+  }
+}

@@ -19,7 +19,7 @@ describe("三色同順の判定", () => {
     doraMarkers: [], // Dummy
   };
 
-  it("門前で三色同順が成立する場合、2飜であること", () => {
+  it("門前で三色同順が成立する場合、2翻であること", () => {
     // 123m 123p 123s 789p 99p
     const tehai = createTehai("123m123p123s789p99p");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -31,7 +31,7 @@ describe("三色同順の判定", () => {
     expect(sanshokuDoujunDefinition.getHansu(hand, mockContextMenzen)).toBe(2);
   });
 
-  it("鳴きありで三色同順が成立する場合、1飜であること", () => {
+  it("鳴きありで三色同順が成立する場合、1翻であること", () => {
     // 123m 123p 789p 99p [123s]
     const tehai = createTehai("123m123p789p99p[123s]");
     const hands = getHouraStructuresForMentsuTe(tehai);

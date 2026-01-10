@@ -30,7 +30,7 @@ describe("緑一色（リューイーソー）の判定", () => {
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(ryuuiisouDefinition.isSatisfied(hand, mockContext)).toBe(true);
-    // ライブラリ仕様として、発なしでも通常の緑一色と同じ役満扱いを確認
+    // ライブラリ仕様として、發なしでも通常の緑一色と同じ役満扱いを確認
     expect(ryuuiisouDefinition.getHansu(hand, mockContext)).toBe(13);
   });
 
