@@ -44,6 +44,14 @@ function ceil100(points: number): number {
 }
 
 /**
+ * 基本点を計算する
+ * 基本点 = 符 × 2^(2+翻)
+ */
+export function calculateBasePoints(fu: number, han: number): number {
+  return fu * Math.pow(2, 2 + han);
+}
+
+/**
  * 支払い情報から和了者が受け取る総点数を計算する
  */
 export function getPaymentTotal(payment: Readonly<Payment>): number {
@@ -144,7 +152,7 @@ export function calculateBasicScore(
   const totalHan = yakuHansu + dora;
   const fu = fuResult.total;
 
-  let basePoints = fu * Math.pow(2, 2 + totalHan);
+  let basePoints = calculateBasePoints(fu, totalHan);
 
   // 満貫以上の判定
   // 5翻以上 は満貫確定

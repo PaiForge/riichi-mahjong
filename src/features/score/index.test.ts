@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { calculateBasicScore, getPaymentTotal } from "./index";
+import {
+  calculateBasicScore,
+  calculateBasePoints,
+  getPaymentTotal,
+} from "./index";
 import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
 import { HaiKind } from "../../types";
@@ -135,6 +139,32 @@ describe("calculateBasicScore", () => {
         mockContext(false, false),
       );
       expect(getPaymentTotal(score.payment)).toBe(64000);
+    });
+  });
+});
+
+describe("calculateBasePoints", () => {
+  describe("30符", () => {
+    it("30符 2翻 -> 480", () => {
+      // 30 * 2^(2+2) = 30 * 16 = 480
+      expect(calculateBasePoints(30, 2)).toBe(480);
+    });
+
+    it("30符 3翻 -> 960", () => {
+      // 30 * 2^(2+3) = 30 * 32 = 960
+      expect(calculateBasePoints(30, 3)).toBe(960);
+    });
+  });
+
+  describe("40符", () => {
+    it("40符 2翻 -> 640", () => {
+      // 40 * 2^(2+2) = 40 * 16 = 640
+      expect(calculateBasePoints(40, 2)).toBe(640);
+    });
+
+    it("40符 3翻 -> 1280", () => {
+      // 40 * 2^(2+3) = 40 * 32 = 1280
+      expect(calculateBasePoints(40, 3)).toBe(1280);
     });
   });
 });
