@@ -160,7 +160,7 @@ function createScoreContext(
  * @param config 点数計算の設定 (場風、自風、ドラなど)
  * @returns 点数計算結果
  */
-export function calculateScore(
+export function calculateScoreForTehai(
   tehai: Tehai14,
   config: Readonly<ScoreCalculationConfig>,
 ): ScoreResult {
@@ -197,7 +197,12 @@ export function calculateScore(
     const dora = countDora(tehai, context.doraMarkers);
 
     // 4. 点数計算 (基本計算)
-    const result = calculateBasicScore(yakuHansu, fuResult, dora, context);
+    const result = calculateScoreFromHanAndFu(
+      yakuHansu,
+      fuResult,
+      dora,
+      context,
+    );
     const total = getPaymentTotal(result.payment);
 
     if (total > maxTotalPoints) {
@@ -216,7 +221,7 @@ export function calculateScore(
 /**
  * 基本的な点数計算ロジック (内部用・テスト用)
  */
-export function calculateBasicScore(
+export function calculateScoreFromHanAndFu(
   yakuHansu: number,
   fuResult: Readonly<FuResult>,
   dora: number,

@@ -111,4 +111,4 @@ export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 // =============================================================================
 // Features - Score
 // =============================================================================
-export { calculateScore, getPaymentTotal } from "./features/score";
+export { calculateScoreForTehai, getPaymentTotal } from "./features/score";
