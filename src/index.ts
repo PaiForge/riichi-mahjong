@@ -25,9 +25,11 @@ export type {
 export type { YakuResult, YakuName, Hansu } from "./features/yaku";
 export type {
   ScoreResult,
-  ScoreLevel,
-  ScorePayment,
   ScoreCalculationConfig,
+  Payment,
+  Ron,
+  KoTsumo,
+  OyaTsumo,
 } from "./features/score/types";
 
 // =============================================================================
@@ -106,4 +108,4 @@ export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 // =============================================================================
 // Features - Score
 // =============================================================================
-export { calculateScore } from "./features/score";
+export { calculateScore, getPaymentTotal } from "./features/score";

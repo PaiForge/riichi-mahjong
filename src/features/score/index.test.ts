@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateBasicScore } from "./index";
+import { calculateBasicScore, getPaymentTotal } from "./index";
 import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
 import { HaiKind } from "../../types";
@@ -31,8 +31,8 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, false),
       );
-      expect(score.points.total).toBe(1000);
-      expect(score.level).toBe("Normal");
+      expect(score.payment.type).toBe("ron");
+      expect(getPaymentTotal(score.payment)).toBe(1000);
     });
 
     it("子 30符 4翻 ロン -> 7700点", () => {
@@ -44,8 +44,8 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, false),
       );
-      expect(score.points.total).toBe(7700);
-      expect(score.level).toBe("Normal");
+      expect(score.payment.type).toBe("ron");
+      expect(getPaymentTotal(score.payment)).toBe(7700);
     });
 
     it("親 30符 4翻 ロン -> 11600点", () => {
@@ -57,17 +57,14 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(true, false),
       );
-      expect(score.points.total).toBe(11600);
-      expect(score.level).toBe("Normal");
+      expect(score.payment.type).toBe("ron");
+      expect(getPaymentTotal(score.payment)).toBe(11600);
     });
 
     it("子 20符 2翻 ツモ (平和ツモ) -> 400/700 (1500点)", () => {
       // Base: 20 * 2^4 = 320
       // Oya pays: 320 * 2 = 640 -> 700
       // Ko pays: 320 * 1 = 320 -> 400
-      // Total: 1500 (400*2 + 700? No, 1 parent, 2 children? No.
-      // Ko Tsumo: 1 parent pays, 2 children pay.
-      // wait.
       // Total from 3 players.
       // Oya pay: 700.
       // Ko pay: 400.
@@ -78,9 +75,11 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, true),
       );
-      expect(score.points.main).toBe(700);
-      expect(score.points.sub).toBe(400);
-      expect(score.points.total).toBe(1500);
+      expect(score.payment.type).toBe("koTsumo");
+      if (score.payment.type === "koTsumo") {
+        expect(score.payment.amount).toEqual([400, 700]);
+      }
+      expect(getPaymentTotal(score.payment)).toBe(1500);
     });
   });
 
@@ -93,8 +92,7 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, false),
       );
-      expect(score.points.total).toBe(8000);
-      expect(score.level).toBe("Mangan");
+      expect(getPaymentTotal(score.payment)).toBe(8000);
     });
 
     it("子 70符 3翻 (満貫切り上げ) -> 8000点", () => {
@@ -106,8 +104,7 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, false),
       );
-      expect(score.points.total).toBe(8000);
-      expect(score.level).toBe("Mangan");
+      expect(getPaymentTotal(score.payment)).toBe(8000);
     });
 
     it("親 6翻 (跳満) -> 18000点", () => {
@@ -117,8 +114,7 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(true, false),
       );
-      expect(score.points.total).toBe(18000);
-      expect(score.level).toBe("Haneman");
+      expect(getPaymentTotal(score.payment)).toBe(18000);
     });
 
     it("子 13翻 (数え役満) -> 32000点", () => {
@@ -128,8 +124,7 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, false),
       );
-      expect(score.points.total).toBe(32000);
-      expect(score.level).toBe("Yakuman");
+      expect(getPaymentTotal(score.payment)).toBe(32000);
     });
 
     it("子 26翻 (ダブル役満) -> 64000点", () => {
@@ -139,8 +134,7 @@ describe("calculateBasicScore", () => {
         0,
         mockContext(false, false),
       );
-      expect(score.points.total).toBe(64000);
-      expect(score.level).toBe("DoubleYakuman");
+      expect(getPaymentTotal(score.payment)).toBe(64000);
     });
   });
 });

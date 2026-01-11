@@ -3,6 +3,7 @@ import { spawnSync } from "child_process";
 import { resolve } from "path";
 import {
   calculateScore,
+  getPaymentTotal,
   type ScoreCalculationConfig,
 } from "../../src/features/score";
 import { createTehai } from "../../src/utils/test-helpers";
@@ -184,7 +185,7 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
 
         expect(score.han).toBe(expected.han);
         expect(score.fu).toBe(expected.fu);
-        expect(score.points.total).toBe(pyTotal);
+        expect(getPaymentTotal(score.payment)).toBe(pyTotal);
       });
     } else {
       // 期待値が取得できない場合のフォールバック（通常ありえないが）

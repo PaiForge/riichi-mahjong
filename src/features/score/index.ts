@@ -19,14 +19,42 @@ import {
   SCORE_BASE_SANBAIMAN,
   SCORE_BASE_YAKUMAN,
 } from "./constants";
-import type { ScoreCalculationConfig, ScoreLevel, ScoreResult } from "./types";
-export type { ScoreCalculationConfig, ScoreLevel, ScoreResult };
+import type {
+  ScoreCalculationConfig,
+  ScoreResult,
+  Payment,
+  Ron,
+  KoTsumo,
+  OyaTsumo,
+} from "./types";
+export type {
+  ScoreCalculationConfig,
+  ScoreResult,
+  Payment,
+  Ron,
+  KoTsumo,
+  OyaTsumo,
+};
 
 /**
  * 100点単位で切り上げる
  */
 function ceil100(points: number): number {
   return Math.ceil(points / 100) * 100;
+}
+
+/**
+ * 支払い情報から和了者が受け取る総点数を計算する
+ */
+export function getPaymentTotal(payment: Readonly<Payment>): number {
+  switch (payment.type) {
+    case "ron":
+      return payment.amount;
+    case "koTsumo":
+      return payment.amount[0] * 2 + payment.amount[1];
+    case "oyaTsumo":
+      return payment.amount * 3;
+  }
 }
 
 /**
@@ -89,9 +117,10 @@ export function calculateScore(
 
     // 4. 点数計算 (基本計算)
     const result = calculateBasicScore(yakuHansu, fuResult, dora, context);
+    const total = getPaymentTotal(result.payment);
 
-    if (result.points.total > maxTotalPoints) {
-      maxTotalPoints = result.points.total;
+    if (total > maxTotalPoints) {
+      maxTotalPoints = total;
       bestResult = result;
     }
   }
@@ -116,96 +145,64 @@ export function calculateBasicScore(
   const fu = fuResult.total;
 
   let basePoints = fu * Math.pow(2, 2 + totalHan);
-  let level: ScoreLevel = "Normal";
 
   // 満貫以上の判定
   // 5翻以上 は満貫確定
   // 4翻以下でも 基本点が2000を超えたら満貫 (切り上げ満貫採用なら1920->2000)
   // ここでは厳密な計算 (2000以上) とする。※30符4翻は1920なのでNormal、60符3翻は1920、70符3翻(2240)は満貫
+  // TODO: 切り上げ満貫対応時に ScoreLevel の追加を検討
   if (totalHan >= HAN_YAKUMAN) {
     // 役満（数え役満）
     // ダブル役満等は呼び出し元でHandを判定して Han=26 とかに固定して渡してもらう想定
     // またはHan=13以上はすべてYakumanとして扱う（シングル）
     // ここでは13以上をYakuman、26以上をDoubleとする簡易判定を入れる
     if (totalHan >= 26) {
-      level = "DoubleYakuman"; // 例
       basePoints = SCORE_BASE_YAKUMAN * 2;
     } else {
-      level = "Yakuman";
       basePoints = SCORE_BASE_YAKUMAN;
     }
   } else if (totalHan >= HAN_SANBAIMAN) {
-    level = "Sanbaiman";
     basePoints = SCORE_BASE_SANBAIMAN;
   } else if (totalHan >= HAN_BAIMAN) {
-    level = "Baiman";
     basePoints = SCORE_BASE_BAIMAN;
   } else if (totalHan >= HAN_HANEMAN) {
-    level = "Haneman";
     basePoints = SCORE_BASE_HANEMAN;
   } else if (totalHan >= HAN_MANGAN || basePoints >= BASE_SCORE_LIMIT) {
-    level = "Mangan";
     basePoints = SCORE_BASE_MANGAN;
   }
 
   // 支払い計算
-  let mainPayment = 0;
-  let subPayment = 0;
-  let totalScore = 0;
+  let payment: Payment;
 
   if (context.isTsumo) {
-    // ツモ和了
     if (context.isOya) {
       // 親ツモ: オール (基本点 * 2)
-      const pay = ceil100(basePoints * 2);
-      mainPayment = pay;
-
-      // ScorePayment型の定義について:
-      // main: ロンなら支払い総額、ツモなら親の支払い
-      // sub: ツモの時の子の支払い
-
-      // 親ツモの場合、「親の支払い」は発生せず、全員が「子」として支払います。
-      // ここでは `main` を「子一人あたりの支払い」として使用します。
-      // 親ツモ: 子の支払い(main) * 3
-      // 子ツモ: 親の支払い(main) + 子の支払い(sub) * 2
-
-      const childPay = ceil100(basePoints * 2);
-      mainPayment = childPay; // 各子の支払い
-      subPayment = 0;
-      totalScore = childPay * 3;
+      const allPay = ceil100(basePoints * 2);
+      payment = { type: "oyaTsumo", amount: allPay };
     } else {
       // 子ツモ
       // 親の支払い: 基本点 * 2
       // 子の支払い: 基本点 * 1
       const parentPay = ceil100(basePoints * 2);
       const childPay = ceil100(basePoints * 1);
-      mainPayment = parentPay;
-      subPayment = childPay;
-      totalScore = parentPay + childPay * 2;
+      payment = { type: "koTsumo", amount: [childPay, parentPay] };
     }
   } else {
     // ロン和了
     if (context.isOya) {
       // 親ロン: 基本点 * 6
       const pay = ceil100(basePoints * 6);
-      mainPayment = pay;
-      totalScore = pay;
+      payment = { type: "ron", amount: pay };
     } else {
       // 子ロン: 基本点 * 4
       const pay = ceil100(basePoints * 4);
-      mainPayment = pay;
-      totalScore = pay;
+      payment = { type: "ron", amount: pay };
     }
   }
 
   return {
     han: totalHan,
     fu: fu,
-    level,
-    points: {
-      main: mainPayment,
-      sub: subPayment,
-      total: totalScore,
-    },
+    payment,
   };
 }

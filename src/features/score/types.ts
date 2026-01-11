@@ -15,25 +15,33 @@ export interface ScoreCalculationConfig {
   uraDoraMarkers?: readonly HaiKindId[];
 }
 
-export type ScoreLevel =
-  | "Normal"
-  | "Mangan" // 満貫: 5翻 or 4翻30符以上
-  | "Haneman" // 跳満: 6-7翻
-  | "Baiman" // 倍満: 8-10翻
-  | "Sanbaiman" // 三倍満: 11-12翻
-  | "Yakuman" // 役満 (13翻以上 または 特殊役)
-  | "DoubleYakuman" // ダブル役満
-  | "TripleYakuman"; // トリプル役満 (理論上)
-
-export interface ScorePayment {
-  main: number; // ロン: 支払い総額, ツモ: 親の支払い
-  sub?: number; // ツモ: 子の支払い (親のツモの場合は0 or undefined)
-  total: number; // 受け取る総額
+/** ロン和了時の支払い */
+export interface Ron {
+  type: "ron";
+  /** 振り込んだプレイヤーが支払う点数 */
+  amount: number;
 }
+
+/** 子のツモ和了時の支払い */
+export interface KoTsumo {
+  type: "koTsumo";
+  /** [子の支払い, 親の支払い] */
+  readonly amount: readonly [number, number];
+}
+
+/** 親のツモ和了時の支払い */
+export interface OyaTsumo {
+  type: "oyaTsumo";
+  /** 子全員が支払う点数（オール） */
+  amount: number;
+}
+
+/** 支払い情報 */
+export type Payment = Ron | KoTsumo | OyaTsumo;
 
 export interface ScoreResult {
   han: number;
   fu: number;
-  level: ScoreLevel;
-  points: ScorePayment;
+  // TODO: 切り上げ満貫対応時に ScoreLevel の追加を検討
+  payment: Payment;
 }
