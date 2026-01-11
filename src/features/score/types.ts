@@ -1,4 +1,19 @@
 import type { Fu, HaiKindId, Kazehai } from "../../types";
+import type { HouraContext } from "../yaku/types";
+
+/**
+ * 点数計算用コンテキスト (ScoreContext)
+ *
+ * HouraContext を拡張し、点数計算に必要な追加情報を持つ。
+ *
+ * HouraContext は役判定に特化しており、isOya は役の成立・翻数に影響しない。
+ * isOya は支払い計算（親ロン/子ロン、親ツモ/子ツモの倍率差）にのみ必要なため、
+ * 点数計算用のコンテキストとして分離している。
+ */
+export interface ScoreContext extends HouraContext {
+  /** 和了者が親かどうか */
+  readonly isOya: boolean;
+}
 
 export interface ScoreCalculationConfig {
   /** 和了牌 */

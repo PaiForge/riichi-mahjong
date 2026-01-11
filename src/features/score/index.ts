@@ -4,7 +4,6 @@ import { getHouraStructures } from "../yaku/lib/structures";
 import { ALL_YAKU_DEFINITIONS } from "../yaku/lib/definitions";
 import { calculateFu } from "./lib/fu";
 import type { FuResult } from "./lib/fu/types";
-import type { HouraContext } from "../yaku/types";
 import { isMenzen } from "../yaku/utils";
 import {
   BASE_SCORE_LIMIT,
@@ -21,6 +20,7 @@ import {
 } from "./constants";
 import type {
   ScoreCalculationConfig,
+  ScoreContext,
   ScoreResult,
   Payment,
   Ron,
@@ -72,6 +72,29 @@ export function getPaymentTotal(payment: Readonly<Payment>): number {
 }
 
 /**
+ * 点数計算用コンテキストを作成する
+ *
+ * @param tehai 手牌 (14枚)
+ * @param config 点数計算の設定
+ * @returns 点数計算用コンテキスト
+ */
+function createScoreContext(
+  tehai: Tehai14,
+  config: Readonly<ScoreCalculationConfig>,
+): ScoreContext {
+  return {
+    isMenzen: isMenzen(tehai),
+    agariHai: config.agariHai,
+    bakaze: config.bakaze,
+    jikaze: config.jikaze,
+    isTsumo: config.isTsumo,
+    isOya: config.jikaze === HaiKind.Ton,
+    doraMarkers: config.doraMarkers,
+    ...(config.uraDoraMarkers ? { uraDoraMarkers: config.uraDoraMarkers } : {}),
+  };
+}
+
+/**
  * 手牌とコンテキストから点数を計算する（公開API）
  *
  * 手牌の構造解析を行い、最も高点となる解釈を採用して点数を返します。
@@ -84,20 +107,7 @@ export function calculateScore(
   tehai: Tehai14,
   config: Readonly<ScoreCalculationConfig>,
 ): ScoreResult {
-  const menzen = isMenzen(tehai);
-  const isOya = config.jikaze === HaiKind.Ton;
-
-  const context: HouraContext & { isOya: boolean } = {
-    isMenzen: menzen,
-    agariHai: config.agariHai,
-    bakaze: config.bakaze,
-    jikaze: config.jikaze,
-    isTsumo: config.isTsumo,
-    isOya: isOya,
-    doraMarkers: config.doraMarkers,
-    ...(config.uraDoraMarkers ? { uraDoraMarkers: config.uraDoraMarkers } : {}),
-  };
-
+  const context = createScoreContext(tehai, config);
   const structuralInterpretations = getHouraStructures(tehai);
   let bestResult: ScoreResult | null = null;
   let maxTotalPoints = -1;
@@ -153,7 +163,7 @@ export function calculateBasicScore(
   yakuHansu: number,
   fuResult: Readonly<FuResult>,
   dora: number,
-  context: Readonly<HouraContext & { isOya: boolean }>,
+  context: Readonly<ScoreContext>,
 ): ScoreResult {
   const totalHan = yakuHansu + dora;
   const fu = fuResult.total;
