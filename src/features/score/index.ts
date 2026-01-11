@@ -19,14 +19,15 @@ import {
   SCORE_BASE_SANBAIMAN,
   SCORE_BASE_YAKUMAN,
 } from "./constants";
-import type {
-  ScoreCalculationConfig,
-  ScoreContext,
-  ScoreResult,
-  Payment,
-  Ron,
-  KoTsumo,
-  OyaTsumo,
+import {
+  ScoreLevel,
+  type ScoreCalculationConfig,
+  type ScoreContext,
+  type ScoreResult,
+  type Payment,
+  type Ron,
+  type KoTsumo,
+  type OyaTsumo,
 } from "./types";
 export type {
   ScoreCalculationConfig,
@@ -36,6 +37,7 @@ export type {
   KoTsumo,
   OyaTsumo,
 };
+export { ScoreLevel };
 
 /**
  * 100点単位で切り上げる
@@ -69,6 +71,60 @@ export function getPaymentTotal(payment: Readonly<Payment>): number {
       return payment.amount[0] * 2 + payment.amount[1];
     case "oyaTsumo":
       return payment.amount * 3;
+  }
+}
+
+/**
+ * 翻数と基本点から点数レベルを判定する
+ *
+ * @param han 翻数
+ * @param basePoints 基本点（符 × 2^(2+翻)）
+ * @returns 点数レベル
+ */
+export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
+  if (han >= 26) {
+    return ScoreLevel.DoubleYakuman;
+  }
+  if (han >= HAN_YAKUMAN) {
+    return ScoreLevel.Yakuman;
+  }
+  if (han >= HAN_SANBAIMAN) {
+    return ScoreLevel.Sanbaiman;
+  }
+  if (han >= HAN_BAIMAN) {
+    return ScoreLevel.Baiman;
+  }
+  if (han >= HAN_HANEMAN) {
+    return ScoreLevel.Haneman;
+  }
+  if (han >= HAN_MANGAN || basePoints >= BASE_SCORE_LIMIT) {
+    return ScoreLevel.Mangan;
+  }
+  return ScoreLevel.Normal;
+}
+
+/**
+ * 点数レベルに対応する基本点を取得する
+ *
+ * @param level 点数レベル
+ * @returns 基本点（Normal の場合は null）
+ */
+function getLimitBasePoints(level: ScoreLevel): number | null {
+  switch (level) {
+    case ScoreLevel.DoubleYakuman:
+      return SCORE_BASE_YAKUMAN * 2;
+    case ScoreLevel.Yakuman:
+      return SCORE_BASE_YAKUMAN;
+    case ScoreLevel.Sanbaiman:
+      return SCORE_BASE_SANBAIMAN;
+    case ScoreLevel.Baiman:
+      return SCORE_BASE_BAIMAN;
+    case ScoreLevel.Haneman:
+      return SCORE_BASE_HANEMAN;
+    case ScoreLevel.Mangan:
+      return SCORE_BASE_MANGAN;
+    case ScoreLevel.Normal:
+      return null;
   }
 }
 
@@ -169,65 +225,54 @@ export function calculateBasicScore(
   const totalHan = yakuHansu + dora;
   const fu = fuResult.total;
 
-  let basePoints = calculateBasePoints(fu, totalHan);
+  // 基本点の計算
+  const rawBasePoints = calculateBasePoints(fu, totalHan);
 
-  // 満貫以上の判定
-  // 5翻以上 は満貫確定
-  // 4翻以下でも 基本点が2000を超えたら満貫 (切り上げ満貫採用なら1920->2000)
-  // ここでは厳密な計算 (2000以上) とする。※30符4翻は1920なのでNormal、60符3翻は1920、70符3翻(2240)は満貫
-  // TODO: 切り上げ満貫対応時に ScoreLevel の追加を検討
-  if (totalHan >= HAN_YAKUMAN) {
-    // 役満（数え役満）
-    // ダブル役満等は呼び出し元でHandを判定して Han=26 とかに固定して渡してもらう想定
-    // またはHan=13以上はすべてYakumanとして扱う（シングル）
-    // ここでは13以上をYakuman、26以上をDoubleとする簡易判定を入れる
-    if (totalHan >= 26) {
-      basePoints = SCORE_BASE_YAKUMAN * 2;
-    } else {
-      basePoints = SCORE_BASE_YAKUMAN;
-    }
-  } else if (totalHan >= HAN_SANBAIMAN) {
-    basePoints = SCORE_BASE_SANBAIMAN;
-  } else if (totalHan >= HAN_BAIMAN) {
-    basePoints = SCORE_BASE_BAIMAN;
-  } else if (totalHan >= HAN_HANEMAN) {
-    basePoints = SCORE_BASE_HANEMAN;
-  } else if (totalHan >= HAN_MANGAN || basePoints >= BASE_SCORE_LIMIT) {
-    basePoints = SCORE_BASE_MANGAN;
-  }
+  // 点数レベルの判定
+  const scoreLevel = getScoreLevel(totalHan, rawBasePoints);
+
+  // 満貫以上なら固定の基本点、それ以外は計算値を使用
+  const basePoints = getLimitBasePoints(scoreLevel) ?? rawBasePoints;
 
   // 支払い計算
-  let payment: Payment;
+  const payment = calculatePayment(basePoints, context);
 
+  return {
+    han: totalHan,
+    fu: fu,
+    scoreLevel,
+    payment,
+  };
+}
+
+/**
+ * 基本点から支払い情報を計算する
+ */
+function calculatePayment(
+  basePoints: number,
+  context: Readonly<ScoreContext>,
+): Payment {
   if (context.isTsumo) {
     if (context.isOya) {
       // 親ツモ: オール (基本点 * 2)
       const allPay = ceil100(basePoints * 2);
-      payment = { type: "oyaTsumo", amount: allPay };
+      return { type: "oyaTsumo", amount: allPay };
     } else {
-      // 子ツモ
-      // 親の支払い: 基本点 * 2
-      // 子の支払い: 基本点 * 1
+      // 子ツモ: 親の支払い = 基本点 * 2, 子の支払い = 基本点 * 1
       const parentPay = ceil100(basePoints * 2);
       const childPay = ceil100(basePoints * 1);
-      payment = { type: "koTsumo", amount: [childPay, parentPay] };
+      return { type: "koTsumo", amount: [childPay, parentPay] };
     }
   } else {
     // ロン和了
     if (context.isOya) {
       // 親ロン: 基本点 * 6
       const pay = ceil100(basePoints * 6);
-      payment = { type: "ron", amount: pay };
+      return { type: "ron", amount: pay };
     } else {
       // 子ロン: 基本点 * 4
       const pay = ceil100(basePoints * 4);
-      payment = { type: "ron", amount: pay };
+      return { type: "ron", amount: pay };
     }
   }
-
-  return {
-    han: totalHan,
-    fu: fu,
-    payment,
-  };
 }

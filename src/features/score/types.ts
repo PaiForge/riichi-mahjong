@@ -54,9 +54,34 @@ export interface OyaTsumo {
 /** 支払い情報 */
 export type Payment = Ron | KoTsumo | OyaTsumo;
 
+/**
+ * 点数レベル (ScoreLevel)
+ *
+ * 翻数と基本点から決まる点数の区分。
+ * 満貫以上では符に関係なく固定の基本点が適用される。
+ */
+export const ScoreLevel = {
+  /** 満貫未満（通常計算） */
+  Normal: "Normal",
+  /** 満貫（5翻、または基本点2000以上） */
+  Mangan: "Mangan",
+  /** 跳満（6-7翻） */
+  Haneman: "Haneman",
+  /** 倍満（8-10翻） */
+  Baiman: "Baiman",
+  /** 三倍満（11-12翻） */
+  Sanbaiman: "Sanbaiman",
+  /** 役満（13翻以上） */
+  Yakuman: "Yakuman",
+  /** ダブル役満（26翻以上、または役満複合） */
+  DoubleYakuman: "DoubleYakuman",
+} as const;
+
+export type ScoreLevel = (typeof ScoreLevel)[keyof typeof ScoreLevel];
+
 export interface ScoreResult {
   han: number;
   fu: Fu;
-  // TODO: 切り上げ満貫対応時に ScoreLevel の追加を検討
+  scoreLevel: ScoreLevel;
   payment: Payment;
 }
