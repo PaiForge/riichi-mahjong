@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { spawnSync } from "child_process";
 import { resolve } from "path";
 import {
-  calculateScore,
+  calculateScoreForTehai,
   getPaymentTotal,
   type ScoreCalculationConfig,
 } from "../../src/features/score";
@@ -163,7 +163,7 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
         const tehai14 = createTehai(fullMspz);
 
         // 3. 点数の計算 (統合APIを使用)
-        const score = calculateScore(tehai14, config);
+        const score = calculateScoreForTehai(tehai14, config);
 
         // アサーション
         // Python出力: `han`, `fu`, `points` (total cost?) または `cost` 辞書。

@@ -2,7 +2,7 @@ import { type Tehai14, type Fu, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
 import { countDora } from "../../core/dora";
 import { getHouraStructures } from "../yaku/lib/structures";
-import { ALL_YAKU_DEFINITIONS } from "../yaku/lib/definitions";
+import { detectYakuForStructure } from "../yaku";
 import { calculateFu } from "./lib/fu";
 import type { FuResult } from "./lib/fu/types";
 import { isMenzen } from "../yaku/utils";
@@ -156,6 +156,9 @@ function createScoreContext(
  *
  * 手牌の構造解析を行い、最も高点となる解釈を採用して点数を返します。
  *
+ * 注: 同一手牌で「翻数が高いが符が低い解釈」と「翻数が低いが符が高い解釈」が
+ * 両立するケースは実質的に存在しないため、翻数最大の解釈を採用しています。
+ *
  * @param tehai 手牌 (14枚)
  * @param config 点数計算の設定 (場風、自風、ドラなど)
  * @returns 点数計算結果
@@ -171,32 +174,20 @@ export function calculateScoreForTehai(
 
   for (const hand of structuralInterpretations) {
     // 1. 役の判定
-    let yakuHansu = 0;
-    let isPinfu = false;
-
-    for (const definition of ALL_YAKU_DEFINITIONS) {
-      if (definition.isSatisfied(hand, context)) {
-        const h = definition.getHansu(hand, context);
-        if (h > 0) {
-          yakuHansu += h;
-          if (definition.yaku.name === "Pinfu") {
-            isPinfu = true;
-          }
-        }
-      }
-    }
+    const yakuResult = detectYakuForStructure(hand, context);
+    const yakuHansu = yakuResult.reduce((sum, [, han]) => sum + han, 0);
 
     // 役がない場合はこの構造は不成立
     if (yakuHansu === 0) continue;
 
     // 2. 符の計算
+    const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
     const fuResult = calculateFu(hand, context, isPinfu);
 
     // 3. ドラの計算
-    // context.doraMarkers にドラ表示牌が入っている前提
     const dora = countDora(tehai, context.doraMarkers);
 
-    // 4. 点数計算 (基本計算)
+    // 4. 点数計算
     const result = calculateScoreFromHanAndFu(
       yakuHansu,
       fuResult,
