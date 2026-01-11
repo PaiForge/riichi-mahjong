@@ -81,6 +81,39 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
     });
   });
 
+  describe("4枚使い切り", () => {
+    it("4枚使い切った牌種は有効牌に含まれないこと", () => {
+      // 123m 456s 11p 22z 333m
+      // 3mは4枚使い切り（123mの1枚 + 333mの3枚）
+      // シャンポン待ち: 1p, 2z
+      // 3mはシャンテンを進める可能性があっても、山に残っていないため有効牌ではない
+      const tehai = createTehai("123m456s11p22z333m");
+      const ukeire = getUkeire(tehai);
+
+      // 3mが有効牌に含まれていないことを確認
+      expect(ukeire).not.toContain(HaiKind.ManZu3);
+
+      // 正しい有効牌（1p, 2z）が含まれていることを確認
+      const expected = createHaiKindIds("1p2z");
+      expect(ukeire).toEqual(expect.arrayContaining(expected));
+      expect(ukeire).toHaveLength(2);
+    });
+
+    it("複数の牌種が4枚使い切りでも正しく処理されること", () => {
+      // 1111m 2222p 345s 11z (13枚: 4+4+3+2=13)
+      // 1mと2pが4枚使い切り、単騎待ち: 1z
+      const tehai = createTehai("1111m2222p345s11z");
+      const ukeire = getUkeire(tehai);
+
+      // 4枚使い切った牌は有効牌に含まれない
+      expect(ukeire).not.toContain(HaiKind.ManZu1);
+      expect(ukeire).not.toContain(HaiKind.PinZu2);
+
+      // 正しい有効牌（1z単騎）が含まれていることを確認
+      expect(ukeire).toContain(HaiKind.Ton);
+    });
+  });
+
   describe("その他", () => {
     it("国士無双などの特殊役は対象外（今回は面子手のみ）", () => {
       const tehai = createTehai("19m19p19s123456z1m");
