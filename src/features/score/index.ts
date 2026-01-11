@@ -46,6 +46,12 @@ function ceil100(points: number): number {
 /**
  * 基本点を計算する
  * 基本点 = 符 × 2^(2+翻)
+ *
+ * 基本点は子がツモ和了したときの他の子1人あたりの支払い点数に相当する。
+ * - 子ツモ: 子の支払い = 基本点, 親の支払い = 基本点 × 2
+ * - 子ロン: 支払い = 基本点 × 4
+ * - 親ツモ: 各子の支払い = 基本点 × 2
+ * - 親ロン: 支払い = 基本点 × 6
  */
 export function calculateBasePoints(fu: number, han: number): number {
   return fu * Math.pow(2, 2 + han);
