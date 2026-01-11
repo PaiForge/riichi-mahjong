@@ -1,4 +1,5 @@
 import { type Tehai14, type Fu, HaiKind } from "../../types";
+import { NoYakuError } from "../../errors";
 import { countDora } from "../../core/dora";
 import { getHouraStructures } from "../yaku/lib/structures";
 import { ALL_YAKU_DEFINITIONS } from "../yaku/lib/definitions";
@@ -150,7 +151,7 @@ export function calculateScore(
   }
 
   if (!bestResult) {
-    throw new Error("役が成立していません (No Yaku found)");
+    throw new NoYakuError();
   }
 
   return bestResult;

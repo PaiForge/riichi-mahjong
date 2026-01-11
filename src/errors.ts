@@ -95,3 +95,38 @@ export class InvalidHaiQuantityError extends MahjongError {
     Object.setPrototypeOf(this, InvalidHaiQuantityError.prototype);
   }
 }
+
+/**
+ * チョンボ（錯和）の基底エラークラス
+ *
+ * 不正な和了宣言に関するエラーの基底クラス。
+ * 具体的なチョンボ種別（役なし、フリテン等）はサブクラスで定義する。
+ */
+export class ChomboError extends MahjongError {
+  /**
+   *
+   */
+  constructor(message = "不正な和了です。") {
+    super(message);
+    this.name = "ChomboError";
+
+    Object.setPrototypeOf(this, ChomboError.prototype);
+  }
+}
+
+/**
+ * 役なし和了のエラー
+ *
+ * 和了形は成立しているが、役が一つも成立していない場合にスローされます。
+ */
+export class NoYakuError extends ChomboError {
+  /**
+   *
+   */
+  constructor(message = "役が成立していません。") {
+    super(message);
+    this.name = "NoYakuError";
+
+    Object.setPrototypeOf(this, NoYakuError.prototype);
+  }
+}

@@ -43,6 +43,8 @@ export {
   MahjongArgumentError,
   DuplicatedHaiIdError,
   InvalidHaiQuantityError,
+  ChomboError,
+  NoYakuError,
 } from "./errors";
 
 // =============================================================================
