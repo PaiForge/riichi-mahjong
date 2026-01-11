@@ -21,14 +21,17 @@ export type {
   Mentsu,
   IncompletedMentsu,
   Kazehai,
+  Fu,
 } from "./types";
 export type { YakuResult, YakuName, Hansu } from "./features/yaku";
 export type {
   ScoreResult,
-  ScoreLevel,
-  ScorePayment,
   ScoreCalculationConfig,
-} from "./features/points/types";
+  Payment,
+  Ron,
+  KoTsumo,
+  OyaTsumo,
+} from "./features/score/types";
 
 // =============================================================================
 // Errors
@@ -40,6 +43,8 @@ export {
   MahjongArgumentError,
   DuplicatedHaiIdError,
   InvalidHaiQuantityError,
+  ChomboError,
+  NoYakuError,
 } from "./errors";
 
 // =============================================================================
@@ -104,6 +109,6 @@ export { parseMspz, parseExtendedMspz } from "./features/parser";
 export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 
 // =============================================================================
-// Features - Points
+// Features - Score
 // =============================================================================
-export { calculateScore } from "./features/points";
+export { calculateScoreForTehai, getPaymentTotal } from "./features/score";

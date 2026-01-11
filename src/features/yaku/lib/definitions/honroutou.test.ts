@@ -69,8 +69,8 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   });
 
   it("字牌が含まれない場合は不成立（清老頭）", () => {
-    // 111m 999p 111s 999s 11m (11mがNG)
-    const tehai = createTehai("111m999p111s999s11m");
+    // 111m 999p 111s 999s 99m (字牌がないのでNG)
+    const tehai = createTehai("111m999p111s999s99m");
     const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 

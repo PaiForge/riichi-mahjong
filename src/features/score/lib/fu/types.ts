@@ -1,3 +1,5 @@
+import type { Fu } from "../../../../types";
+
 /**
  * 符の構成要素 (FuDetails)
  *
@@ -52,7 +54,7 @@ export interface FuResult {
    * 内訳の合計を10符単位で切り上げたもの。
    * (例: 22符 -> 30符)
    */
-  readonly total: number;
+  readonly total: Fu;
 
   /**
    * 計算の内訳

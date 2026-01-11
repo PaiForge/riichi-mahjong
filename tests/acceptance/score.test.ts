@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import { spawnSync } from "child_process";
 import { resolve } from "path";
 import {
-  calculateScore,
+  calculateScoreForTehai,
+  getPaymentTotal,
   type ScoreCalculationConfig,
-} from "../../src/features/points";
+} from "../../src/features/score";
 import { createTehai } from "../../src/utils/test-helpers";
 import { HaiKind } from "../../src/types";
 
@@ -162,7 +163,7 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
         const tehai14 = createTehai(fullMspz);
 
         // 3. 点数の計算 (統合APIを使用)
-        const score = calculateScore(tehai14, config);
+        const score = calculateScoreForTehai(tehai14, config);
 
         // アサーション
         // Python出力: `han`, `fu`, `points` (total cost?) または `cost` 辞書。
@@ -184,7 +185,7 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
 
         expect(score.han).toBe(expected.han);
         expect(score.fu).toBe(expected.fu);
-        expect(score.points.total).toBe(pyTotal);
+        expect(getPaymentTotal(score.payment)).toBe(pyTotal);
       });
     } else {
       // 期待値が取得できない場合のフォールバック（通常ありえないが）
