@@ -21,6 +21,7 @@ export type {
   Mentsu,
   IncompletedMentsu,
   Kazehai,
+  Fu,
 } from "./types";
 export type { YakuResult, YakuName, Hansu } from "./features/yaku";
 export type {

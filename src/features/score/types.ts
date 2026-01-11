@@ -1,4 +1,4 @@
-import type { HaiKindId, Kazehai } from "../../types";
+import type { Fu, HaiKindId, Kazehai } from "../../types";
 
 export interface ScoreCalculationConfig {
   /** 和了牌 */
@@ -41,7 +41,7 @@ export type Payment = Ron | KoTsumo | OyaTsumo;
 
 export interface ScoreResult {
   han: number;
-  fu: number;
+  fu: Fu;
   // TODO: 切り上げ満貫対応時に ScoreLevel の追加を検討
   payment: Payment;
 }

@@ -1,4 +1,4 @@
-import { type Tehai14, HaiKind } from "../../types";
+import { type Tehai14, type Fu, HaiKind } from "../../types";
 import { countDora } from "../../core/dora";
 import { getHouraStructures } from "../yaku/lib/structures";
 import { ALL_YAKU_DEFINITIONS } from "../yaku/lib/definitions";
@@ -53,7 +53,7 @@ function ceil100(points: number): number {
  * - 親ツモ: 各子の支払い = 基本点 × 2
  * - 親ロン: 支払い = 基本点 × 6
  */
-export function calculateBasePoints(fu: number, han: number): number {
+export function calculateBasePoints(fu: Fu, han: number): number {
   return fu * Math.pow(2, 2 + han);
 }
 
