@@ -21,8 +21,8 @@ describe("三槓子（サンカンツ）の判定", () => {
     // 現状の createTehai は `[1111m]` で明槓を作る。
     // 三槓子は副露していても成立するので、明槓でテストする。
 
-    // [1111m], [2222p], [3333s], 123m, 99p
-    const tehai = createTehai("123m99p[1111m][2222p][3333s]");
+    // [1111m], [2222p], [3333s], 789m, 99p
+    const tehai = createTehai("789m99p[1111m][2222p][3333s]");
     const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
@@ -31,8 +31,8 @@ describe("三槓子（サンカンツ）の判定", () => {
   });
 
   it("槓子が2つしかない場合は不成立", () => {
-    // [1111m], [2222p], 333s, 123m, 99p
-    const tehai = createTehai("123m99p333s[1111m][2222p]");
+    // [1111m], [2222p], 333s, 789m, 99p
+    const tehai = createTehai("789m99p333s[1111m][2222p]");
     const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 

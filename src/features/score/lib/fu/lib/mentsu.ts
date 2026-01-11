@@ -2,7 +2,7 @@ import type { FuResult } from "../types";
 import type { HouraContext } from "../../../../yaku/types";
 import type { MentsuHouraStructure } from "../../../../yaku/types";
 import { isYaochu } from "../../../../../core/hai";
-import { HaiKind } from "../../../../../types";
+import { HaiKind, type Fu } from "../../../../../types";
 import { classifyMachi } from "../../../../../core/machi";
 import {
   FU_BASE,
@@ -14,6 +14,22 @@ import {
   FU_PINFU_TSUMO,
   FU_OPEN_PINFU_GLAZE,
 } from "../constants";
+
+/** 有効な符の値 */
+const VALID_FU_VALUES: readonly Fu[] = [
+  20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110,
+];
+
+/**
+ * 数値を Fu 型に変換する（無効な値の場合はエラー）
+ */
+function toFu(value: number): Fu {
+  const fu = VALID_FU_VALUES.find((f) => f === value);
+  if (fu === undefined) {
+    throw new Error(`Invalid fu value: ${value}`);
+  }
+  return fu;
+}
 
 /**
  * 面子手の符を計算する
@@ -144,7 +160,7 @@ export function calculateMentsuFu(
   }
 
   return {
-    total: sum,
+    total: toFu(sum),
     details,
   };
 }

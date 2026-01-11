@@ -25,8 +25,8 @@ describe("四槓子（スーカンツ）の判定", () => {
   });
 
   it("槓子が3つ以下の場合は不成立", () => {
-    // [1111m], [2222p], [3333s], 123m, 99p
-    const tehai = createTehai("123m99p[1111m][2222p][3333s]");
+    // [1111m], [2222p], [3333s], 789m, 99p
+    const tehai = createTehai("789m99p[1111m][2222p][3333s]");
     const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 

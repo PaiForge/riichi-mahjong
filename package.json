@@ -1,6 +1,6 @@
 {
   "name": "@pai-forge/riichi-mahjong",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -24,7 +24,8 @@
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mahjong",

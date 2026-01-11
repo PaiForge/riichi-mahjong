@@ -56,14 +56,14 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
-  describe("calculateScore", () => {
+  describe("calculateScoreForTehai", () => {
     it("関数としてエクスポートされていること", () => {
-      expect(PublicApi.calculateScore).toBeDefined();
-      expect(typeof PublicApi.calculateScore).toBe("function");
+      expect(PublicApi.calculateScoreForTehai).toBeDefined();
+      expect(typeof PublicApi.calculateScoreForTehai).toBe("function");
     });
 
     it("期待される型シグネチャを満たすこと", () => {
-      PublicApi.calculateScore satisfies (
+      PublicApi.calculateScoreForTehai satisfies (
         tehai: PublicApi.Tehai14,
         config: PublicApi.ScoreCalculationConfig,
       ) => PublicApi.ScoreResult;

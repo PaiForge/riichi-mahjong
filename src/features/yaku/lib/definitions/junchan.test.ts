@@ -58,8 +58,8 @@ describe("純全帯幺九（ジュンチャン）の判定", () => {
   });
 
   it("順子が含まれない場合は不成立（清老頭になるため）", () => {
-    // 111m 999p 111s 999s 11m
-    const tehai = createTehai("111m999p111s999s11m");
+    // 111m 999p 111s 999s 99m
+    const tehai = createTehai("111m999p111s999s99m");
     const hands = getHouraStructuresForMentsuTe(tehai);
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
