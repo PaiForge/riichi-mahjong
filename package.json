@@ -1,6 +1,6 @@
 {
   "name": "@pai-forge/riichi-mahjong",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -10,9 +10,12 @@
     "url": "git+https://github.com/PaiForge/riichi-mahjong.git"
   },
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "files": [
     "dist"
@@ -20,7 +23,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "vitest src",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "vite build",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
@@ -46,6 +49,8 @@
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.0",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.15"
   },
   "engines": {
