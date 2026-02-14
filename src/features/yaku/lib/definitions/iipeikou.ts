@@ -29,38 +29,22 @@ const checkIipeikou = (hand: HouraStructure): boolean => {
     return false;
   }
 
-  // 同じ順子が2つあるか探す
-  // haisの内容比較が必要。Shuntsu.haisはソート済みであることを前提とするか、
-  // ここで比較用キーを作って判定する。
-  // ライブラリの仕様としてShuntsuのhaisは [T, T, T] だが順序保証は型定義上は明示されていないものの、
-  // 一般的な実装として昇順になっているはず。
-  // 安全のため、各順子の牌をソートした文字列などをキーにして比較する。
-  // ただし、Shuntsu定義上 [T, T, T] で、順子である以上連続しているため、
-  // 先頭の牌（最小の牌）が同じで、種類（萬子/筒子/索子）が同じなら同一順子とみなせる。
-  // しかし HaiKindId の単純な数値比較で十分。
-  // 例えば 1m, 2m, 3m の順子は [0, 1, 2]。
-  // 順子の構成牌IDが完全一致するかどうかを見れば良い。
-
-  for (let i = 0; i < shuntsuList.length; i++) {
-    for (let j = i + 1; j < shuntsuList.length; j++) {
-      const shuntsuA = shuntsuList[i];
-      const shuntsuB = shuntsuList[j];
-
-      if (!shuntsuA || !shuntsuB) continue;
-
-      // 牌のID列が完全に一致するか
-      const isSame =
-        shuntsuA.hais[0] === shuntsuB.hais[0] &&
-        shuntsuA.hais[1] === shuntsuB.hais[1] &&
-        shuntsuA.hais[2] === shuntsuB.hais[2];
-
-      if (isSame) {
-        return true;
-      }
-    }
+  // 同一順子のペア数をカウントする
+  // 二盃口（ペア数 >= 2）の場合は上位互換のため一盃口不成立
+  const shuntsuCounts = new Map<number, number>();
+  for (const shuntsu of shuntsuList) {
+    const key = shuntsu.hais[0];
+    const currentCount = shuntsuCounts.get(key) ?? 0;
+    shuntsuCounts.set(key, currentCount + 1);
   }
 
-  return false;
+  let pairCount = 0;
+  for (const count of shuntsuCounts.values()) {
+    pairCount += Math.floor(count / 2);
+  }
+
+  // 一盃口: ちょうど1ペア（二盃口の除外）
+  return pairCount === 1;
 };
 
 export const iipeikouDefinition: YakuDefinition = createYakuDefinition(
