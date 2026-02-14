@@ -117,6 +117,21 @@ describe("二盃口（リャンペーコー）の判定", () => {
     expect(hasRyanpeikou).toBe(false);
   });
 
+  it("一盃口のみの手牌では二盃口が成立しないこと", () => {
+    // 112233m 456p 55s 789s（一盃口のみ）
+    const tehai = createTehai("112233m456p55789s");
+    const hands = getHouraStructuresForMentsuTe(tehai);
+
+    const hasRyanpeikou = hands.some((hand) =>
+      ryanpeikouDefinition.isSatisfied(
+        hand as unknown as MentsuHouraStructure,
+        mockContextMenzen,
+      ),
+    );
+
+    expect(hasRyanpeikou).toBe(false);
+  });
+
   it("七対子の構造として解釈された場合は不成立", () => {
     // 112233m 445566p 99s
     // 二盃口の形だが、七対子として解釈された構造オブジェクトに対してはfalseを返す

@@ -6,10 +6,10 @@ import {
 } from "./index";
 import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
-import { HaiKind } from "../../types";
+import { type Fu, HaiKind } from "../../types";
 
 describe("calculateScoreFromHanAndFu", () => {
-  const mockFuResult = (fu: number): FuResult => ({
+  const mockFuResult = (fu: Fu): FuResult => ({
     total: fu,
     details: { base: 20, mentsu: 0, jantou: 0, machi: 0, agari: 0 },
   });
