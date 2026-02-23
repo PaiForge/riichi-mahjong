@@ -1,6 +1,7 @@
 import { type Tehai14, type Fu, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
 import { countDora } from "../../core/dora";
+import { classifyMachi } from "../../core/machi";
 import { getHouraStructures } from "../yaku/lib/structures";
 import { detectYakuForStructure } from "../yaku";
 import { calculateFu } from "./lib/fu";
@@ -24,6 +25,7 @@ import {
   type ScoreCalculationConfig,
   type ScoreContext,
   type ScoreResult,
+  type ScoreDetail,
   type Payment,
   type Ron,
   type KoTsumo,
@@ -32,6 +34,7 @@ import {
 export type {
   ScoreCalculationConfig,
   ScoreResult,
+  ScoreDetail,
   Payment,
   Ron,
   KoTsumo,
@@ -198,7 +201,17 @@ export function calculateScoreForTehai(
 
     if (total > maxTotalPoints) {
       maxTotalPoints = total;
-      bestResult = result;
+      // 最高得点の構造が確定した時点で、その構造に紐づく詳細情報を保持する。
+      // 利用側が符の内訳を表示する際に、ライブラリと同じ構造解釈を
+      // 参照できるようにするため。
+      const machiType = classifyMachi(hand, context.agariHai);
+      const detail: ScoreDetail = {
+        structure: hand,
+        machiType,
+        fuResult,
+        yakuResult,
+      };
+      bestResult = { ...result, detail };
     }
   }
 
