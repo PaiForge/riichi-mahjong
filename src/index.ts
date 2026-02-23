@@ -29,7 +29,7 @@ export type {
   MentsuHouraStructure,
   ChiitoitsuHouraStructure,
   KokushiHouraStructure,
-} from "./features/yaku/types";
+} from "./types";
 export type { FuResult, FuDetails } from "./features/score/lib/fu/types";
 export type {
   ScoreResult,
@@ -53,6 +53,7 @@ export {
   InvalidHaiQuantityError,
   ChomboError,
   NoYakuError,
+  MspzParseError,
 } from "./errors";
 
 // =============================================================================

@@ -1,9 +1,10 @@
 import type { FuResult } from "../types";
+import type { MentsuHouraStructure } from "../../../../../types";
 import type { HouraContext } from "../../../../yaku/types";
-import type { MentsuHouraStructure } from "../../../../yaku/types";
 import { isYaochu } from "../../../../../core/hai";
 import { HaiKind, type Fu } from "../../../../../types";
 import { classifyMachi } from "../../../../../core/machi";
+import { MahjongError } from "../../../../../errors";
 import {
   FU_BASE,
   FU_KOUTSU,
@@ -26,7 +27,7 @@ const VALID_FU_VALUES: readonly Fu[] = [
 function toFu(value: number): Fu {
   const fu = VALID_FU_VALUES.find((f) => f === value);
   if (fu === undefined) {
-    throw new Error(`Invalid fu value: ${value}`);
+    throw new MahjongError(`Invalid fu value: ${value}`);
   }
   return fu;
 }

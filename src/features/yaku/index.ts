@@ -16,6 +16,7 @@ export type {
   Yakuhai,
 } from "./types";
 export * from "./lib";
+export { getHouraStructures } from "./lib/structures";
 
 /**
  * 役満の翻数閾値

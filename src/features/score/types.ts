@@ -1,5 +1,5 @@
-import type { Fu, HaiKindId, Kazehai } from "../../types";
-import type { HouraContext, HouraStructure, YakuResult } from "../yaku/types";
+import type { Fu, HaiKindId, Kazehai, HouraStructure } from "../../types";
+import type { HouraContext, YakuResult } from "../yaku/types";
 import type { MachiType } from "../../core/machi";
 import type { FuResult } from "./lib/fu/types";
 

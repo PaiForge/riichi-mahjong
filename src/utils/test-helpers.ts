@@ -15,8 +15,13 @@ import {
 } from "../features/parser";
 import { isValidShuntsu } from "../core/mentsu";
 import { isTuple2, isTuple3 } from "./assertions";
-import type { Shuntsu, Koutsu, Toitsu, CompletedMentsu } from "../types";
-import type { HouraStructure } from "../features/yaku/types";
+import type {
+  Shuntsu,
+  Koutsu,
+  Toitsu,
+  CompletedMentsu,
+  HouraStructure,
+} from "../types";
 
 /**
  * テスト用の Tehai13 オブジェクトを作成します。

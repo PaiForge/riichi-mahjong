@@ -2,8 +2,7 @@ import { type Tehai14, type Fu, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
 import { countDora } from "../../core/dora";
 import { classifyMachi } from "../../core/machi";
-import { getHouraStructures } from "../yaku/lib/structures";
-import { detectYakuForStructure } from "../yaku";
+import { getHouraStructures, detectYakuForStructure } from "../yaku";
 import { calculateFu } from "./lib/fu";
 import type { FuResult } from "./lib/fu/types";
 import { isMenzen } from "../yaku/utils";
@@ -110,9 +109,9 @@ export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
  * 点数レベルに対応する基本点を取得する
  *
  * @param level 点数レベル
- * @returns 基本点（Normal の場合は null）
+ * @returns 基本点（Normal の場合は undefined）
  */
-function getLimitBasePoints(level: ScoreLevel): number | null {
+function getLimitBasePoints(level: ScoreLevel): number | undefined {
   switch (level) {
     case ScoreLevel.DoubleYakuman:
       return SCORE_BASE_YAKUMAN * 2;
@@ -127,7 +126,7 @@ function getLimitBasePoints(level: ScoreLevel): number | null {
     case ScoreLevel.Mangan:
       return SCORE_BASE_MANGAN;
     case ScoreLevel.Normal:
-      return null;
+      return undefined;
   }
 }
 
@@ -172,7 +171,7 @@ export function calculateScoreForTehai(
 ): ScoreResult {
   const context = createScoreContext(tehai, config);
   const structuralInterpretations = getHouraStructures(tehai);
-  let bestResult: ScoreResult | null = null;
+  let bestResult: ScoreResult | undefined = undefined;
   let maxTotalPoints = -1;
 
   for (const hand of structuralInterpretations) {

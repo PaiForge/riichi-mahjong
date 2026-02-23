@@ -6,10 +6,21 @@ import type {
   Kantsu,
   Toitsu,
   Mentsu,
-  CompletedMentsu,
+  HouraStructure,
+  MentsuHouraStructure,
+  ChiitoitsuHouraStructure,
+  KokushiHouraStructure,
 } from "../../types";
 
 export type { Kazehai, Shuntsu, Koutsu, Kantsu, Toitsu, Mentsu };
+
+// 後方互換性のため src/types.ts から再エクスポート
+export type {
+  HouraStructure,
+  MentsuHouraStructure,
+  ChiitoitsuHouraStructure,
+  KokushiHouraStructure,
+};
 
 /**
  * 役牌 (Yakuhai)
@@ -62,43 +73,6 @@ export type TehaiYaku =
  * 1, 2, 3, 5(流し満貫/清一色喰い下がり), 6(清一色), 13(役満), 26(ダブル役満)
  */
 export type Hansu = 1 | 2 | 3 | 5 | 6 | 13 | 26;
-
-export interface MentsuHouraStructure {
-  readonly type: "Mentsu";
-  readonly fourMentsu: readonly [
-    CompletedMentsu,
-    CompletedMentsu,
-    CompletedMentsu,
-    CompletedMentsu,
-  ];
-  readonly jantou: Toitsu;
-}
-
-export interface ChiitoitsuHouraStructure {
-  readonly type: "Chiitoitsu";
-  readonly pairs: readonly [
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-  ];
-}
-
-export interface KokushiHouraStructure {
-  readonly type: "Kokushi";
-  /** 13種類の么九牌（重複なし） */
-  readonly yaochu: readonly HaiKindId[];
-  /** 雀頭となる牌の種類 */
-  readonly jantou: HaiKindId;
-}
-
-export type HouraStructure =
-  | MentsuHouraStructure
-  | ChiitoitsuHouraStructure
-  | KokushiHouraStructure;
 
 /**
  * 役の翻数定義

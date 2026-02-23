@@ -130,3 +130,20 @@ export class NoYakuError extends ChomboError {
     Object.setPrototypeOf(this, NoYakuError.prototype);
   }
 }
+
+/**
+ * MSPZ文字列の解析エラー
+ *
+ * MSPZ形式の文字列が不正な場合にスローされます。
+ */
+export class MspzParseError extends MahjongError {
+  /**
+   *
+   */
+  constructor(message = "MSPZ文字列の解析に失敗しました。") {
+    super(message);
+    this.name = "MspzParseError";
+
+    Object.setPrototypeOf(this, MspzParseError.prototype);
+  }
+}
