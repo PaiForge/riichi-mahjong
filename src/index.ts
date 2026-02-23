@@ -25,7 +25,15 @@ export type {
 } from "./types";
 export type { YakuResult, YakuName, Hansu } from "./features/yaku";
 export type {
+  HouraStructure,
+  MentsuHouraStructure,
+  ChiitoitsuHouraStructure,
+  KokushiHouraStructure,
+} from "./features/yaku/types";
+export type { FuResult, FuDetails } from "./features/score/lib/fu/types";
+export type {
   ScoreResult,
+  ScoreDetail,
   ScoreCalculationConfig,
   Payment,
   Ron,
