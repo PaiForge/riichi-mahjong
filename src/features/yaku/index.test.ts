@@ -15,7 +15,11 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
       const hand = createTehai("234m234p234s678s88p");
       const agari = getHaiKindId("8s");
 
-      const result = detectYaku(hand, agari, HaiKind.Ton, HaiKind.Nan);
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+      });
 
       // Tanyao (1) + Pinfu (1)
       expect(result).toContainEqual(["Tanyao", 1]);
@@ -29,7 +33,11 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
       const hand = createTehai("223344m223344p55z");
       const agari = getHaiKindId("2m");
 
-      const result = detectYaku(hand, agari, HaiKind.Ton, HaiKind.Nan);
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+      });
 
       expect(result).toContainEqual(["Ryanpeikou", 3]);
       // 七対子は含まれないはず（面子手として解釈されたため）
@@ -42,7 +50,11 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
       const hand = createTehai("11m33m55m77m99m11z22z");
       const agari = getHaiKindId("1m");
 
-      const result = detectYaku(hand, agari, HaiKind.Ton, HaiKind.Nan);
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+      });
 
       expect(result).toContainEqual(["Chiitoitsu", 2]);
       expect(result).toContainEqual(["Honitsu", 3]); // 混一色は食い下がりあるが、七対子は門前役なので3翻のはず
@@ -54,7 +66,11 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
       const hand = createTehai("19m19p19s1234567z1m");
       const agari = getHaiKindId("1m");
 
-      const result = detectYaku(hand, agari, HaiKind.Ton, HaiKind.Nan);
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+      });
 
       expect(result).toContainEqual(["KokushiMusou", 13]);
     });

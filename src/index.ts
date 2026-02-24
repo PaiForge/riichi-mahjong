@@ -23,7 +23,12 @@ export type {
   Kazehai,
   Fu,
 } from "./types";
-export type { YakuResult, YakuName, Hansu } from "./features/yaku";
+export type {
+  YakuResult,
+  YakuName,
+  Hansu,
+  DetectYakuConfig,
+} from "./features/yaku";
 export type {
   HouraStructure,
   MentsuHouraStructure,
@@ -71,7 +76,13 @@ export {
 // =============================================================================
 // Core - Tehai (Hand) Validation
 // =============================================================================
-export { validateTehai, isTehai13, isTehai14 } from "./core/tehai";
+export {
+  validateTehai,
+  assertTehai13,
+  assertTehai14,
+  isTehai13,
+  isTehai14,
+} from "./core/tehai";
 
 // =============================================================================
 // Core - Mentsu (Meld) Validation

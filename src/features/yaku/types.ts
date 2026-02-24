@@ -106,6 +106,27 @@ export type YakuName = TehaiYaku;
  */
 export type YakuResult = readonly [YakuName, Hansu][];
 
+/**
+ * 役判定コンフィグ (DetectYakuConfig)
+ *
+ * detectYaku に渡す設定オブジェクト。
+ * 和了牌、場風、自風、ドラ表示牌などをまとめて指定する。
+ */
+export interface DetectYakuConfig {
+  /** 和了牌 */
+  readonly agariHai: HaiKindId;
+  /** 場風牌 */
+  readonly bakaze?: Kazehai;
+  /** 自風牌 */
+  readonly jikaze?: Kazehai;
+  /** ドラ表示牌のリスト */
+  readonly doraMarkers?: readonly HaiKindId[];
+  /** 裏ドラ表示牌のリスト */
+  readonly uraDoraMarkers?: readonly HaiKindId[];
+  /** ツモ和了かどうか */
+  readonly isTsumo?: boolean;
+}
+
 export interface HouraContext {
   /** 手牌が門前かどうか（暗槓が含まれていても門前扱い） */
   readonly isMenzen: boolean;

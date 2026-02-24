@@ -37,13 +37,14 @@ export function countHaiKind(hais: readonly HaiKindId[]): HaiKindDistribution {
 }
 
 /**
- * 手牌がTehai13（有効枚数13枚）であるか検証します。
+ * 手牌がTehai13（有効枚数13枚）であることを表明します。
+ * バリデーション成功後、引数を Tehai13 型にナローイングします。
  * @throws {ShoushaiError} 枚数が不足している場合
  * @throws {TahaiError} 枚数が超過している場合
  */
-export function validateTehai13<T extends HaiKindId | HaiId>(
+export function assertTehai13<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): void {
+): asserts tehai is Tehai13<T> {
   const count = calculateTehaiCount(tehai);
   if (count < 13) {
     throw new ShoushaiError();
@@ -55,15 +56,28 @@ export function validateTehai13<T extends HaiKindId | HaiId>(
 }
 
 /**
- * 手牌がTehai14（有効枚数14枚）であるか検証します。
+ * 手牌がTehai13（有効枚数13枚）であるか検証します。
+ * 後方互換性のため assertTehai13 のラッパーとして提供。
+ * @throws {ShoushaiError} 枚数が不足している場合
+ * @throws {TahaiError} 枚数が超過している場合
+ */
+export function validateTehai13<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+): asserts tehai is Tehai13<T> {
+  assertTehai13(tehai);
+}
+
+/**
+ * 手牌がTehai14（有効枚数14枚）であることを表明します。
+ * バリデーション成功後、引数を Tehai14 型にナローイングします。
  * @throws {ShoushaiError} 枚数が不足している場合
  * @throws {TahaiError} 枚数が超過している場合
  * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
  * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
  */
-export function validateTehai14<T extends HaiKindId | HaiId>(
+export function assertTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): void {
+): asserts tehai is Tehai14<T> {
   const count = calculateTehaiCount(tehai);
   if (count < 14) {
     throw new ShoushaiError();
@@ -72,6 +86,20 @@ export function validateTehai14<T extends HaiKindId | HaiId>(
     throw new TahaiError();
   }
   validateHaiConsistency(tehai);
+}
+
+/**
+ * 手牌がTehai14（有効枚数14枚）であるか検証します。
+ * 後方互換性のため assertTehai14 のラッパーとして提供。
+ * @throws {ShoushaiError} 枚数が不足している場合
+ * @throws {TahaiError} 枚数が超過している場合
+ * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
+ * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
+ */
+export function validateTehai14<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+): asserts tehai is Tehai14<T> {
+  assertTehai14(tehai);
 }
 
 /**

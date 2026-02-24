@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { calculateKokushiShanten } from "./kokushi";
-import type { HaiId } from "../../../types";
+import type { HaiId, Tehai13 } from "../../../types";
 import { HaiKind, MentsuType } from "../../../types";
 import { haiIdToKindId } from "../../../core/hai"; // Add import
 import { createTehai13 } from "../../../utils/test-helpers";
@@ -121,7 +121,7 @@ describe("calculateKokushiShanten", () => {
           hais: [HaiKind.ManZu1, HaiKind.ManZu1, HaiKind.ManZu1] as const,
         }, // 3 tiles
       ],
-    };
+    } as unknown as Tehai13;
     expect(calculateKokushiShanten(tehai)).toBe(Infinity);
   });
 

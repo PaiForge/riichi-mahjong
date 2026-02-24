@@ -341,15 +341,32 @@ export interface Tehai<T extends HaiKindId | HaiId = HaiKindId> {
   readonly exposed: readonly CompletedMentsu<T>[];
 }
 
+declare const __tehai13Brand: unique symbol;
+declare const __tehai14Brand: unique symbol;
+
 /**
  * ツモる前の手牌 (13枚)
+ *
+ * Branded Type により Tehai14 と型レベルで区別される。
+ * 生成には createTehai13（テスト用）や assertTehai13 を使用する。
  */
-export type Tehai13<T extends HaiKindId | HaiId = HaiKindId> = Tehai<T>;
+export interface Tehai13<
+  T extends HaiKindId | HaiId = HaiKindId,
+> extends Tehai<T> {
+  readonly [__tehai13Brand]: never;
+}
 
 /**
  * ツモった後の手牌 (14枚)
+ *
+ * Branded Type により Tehai13 と型レベルで区別される。
+ * 生成には createTehai（テスト用）や assertTehai14 を使用する。
  */
-export type Tehai14<T extends HaiKindId | HaiId = HaiKindId> = Tehai<T>;
+export interface Tehai14<
+  T extends HaiKindId | HaiId = HaiKindId,
+> extends Tehai<T> {
+  readonly [__tehai14Brand]: never;
+}
 
 /**
  * 面子手の和了構造 (MentsuHouraStructure)

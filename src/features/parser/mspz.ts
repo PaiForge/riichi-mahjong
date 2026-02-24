@@ -14,6 +14,7 @@ import {
   Tacha,
 } from "../../types";
 import { haiIdToKindId, haiKindToNumber } from "../../core/hai";
+import { countHaiKind } from "../../core/tehai";
 
 // 1つ以上の数字 + 1つのサフィックス (m, p, s, z)
 const BLOCK_PATTERN = "\\d+[mpsz]";
@@ -250,6 +251,7 @@ function parseMentsuFromExtendedMspz(
 
 /**
  * 13枚の牌種ID配列を 34種の牌種分布（所持数分布）に変換します。
+ * 枚数バリデーション付きの countHaiKind ラッパーです。
  * @throws {ShoushaiError} 牌の数が13枚より少ない場合
  * @throws {TahaiError} 牌の数が13枚より多い場合
  */
@@ -267,15 +269,7 @@ export function createDistribution(
     );
   }
 
-  const counts = Array.from({ length: 34 }, () => 0);
-
-  for (const kind of hais) {
-    counts[kind] = (counts[kind] ?? 0) + 1;
-  }
-
-  // Tupleへの変換はアサーションが必要だが、生成ロジックが保証しているため安全
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return counts as unknown as HaiKindDistribution;
+  return countHaiKind(hais);
 }
 
 /**
@@ -302,46 +296,26 @@ export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
   const counts = createDistribution(hais);
   let result = "";
 
-  // 萬子
-  const manzu: number[] = [];
-  for (let i = 0; i < 9; i++) {
-    const kind = asHaiKindId(HaiKind.ManZu1 + i);
-    const count = counts[kind];
-    for (let j = 0; j < count; j++) {
-      const num = haiKindToNumber(kind);
-      if (num !== undefined) manzu.push(num);
-    }
-  }
-  if (manzu.length > 0) {
-    result += manzu.join("") + "m";
-  }
+  // 数牌（萬子・筒子・索子）
+  const suupaiGroups = [
+    { base: HaiKind.ManZu1, suffix: "m" },
+    { base: HaiKind.PinZu1, suffix: "p" },
+    { base: HaiKind.SouZu1, suffix: "s" },
+  ] as const;
 
-  // 筒子
-  const pinzu: number[] = [];
-  for (let i = 0; i < 9; i++) {
-    const kind = asHaiKindId(HaiKind.PinZu1 + i);
-    const count = counts[kind];
-    for (let j = 0; j < count; j++) {
-      const num = haiKindToNumber(kind);
-      if (num !== undefined) pinzu.push(num);
+  for (const { base, suffix } of suupaiGroups) {
+    const nums: number[] = [];
+    for (let i = 0; i < 9; i++) {
+      const kind = asHaiKindId(base + i);
+      const count = counts[kind];
+      for (let j = 0; j < count; j++) {
+        const num = haiKindToNumber(kind);
+        if (num !== undefined) nums.push(num);
+      }
     }
-  }
-  if (pinzu.length > 0) {
-    result += pinzu.join("") + "p";
-  }
-
-  // 索子
-  const souzu: number[] = [];
-  for (let i = 0; i < 9; i++) {
-    const kind = asHaiKindId(HaiKind.SouZu1 + i);
-    const count = counts[kind];
-    for (let j = 0; j < count; j++) {
-      const num = haiKindToNumber(kind);
-      if (num !== undefined) souzu.push(num);
+    if (nums.length > 0) {
+      result += nums.join("") + suffix;
     }
-  }
-  if (souzu.length > 0) {
-    result += souzu.join("") + "s";
   }
 
   // 字牌

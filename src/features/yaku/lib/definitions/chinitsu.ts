@@ -1,6 +1,5 @@
-import { isSuupai, kindIdToHaiType } from "../../../../core/hai";
-import { HaiType } from "../../../../types";
 import { createYakuDefinition } from "../../factory";
+import { analyzeIshokuPattern } from "../../utils";
 import type {
   HouraStructure,
   Yaku,
@@ -17,37 +16,11 @@ const CHINITSU_YAKU: Yaku = {
 };
 
 const checkChinitsu = (hand: HouraStructure): boolean => {
-  let blocks;
-  if (hand.type === "Mentsu") {
-    blocks = [hand.jantou, ...hand.fourMentsu];
-  } else if (hand.type === "Chiitoitsu") {
-    blocks = hand.pairs;
-  } else {
-    return false;
-  }
+  const result = analyzeIshokuPattern(hand);
+  if (result === undefined) return false;
 
-  // ブロック内の全ての牌をフラットな配列にする
-  const allHais = blocks.flatMap((b) => b.hais);
-
-  // 1. 字牌が含まれていないこと
-  const hasJihai = allHais.some((k) => kindIdToHaiType(k) === HaiType.Jihai);
-  if (hasJihai) return false;
-
-  // 2. 数牌が全て同じ種類であること
-  const suupais = allHais.filter((k) => isSuupai(k));
-
-  // 数牌が含まれていない（字一色想定だが上記でJihaiチェック済みなので事実上ありえない）場合は不成立
-  if (suupais.length === 0) return false;
-
-  const firstSuupai = suupais[0];
-  if (firstSuupai === undefined) return false;
-
-  const firstSuupaiType = kindIdToHaiType(firstSuupai);
-  const isAllSameType = suupais.every(
-    (k) => kindIdToHaiType(k) === firstSuupaiType,
-  );
-
-  return isAllSameType;
+  // 清一色: 字牌を含まず、かつ数牌が1種のみ
+  return !result.hasJihai && result.suupaiSuit !== undefined;
 };
 
 export const chinitsuDefinition: YakuDefinition = createYakuDefinition(
