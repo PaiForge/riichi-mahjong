@@ -27,15 +27,14 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("111m222p333s444s55z");
       const agari = getHaiKindId("4s");
 
-      const result = detectYaku(
-        hand,
-        agari,
-        HaiKind.Ton,
-        HaiKind.Nan,
-        [],
-        [],
-        true, // ツモ
-      );
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+        doraMarkers: [],
+        uraDoraMarkers: [],
+        isTsumo: true,
+      });
 
       expect(result).toContainEqual(["Suuankou", 13]);
       expect(result).not.toContainEqual(expect.arrayContaining(["Sanankou"]));
@@ -47,15 +46,14 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("111m222p333s444s55z");
       const agari = getHaiKindId("5z");
 
-      const result = detectYaku(
-        hand,
-        agari,
-        HaiKind.Ton,
-        HaiKind.Nan,
-        [],
-        [],
-        true,
-      );
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+        doraMarkers: [],
+        uraDoraMarkers: [],
+        isTsumo: true,
+      });
 
       expect(result).toContainEqual(["Suuankou", 26]);
       expect(result).not.toContainEqual(expect.arrayContaining(["Sanankou"]));
@@ -69,7 +67,11 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("19m19p19s1234567z1m");
       const agari = getHaiKindId("1m");
 
-      const result = detectYaku(hand, agari, HaiKind.Ton, HaiKind.Nan);
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+      });
 
       expect(result).toContainEqual(["KokushiMusou", 13]);
       expect(result.length).toBe(1);
@@ -214,15 +216,14 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("1112345678999m5m");
       const agari = getHaiKindId("5m");
 
-      const result = detectYaku(
-        hand,
-        agari,
-        HaiKind.Ton,
-        HaiKind.Nan,
-        [],
-        [],
-        true,
-      );
+      const result = detectYaku(hand, {
+        agariHai: agari,
+        bakaze: HaiKind.Ton,
+        jikaze: HaiKind.Nan,
+        doraMarkers: [],
+        uraDoraMarkers: [],
+        isTsumo: true,
+      });
 
       expect(result).toContainEqual(["ChuurenPoutou", 13]);
       expect(result).not.toContainEqual(expect.arrayContaining(["Chinitsu"]));

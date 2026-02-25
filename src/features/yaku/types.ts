@@ -6,10 +6,21 @@ import type {
   Kantsu,
   Toitsu,
   Mentsu,
-  CompletedMentsu,
+  HouraStructure,
+  MentsuHouraStructure,
+  ChiitoitsuHouraStructure,
+  KokushiHouraStructure,
 } from "../../types";
 
 export type { Kazehai, Shuntsu, Koutsu, Kantsu, Toitsu, Mentsu };
+
+// 後方互換性のため src/types.ts から再エクスポート
+export type {
+  HouraStructure,
+  MentsuHouraStructure,
+  ChiitoitsuHouraStructure,
+  KokushiHouraStructure,
+};
 
 /**
  * 役牌 (Yakuhai)
@@ -63,43 +74,6 @@ export type TehaiYaku =
  */
 export type Hansu = 1 | 2 | 3 | 5 | 6 | 13 | 26;
 
-export interface MentsuHouraStructure {
-  readonly type: "Mentsu";
-  readonly fourMentsu: readonly [
-    CompletedMentsu,
-    CompletedMentsu,
-    CompletedMentsu,
-    CompletedMentsu,
-  ];
-  readonly jantou: Toitsu;
-}
-
-export interface ChiitoitsuHouraStructure {
-  readonly type: "Chiitoitsu";
-  readonly pairs: readonly [
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-    Toitsu,
-  ];
-}
-
-export interface KokushiHouraStructure {
-  readonly type: "Kokushi";
-  /** 13種類の么九牌（重複なし） */
-  readonly yaochu: readonly HaiKindId[];
-  /** 雀頭となる牌の種類 */
-  readonly jantou: HaiKindId;
-}
-
-export type HouraStructure =
-  | MentsuHouraStructure
-  | ChiitoitsuHouraStructure
-  | KokushiHouraStructure;
-
 /**
  * 役の翻数定義
  */
@@ -131,6 +105,27 @@ export type YakuName = TehaiYaku;
  * 役が一つも成立しない場合は空配列となる。
  */
 export type YakuResult = readonly [YakuName, Hansu][];
+
+/**
+ * 役判定コンフィグ (DetectYakuConfig)
+ *
+ * detectYaku に渡す設定オブジェクト。
+ * 和了牌、場風、自風、ドラ表示牌などをまとめて指定する。
+ */
+export interface DetectYakuConfig {
+  /** 和了牌 */
+  readonly agariHai: HaiKindId;
+  /** 場風牌 */
+  readonly bakaze?: Kazehai;
+  /** 自風牌 */
+  readonly jikaze?: Kazehai;
+  /** ドラ表示牌のリスト */
+  readonly doraMarkers?: readonly HaiKindId[];
+  /** 裏ドラ表示牌のリスト */
+  readonly uraDoraMarkers?: readonly HaiKindId[];
+  /** ツモ和了かどうか */
+  readonly isTsumo?: boolean;
+}
 
 export interface HouraContext {
   /** 手牌が門前かどうか（暗槓が含まれていても門前扱い） */

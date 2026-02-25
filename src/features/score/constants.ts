@@ -1,5 +1,3 @@
-export const SCORE_OYA_MULTIPLIER = 1.5; // 親は1.5倍
-
 export const SCORE_BASE_MANGAN = 2000;
 export const SCORE_BASE_HANEMAN = 3000;
 export const SCORE_BASE_BAIMAN = 4000;
@@ -24,9 +22,6 @@ export const HAN_HANEMAN = 6;
 export const HAN_BAIMAN = 8;
 export const HAN_SANBAIMAN = 11;
 export const HAN_YAKUMAN = 13;
-
-export const HAS_YAKUMAN = 13; // 便宜上の翻数
-export const HAS_DOUBLE_YAKUMAN = 26;
 
 // 切り上げ満貫の閾値 (30符4翻 = 1920 -> 2000? 60符3翻=1920)
 // 一般的には 2000点(子) / 3000点(親) が満貫の最低点（ベース）

@@ -7,7 +7,7 @@ import type {
   Mentsu,
   MentsuType,
 } from "../types";
-import { validateTehai13 } from "../core/tehai";
+import { assertTehai13 } from "../core/tehai";
 import {
   isExtendedMspz,
   parseExtendedMspz,
@@ -15,12 +15,17 @@ import {
 } from "../features/parser";
 import { isValidShuntsu } from "../core/mentsu";
 import { isTuple2, isTuple3 } from "./assertions";
-import type { Shuntsu, Koutsu, Toitsu, CompletedMentsu } from "../types";
-import type { HouraStructure } from "../features/yaku/types";
+import type {
+  Shuntsu,
+  Koutsu,
+  Toitsu,
+  CompletedMentsu,
+  HouraStructure,
+} from "../types";
 
 /**
  * テスト用の Tehai13 オブジェクトを作成します。
- * 作成時に validateTehai13 を実行し、不正な場合はエラーをスローします。
+ * 作成時に assertTehai13 を実行し、不正な場合はエラーをスローします。
  * これにより、テストデータが正しい Tehai13 であることを保証します。
  */
 export function createTehai13<T extends HaiKindId | HaiId>(
@@ -31,9 +36,22 @@ export function createTehai13<T extends HaiKindId | HaiId>(
     exposed: [],
   };
 
-  validateTehai13(tehai);
+  assertTehai13(tehai);
 
   return tehai;
+}
+
+/**
+ * MSPZ形式の文字列からテスト用の Tehai13 オブジェクトを作成します。
+ * 13枚の手牌をMSPZ形式で指定できる便利関数です。
+ *
+ * @param mspzString MSPZ形式の文字列 (例: "123m456p789s11z22z")
+ * @returns Tehai13 オブジェクト
+ */
+export function createTehai13FromMspz(mspzString: string): Tehai13 {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const ids = parseMspz(mspzString).closed as HaiKindId[];
+  return createTehai13(ids);
 }
 
 /**
@@ -55,12 +73,16 @@ export function createMentsu<T extends HaiKindId | HaiId>(
  * @returns Tehai14 オブジェクト
  */
 export function createTehai(mspzString: string): Tehai14 {
+  let tehai: Tehai;
   if (isExtendedMspz(mspzString)) {
-    return parseExtendedMspz(mspzString);
+    tehai = parseExtendedMspz(mspzString);
+  } else {
+    tehai = parseMspz(mspzString);
   }
 
-  // 通常のMSPZ形式の場合
-  return parseMspz(mspzString);
+  // ファクトリ関数内での as 使用は許容
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return tehai as Tehai14;
 }
 
 /**

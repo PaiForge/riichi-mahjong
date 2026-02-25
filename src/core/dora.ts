@@ -53,27 +53,13 @@ export function countDora(
   tehai: Tehai,
   indicators: readonly HaiKindId[],
 ): number {
-  let count = 0;
-  // Calculate actual dora hinds
   const doraHais = indicators.map(getDoraNext);
-
-  // Count in closed hand
-  for (const hai of tehai.closed) {
-    for (const dora of doraHais) {
-      if (hai === dora) count++;
-    }
-  }
-
-  // Count in exposed mentsu
-  for (const mentsu of tehai.exposed) {
-    for (const hai of mentsu.hais) {
-      for (const dora of doraHais) {
-        if (hai === dora) count++;
-      }
-    }
-  }
+  const allHais = [...tehai.closed, ...tehai.exposed.flatMap((m) => m.hais)];
 
   // TODO: Add Akadora counting logic here
 
-  return count;
+  return allHais.reduce<number>(
+    (count, hai) => count + doraHais.filter((d) => d === hai).length,
+    0,
+  );
 }

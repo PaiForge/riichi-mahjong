@@ -1,5 +1,4 @@
-import type { HaiKindId, Shuntsu } from "../types";
-import type { HouraStructure } from "../features/yaku/types";
+import type { HaiKindId, Shuntsu, HouraStructure } from "../types";
 
 /** 待ちの形 */
 export type MachiType =

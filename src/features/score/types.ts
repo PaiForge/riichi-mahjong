@@ -1,5 +1,5 @@
-import type { Fu, HaiKindId, Kazehai } from "../../types";
-import type { HouraContext, HouraStructure, YakuResult } from "../yaku/types";
+import type { Fu, HaiKindId, Kazehai, HouraStructure } from "../../types";
+import type { HouraContext, YakuResult } from "../yaku/types";
 import type { MachiType } from "../../core/machi";
 import type { FuResult } from "./lib/fu/types";
 
@@ -19,38 +19,38 @@ export interface ScoreContext extends HouraContext {
 
 export interface ScoreCalculationConfig {
   /** 和了牌 */
-  agariHai: HaiKindId;
+  readonly agariHai: HaiKindId;
   /** ツモ和了かどうか (必須) */
-  isTsumo: boolean;
+  readonly isTsumo: boolean;
   /** 自風 (必須) */
-  jikaze: Kazehai;
+  readonly jikaze: Kazehai;
   /** 場風 (必須) */
-  bakaze: Kazehai;
+  readonly bakaze: Kazehai;
   /** ドラ表示牌 (必須、なければ空配列) */
-  doraMarkers: readonly HaiKindId[];
+  readonly doraMarkers: readonly HaiKindId[];
   /** 裏ドラ表示牌 (任意) */
-  uraDoraMarkers?: readonly HaiKindId[];
+  readonly uraDoraMarkers?: readonly HaiKindId[];
 }
 
 /** ロン和了時の支払い */
 export interface Ron {
-  type: "ron";
+  readonly type: "ron";
   /** 振り込んだプレイヤーが支払う点数 */
-  amount: number;
+  readonly amount: number;
 }
 
 /** 子のツモ和了時の支払い */
 export interface KoTsumo {
-  type: "koTsumo";
+  readonly type: "koTsumo";
   /** [子の支払い, 親の支払い] */
   readonly amount: readonly [number, number];
 }
 
 /** 親のツモ和了時の支払い */
 export interface OyaTsumo {
-  type: "oyaTsumo";
+  readonly type: "oyaTsumo";
   /** 子全員が支払う点数（オール） */
-  amount: number;
+  readonly amount: number;
 }
 
 /** 支払い情報 */
@@ -118,10 +118,10 @@ export interface ScoreDetail {
 }
 
 export interface ScoreResult {
-  han: number;
-  fu: Fu;
-  scoreLevel: ScoreLevel;
-  payment: Payment;
+  readonly han: number;
+  readonly fu: Fu;
+  readonly scoreLevel: ScoreLevel;
+  readonly payment: Payment;
   /**
    * ライブラリが最高得点として選択した構造解釈の詳細情報
    *
@@ -132,5 +132,5 @@ export interface ScoreResult {
    * 利用側で符の内訳や待ちの形を表示する際は、独自に構造解釈を行わず、
    * このフィールドの値をそのまま使用すること。
    */
-  detail?: ScoreDetail;
+  readonly detail?: ScoreDetail;
 }

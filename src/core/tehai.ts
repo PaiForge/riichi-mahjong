@@ -12,6 +12,7 @@ import type {
   Tehai13,
   Tehai14,
 } from "../types";
+import { haiIdToKindId } from "./hai";
 
 /**
  * 手牌の有効枚数を計算します。
@@ -36,13 +37,14 @@ export function countHaiKind(hais: readonly HaiKindId[]): HaiKindDistribution {
 }
 
 /**
- * 手牌がTehai13（有効枚数13枚）であるか検証します。
+ * 手牌がTehai13（有効枚数13枚）であることを表明します。
+ * バリデーション成功後、引数を Tehai13 型にナローイングします。
  * @throws {ShoushaiError} 枚数が不足している場合
  * @throws {TahaiError} 枚数が超過している場合
  */
-export function validateTehai13<T extends HaiKindId | HaiId>(
+export function assertTehai13<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): void {
+): asserts tehai is Tehai13<T> {
   const count = calculateTehaiCount(tehai);
   if (count < 13) {
     throw new ShoushaiError();
@@ -54,15 +56,28 @@ export function validateTehai13<T extends HaiKindId | HaiId>(
 }
 
 /**
- * 手牌がTehai14（有効枚数14枚）であるか検証します。
+ * 手牌がTehai13（有効枚数13枚）であるか検証します。
+ * 後方互換性のため assertTehai13 のラッパーとして提供。
+ * @throws {ShoushaiError} 枚数が不足している場合
+ * @throws {TahaiError} 枚数が超過している場合
+ */
+export function validateTehai13<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+): asserts tehai is Tehai13<T> {
+  assertTehai13(tehai);
+}
+
+/**
+ * 手牌がTehai14（有効枚数14枚）であることを表明します。
+ * バリデーション成功後、引数を Tehai14 型にナローイングします。
  * @throws {ShoushaiError} 枚数が不足している場合
  * @throws {TahaiError} 枚数が超過している場合
  * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
  * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
  */
-export function validateTehai14<T extends HaiKindId | HaiId>(
+export function assertTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): void {
+): asserts tehai is Tehai14<T> {
   const count = calculateTehaiCount(tehai);
   if (count < 14) {
     throw new ShoushaiError();
@@ -71,6 +86,20 @@ export function validateTehai14<T extends HaiKindId | HaiId>(
     throw new TahaiError();
   }
   validateHaiConsistency(tehai);
+}
+
+/**
+ * 手牌がTehai14（有効枚数14枚）であるか検証します。
+ * 後方互換性のため assertTehai14 のラッパーとして提供。
+ * @throws {ShoushaiError} 枚数が不足している場合
+ * @throws {TahaiError} 枚数が超過している場合
+ * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
+ * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
+ */
+export function validateTehai14<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+): asserts tehai is Tehai14<T> {
+  assertTehai14(tehai);
 }
 
 /**
@@ -131,27 +160,8 @@ function validateHaiConsistency<T extends HaiKindId | HaiId>(
   // 2. Check for Kind quantity (max 4 per kind)
   const counts = new Map<number, number>();
   for (const hai of allHais) {
-    // If HaiId mode, convert to KindId
-    // If KindId mode, use as is
-    // import { haiIdToKindId } from "./hai"; <--- Need to import or implement logic
-    // Since we are in core/tehai, and core/hai depends on types.
-    // Let's defer strict conversion.
-    // For now, assume generic T validation behavior.
-    // But we need `haiIdToKindId`.
-    // Let's implement logic inline or use import.
-    // Circular dependency risk? core/tehai -> core/hai.
-    // core/hai imports types. core/tehai imports types. Should be fine.
-    // But I need to import it at top of file.
-
-    // Using inline logic to avoid circular deps if any (though likely safe)
-    // 0-35 -> 0-8, etc.
-    let kind: number = hai;
-    if (hai > 33) {
-      if (hai < 36) kind = Math.floor(hai / 4);
-      else if (hai < 72) kind = Math.floor((hai - 36) / 4) + 9;
-      else if (hai < 108) kind = Math.floor((hai - 72) / 4) + 18;
-      else kind = Math.floor((hai - 108) / 4) + 27;
-    }
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const kind: number = isHaiIdMode ? haiIdToKindId(hai as HaiId) : hai;
 
     const current = counts.get(kind) ?? 0;
     if (current + 1 > 4) {

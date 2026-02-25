@@ -43,13 +43,9 @@ describe("公開APIのエクスポート", () => {
     });
 
     it("期待される型シグネチャを満たすこと", () => {
-      // NOTE: Tehai14 は Tehai<T> (default HaiKindId) のエイリアス
-      // 型パラメータは実装に合わせて HaiKindId | HaiId ではなくデフォルト(HaiKindId)を利用する
       PublicApi.detectYaku satisfies (
         tehai: PublicApi.Tehai14,
-        agariHai: HaiKindId,
-        bakaze?: HaiKindId,
-        jikaze?: HaiKindId,
+        config: PublicApi.DetectYakuConfig,
       ) => PublicApi.YakuResult;
 
       expect(true).toBe(true);
@@ -82,17 +78,13 @@ describe("公開APIのエクスポート", () => {
     });
 
     it("parseMspz が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseMspz satisfies (
-        input: string,
-      ) => PublicApi.Tehai13 | PublicApi.Tehai14; // Returns Tehai generic
+      PublicApi.parseMspz satisfies (input: string) => PublicApi.Tehai; // パーサーは Branded ではない Tehai を返す
 
       expect(true).toBe(true);
     });
 
     it("parseExtendedMspz が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseExtendedMspz satisfies (
-        input: string,
-      ) => PublicApi.Tehai13 | PublicApi.Tehai14;
+      PublicApi.parseExtendedMspz satisfies (input: string) => PublicApi.Tehai;
 
       expect(true).toBe(true);
     });
