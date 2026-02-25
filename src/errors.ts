@@ -11,8 +11,7 @@ export class MahjongError extends Error {
     this.name = "MahjongError";
 
     // TypeScriptでカスタムエラーを正しく動作させるためのハック
-    // TypeScriptでカスタムエラーを正しく動作させるためのハック
-    Object.setPrototypeOf(this, MahjongError.prototype);
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
@@ -27,8 +26,6 @@ export class ShoushaiError extends MahjongError {
   constructor(message = "手牌が規定枚数（13枚）より少ないです。") {
     super(message);
     this.name = "ShoushaiError";
-
-    Object.setPrototypeOf(this, ShoushaiError.prototype);
   }
 }
 
@@ -43,8 +40,6 @@ export class TahaiError extends MahjongError {
   constructor(message = "手牌が規定枚数（13枚）より多いです。") {
     super(message);
     this.name = "TahaiError";
-
-    Object.setPrototypeOf(this, TahaiError.prototype);
   }
 }
 
@@ -59,8 +54,6 @@ export class MahjongArgumentError extends MahjongError {
   constructor(message: string) {
     super(message);
     this.name = "MahjongArgumentError";
-
-    Object.setPrototypeOf(this, MahjongArgumentError.prototype);
   }
 }
 
@@ -75,8 +68,6 @@ export class DuplicatedHaiIdError extends MahjongError {
   constructor(message = "牌IDが重複しています。") {
     super(message);
     this.name = "DuplicatedHaiIdError";
-
-    Object.setPrototypeOf(this, DuplicatedHaiIdError.prototype);
   }
 }
 
@@ -91,8 +82,6 @@ export class InvalidHaiQuantityError extends MahjongError {
   constructor(message = "同種の牌が5枚以上存在します。") {
     super(message);
     this.name = "InvalidHaiQuantityError";
-
-    Object.setPrototypeOf(this, InvalidHaiQuantityError.prototype);
   }
 }
 
@@ -109,8 +98,6 @@ export class ChomboError extends MahjongError {
   constructor(message = "不正な和了です。") {
     super(message);
     this.name = "ChomboError";
-
-    Object.setPrototypeOf(this, ChomboError.prototype);
   }
 }
 
@@ -126,7 +113,20 @@ export class NoYakuError extends ChomboError {
   constructor(message = "役が成立していません。") {
     super(message);
     this.name = "NoYakuError";
+  }
+}
 
-    Object.setPrototypeOf(this, NoYakuError.prototype);
+/**
+ * MSPZ文字列の解析エラー
+ *
+ * MSPZ形式の文字列が不正な場合にスローされます。
+ */
+export class MspzParseError extends MahjongError {
+  /**
+   *
+   */
+  constructor(message = "MSPZ文字列の解析に失敗しました。") {
+    super(message);
+    this.name = "MspzParseError";
   }
 }

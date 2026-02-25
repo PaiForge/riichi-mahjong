@@ -1,6 +1,7 @@
 import type { HaiKindId, Tehai13 } from "../../types";
 import { countHaiKind } from "../../core/tehai";
 import { calculateMentsuTeShanten } from "../shanten";
+import { asHaiKindId } from "../../utils/assertions";
 
 /**
  * 手牌の受け入れ（有効牌）を計算する。
@@ -22,8 +23,7 @@ export function getUkeire(tehai: Tehai13): HaiKindId[] {
 
   // 全34種の牌について、1枚加えてシャンテン数が下がるか試す
   for (let i = 0; i < 34; i++) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const tile = i as HaiKindId;
+    const tile = asHaiKindId(i);
 
     // 4枚使い切っている牌種はスキップ（山に残っていない）
     if (haiCounts[tile] >= 4) {

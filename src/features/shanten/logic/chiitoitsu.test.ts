@@ -47,7 +47,7 @@ describe("calculateChiitoitsuShanten", () => {
   });
 
   it("副露がある場合はInfinityを返すこと", () => {
-    const tehai: Tehai13 = {
+    const tehai = {
       closed: [
         HaiKind.ManZu2,
         HaiKind.ManZu2,
@@ -66,7 +66,7 @@ describe("calculateChiitoitsuShanten", () => {
           hais: [HaiKind.ManZu1, HaiKind.ManZu1, HaiKind.ManZu1],
         },
       ],
-    };
+    } as unknown as Tehai13;
     expect(calculateChiitoitsuShanten(tehai)).toBe(Infinity);
   });
 

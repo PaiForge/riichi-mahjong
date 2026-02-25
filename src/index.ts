@@ -23,13 +23,18 @@ export type {
   Kazehai,
   Fu,
 } from "./types";
-export type { YakuResult, YakuName, Hansu } from "./features/yaku";
+export type {
+  YakuResult,
+  YakuName,
+  Hansu,
+  DetectYakuConfig,
+} from "./features/yaku";
 export type {
   HouraStructure,
   MentsuHouraStructure,
   ChiitoitsuHouraStructure,
   KokushiHouraStructure,
-} from "./features/yaku/types";
+} from "./types";
 export type { FuResult, FuDetails } from "./features/score/lib/fu/types";
 export type {
   ScoreResult,
@@ -53,6 +58,7 @@ export {
   InvalidHaiQuantityError,
   ChomboError,
   NoYakuError,
+  MspzParseError,
 } from "./errors";
 
 // =============================================================================
@@ -70,7 +76,13 @@ export {
 // =============================================================================
 // Core - Tehai (Hand) Validation
 // =============================================================================
-export { validateTehai, isTehai13, isTehai14 } from "./core/tehai";
+export {
+  validateTehai,
+  assertTehai13,
+  assertTehai14,
+  isTehai13,
+  isTehai14,
+} from "./core/tehai";
 
 // =============================================================================
 // Core - Mentsu (Meld) Validation

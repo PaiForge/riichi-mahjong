@@ -1,8 +1,14 @@
-import type { Tehai14, HaiKindId } from "../../types";
-import type { YakuResult, YakuName, Hansu, HouraStructure } from "./types";
+import type { Tehai14 } from "../../types";
+import type {
+  YakuResult,
+  YakuName,
+  Hansu,
+  HouraStructure,
+  DetectYakuConfig,
+} from "./types";
 
 import { getHouraStructures } from "./lib/structures";
-import { isMenzen, isKazehai } from "./utils";
+import { isMenzen } from "./utils";
 import { ALL_YAKU_DEFINITIONS } from "./lib/definitions";
 import type { HouraContext } from "./types";
 
@@ -14,8 +20,10 @@ export type {
   TehaiYaku,
   YakuHanConfig,
   Yakuhai,
+  DetectYakuConfig,
 } from "./types";
 export * from "./lib";
+export { getHouraStructures } from "./lib/structures";
 
 /**
  * 役満の翻数閾値
@@ -76,26 +84,21 @@ function getTotalHan(
  * 手牌の構造役を検出する
  *
  * @param tehai 判定対象の手牌
- * @param agariHai 和了牌
+ * @param config 役判定コンフィグ（和了牌、場風、自風、ドラ表示牌など）
  * @returns 成立した役と翻数のリスト（最も高得点となる解釈の結果）
  */
 export function detectYaku(
   tehai: Tehai14,
-  agariHai: HaiKindId,
-  bakaze?: HaiKindId,
-  jikaze?: HaiKindId,
-  doraMarkers?: readonly HaiKindId[],
-  uraDoraMarkers?: readonly HaiKindId[],
-  isTsumo?: boolean,
+  config: DetectYakuConfig,
 ): YakuResult {
   const context: HouraContext = {
     isMenzen: isMenzen(tehai),
-    agariHai,
-    bakaze: bakaze !== undefined && isKazehai(bakaze) ? bakaze : undefined,
-    jikaze: jikaze !== undefined && isKazehai(jikaze) ? jikaze : undefined,
-    doraMarkers: doraMarkers ?? [],
-    uraDoraMarkers: uraDoraMarkers ?? [],
-    isTsumo,
+    agariHai: config.agariHai,
+    bakaze: config.bakaze,
+    jikaze: config.jikaze,
+    doraMarkers: config.doraMarkers ?? [],
+    uraDoraMarkers: config.uraDoraMarkers ?? [],
+    isTsumo: config.isTsumo,
   };
 
   const structuralInterpretations = getHouraStructures(tehai);

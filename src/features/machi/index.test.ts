@@ -1,13 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { getUkeire } from "./index";
-import { createTehai, createHaiKindIds } from "../../utils/test-helpers";
+import {
+  createHaiKindIds,
+  createTehai13FromMspz,
+} from "../../utils/test-helpers";
 import { HaiKind } from "../../types";
 
 describe("getUkeire (待ち/受け入れ判定)", () => {
   describe("聴牌 (Tenpai)", () => {
     it("両面待ち+ノベタンの有効牌を正しく返すこと", () => {
       // 123m 456s 78s 11z 222p (6s, 9s 待ち + 456sとの複合で3sも待ち)
-      const tehai = createTehai("123m456s78s11z222p");
+      const tehai = createTehai13FromMspz("123m456s78s11z222p");
       const ukeire = getUkeire(tehai);
 
       const expected = createHaiKindIds("369s");
@@ -17,7 +20,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
 
     it("単騎待ちの有効牌を正しく返すこと", () => {
       // 123m 456s 789p 222z 5m (5m 単騎)
-      const tehai = createTehai("123m456s789p222z5m");
+      const tehai = createTehai13FromMspz("123m456s789p222z5m");
       const ukeire = getUkeire(tehai);
 
       const expected = [HaiKind.ManZu5];
@@ -26,7 +29,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
 
     it("シャンポン待ちの有効牌を正しく返すこと", () => {
       // 123m 456s 11p 22z 333m (1p, 2z シャンポン)
-      const tehai = createTehai("123m456s11p22z333m");
+      const tehai = createTehai13FromMspz("123m456s11p22z333m");
       const ukeire = getUkeire(tehai);
 
       const expected = createHaiKindIds("1p2z");
@@ -36,7 +39,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
 
     it("変則多面待ちの有効牌を正しく返すこと", () => {
       // 23456m 44p 666s 777z (1-4-7m)
-      const tehai = createTehai("23456m44p666s777z");
+      const tehai = createTehai13FromMspz("23456m44p666s777z");
       const ukeire = getUkeire(tehai);
 
       const expected = createHaiKindIds("147m");
@@ -49,7 +52,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
     it("完全1シャンテン的な形の有効牌を正しく返すこと", () => {
       // 123m 456s 13p 78p 11z 5m
       // 2面子, 1雀頭, 2塔子, 1浮き (5m)
-      const tehai = createTehai("123m456s13p78p11z5m");
+      const tehai = createTehai13FromMspz("123m456s13p78p11z5m");
       const ukeire = getUkeire(tehai);
 
       // 塔子を完成させる牌: 2p, 6p, 9p
@@ -64,7 +67,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
       // 3+3+3+2+1+1 = 13.
       // Ukeire for 4m: 2m,3m,4m,5m,6m.
       // Ukeire for 6p: 4p,5p,6p,7p,8p.
-      const tehai = createTehai("123m456p789s11z4m6p");
+      const tehai = createTehai13FromMspz("123m456p789s11z4m6p");
       const ukeire = getUkeire(tehai);
 
       // 4m -> 2,3,4,5,6m. Also 1m works (123m 4m + 1m -> 11m 234m).
@@ -87,7 +90,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
       // 3mは4枚使い切り（123mの1枚 + 333mの3枚）
       // シャンポン待ち: 1p, 2z
       // 3mはシャンテンを進める可能性があっても、山に残っていないため有効牌ではない
-      const tehai = createTehai("123m456s11p22z333m");
+      const tehai = createTehai13FromMspz("123m456s11p22z333m");
       const ukeire = getUkeire(tehai);
 
       // 3mが有効牌に含まれていないことを確認
@@ -102,7 +105,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
     it("複数の牌種が4枚使い切りでも正しく処理されること", () => {
       // 1111m 2222p 345s 11z (13枚: 4+4+3+2=13)
       // 1mと2pが4枚使い切り、単騎待ち: 1z
-      const tehai = createTehai("1111m2222p345s11z");
+      const tehai = createTehai13FromMspz("1111m2222p345s11z");
       const ukeire = getUkeire(tehai);
 
       // 4枚使い切った牌は有効牌に含まれない
@@ -116,7 +119,7 @@ describe("getUkeire (待ち/受け入れ判定)", () => {
 
   describe("その他", () => {
     it("国士無双などの特殊役は対象外（今回は面子手のみ）", () => {
-      const tehai = createTehai("19m19p19s123456z1m");
+      const tehai = createTehai13FromMspz("19m19p19s123456z1m");
       const ukeire = getUkeire(tehai);
       expect(Array.isArray(ukeire)).toBe(true);
     });
