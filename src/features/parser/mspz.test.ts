@@ -23,12 +23,17 @@ describe("Standard MSPZ", () => {
   });
 
   describe("asMspz", () => {
-    it("returns input for valid MSPZ strings", () => {
-      expect(asMspz("123m")).toBe("123m");
+    it("returns ok for valid MSPZ strings", () => {
+      const res = asMspz("123m");
+      expect(res.isOk()).toBe(true);
+      if (res.isOk()) {
+        expect(res.value).toBe("123m");
+      }
     });
 
-    it("throws error for Extended MSPZ strings", () => {
-      expect(() => asMspz("[123m]")).toThrow("Invalid MSPZ string");
+    it("returns err for Extended MSPZ strings", () => {
+      const res = asMspz("[123m]");
+      expect(res.isErr()).toBe(true);
     });
   });
 });
@@ -57,14 +62,18 @@ describe("Extended MSPZ", () => {
 
   describe("parseExtendedMspz", () => {
     it("parses regular MSPZ as closed tiles", () => {
-      const result = parseExtendedMspz("123m");
+      const res = parseExtendedMspz("123m");
+      if (res.isErr()) throw res.error;
+      const result = res.value;
       expect(result.closed).toHaveLength(3);
       expect(result.exposed).toHaveLength(0);
       expect(result.closed[0]).toBe(HaiKind.ManZu1);
     });
 
     it("parses Shuntsu (Chi) in brackets", () => {
-      const result = parseExtendedMspz("[123m]");
+      const res = parseExtendedMspz("[123m]");
+      if (res.isErr()) throw res.error;
+      const result = res.value;
       expect(result.closed).toHaveLength(0);
       expect(result.exposed).toHaveLength(1);
 
@@ -81,7 +90,9 @@ describe("Extended MSPZ", () => {
     });
 
     it("parses Koutsu (Pon) in brackets", () => {
-      const result = parseExtendedMspz("[111p]");
+      const res = parseExtendedMspz("[111p]");
+      if (res.isErr()) throw res.error;
+      const result = res.value;
       expect(result.exposed).toHaveLength(1);
 
       const mentsu = result.exposed[0];
@@ -95,7 +106,9 @@ describe("Extended MSPZ", () => {
     });
 
     it("parses Daiminkan (Open Quad) in brackets", () => {
-      const result = parseExtendedMspz("[2222s]");
+      const res = parseExtendedMspz("[2222s]");
+      if (res.isErr()) throw res.error;
+      const result = res.value;
       expect(result.exposed).toHaveLength(1);
 
       const mentsu = result.exposed[0];
@@ -109,7 +122,9 @@ describe("Extended MSPZ", () => {
     });
 
     it("parses Ankan (Closed Quad) in parentheses", () => {
-      const result = parseExtendedMspz("(1111z)");
+      const res = parseExtendedMspz("(1111z)");
+      if (res.isErr()) throw res.error;
+      const result = res.value;
       expect(result.exposed).toHaveLength(1);
 
       const kantsu = result.exposed[0];
@@ -126,7 +141,9 @@ describe("Extended MSPZ", () => {
 
     it("parses mixed content correctly", () => {
       // 123m (chi), 456p (pon), 789s (closed)
-      const result = parseExtendedMspz("789s[123m][444p]");
+      const res = parseExtendedMspz("789s[123m][444p]");
+      if (res.isErr()) throw res.error;
+      const result = res.value;
       expect(result.closed).toHaveLength(3); // 7,8,9s
       expect(result.exposed).toHaveLength(2); // chi, pon
 

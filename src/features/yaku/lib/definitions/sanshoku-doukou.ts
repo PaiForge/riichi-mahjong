@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Kantsu,
@@ -71,7 +71,12 @@ const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
   return false;
 };
 
-export const sanshokuDoukouDefinition: YakuDefinition = createYakuDefinition(
-  SANSHOKU_DOUKOU_YAKU,
-  checkSanshokuDoukou,
-);
+export const sanshokuDoukouDefinition: YakuDefinition = createYaku(
+  SANSHOKU_DOUKOU_YAKU.name,
+  SANSHOKU_DOUKOU_YAKU.han.closed,
+  typeof SANSHOKU_DOUKOU_YAKU.han.open === "number"
+    ? SANSHOKU_DOUKOU_YAKU.han.open
+    : 0,
+)
+  .require(checkSanshokuDoukou)
+  .build();

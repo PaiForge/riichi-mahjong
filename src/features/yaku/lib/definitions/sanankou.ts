@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -25,7 +25,10 @@ const checkSanankou = (
   return ankouCount >= 3;
 };
 
-export const sanankouDefinition: YakuDefinition = createYakuDefinition(
-  SANANKOU_YAKU,
-  checkSanankou,
-);
+export const sanankouDefinition: YakuDefinition = createYaku(
+  SANANKOU_YAKU.name,
+  SANANKOU_YAKU.han.closed,
+  typeof SANANKOU_YAKU.han.open === "number" ? SANANKOU_YAKU.han.open : 0,
+)
+  .require(checkSanankou)
+  .build();

@@ -1,3 +1,4 @@
+import { Result, ok, err } from "neverthrow";
 import { asHaiKindId, isTuple3, isTuple4 } from "../../utils/assertions";
 import { MspzParseError } from "../../errors";
 import {
@@ -53,18 +54,15 @@ export function isExtendedMspz(input: string): input is ExtendedMspzString {
 }
 
 /**
- * 文字列を ExtendedMspzString 型として扱います。
- * 拡張MSPZ形式であることを検証します。
  *
- * @param input 変換対象の文字列
- * @throws {Error} 拡張MSPZ形式でない場合
- * @returns ExtendedMspzString
  */
-export function asExtendedMspz(input: string): ExtendedMspzString {
+export function asExtendedMspz(
+  input: string,
+): Result<ExtendedMspzString, MspzParseError> {
   if (!isExtendedMspz(input)) {
-    throw new MspzParseError(`Invalid Extended MSPZ string: ${input}`);
+    return err(new MspzParseError(`Invalid Extended MSPZ string: ${input}`));
   }
-  return input;
+  return ok(input);
 }
 
 /**
@@ -90,7 +88,9 @@ interface ExtendedMspzParseResult {
  * @param input 拡張MSPZ形式の文字列
  * @returns 解析結果オブジェクト
  */
-export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
+export function parseExtendedMspz(
+  input: string,
+): Result<ExtendedMspzParseResult, MspzParseError> {
   const closedParts: string[] = [];
   const exposed: CompletedMentsu[] = [];
 
@@ -101,32 +101,36 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
   for (const char of input) {
     if (char === "[") {
       if (mode !== "closed")
-        throw new MspzParseError("Nested brackets are not supported");
+        return err(new MspzParseError("Nested brackets are not supported"));
       if (current.length > 0) closedParts.push(current);
-      // current = ""; // OLD
       current = "["; // NEW: Start capturing with bracket
       mode = "open";
     } else if (char === "]") {
       if (mode !== "open")
-        throw new MspzParseError("Unexpected closing bracket ']'");
+        return err(new MspzParseError("Unexpected closing bracket ']'"));
       current += "]"; // NEW: End capturing with bracket
-      // exposed.push(parseMentsuString(current, "open")); // OLD
-      exposed.push(parseMentsuFromExtendedMspz(asExtendedMspz(current))); // NEW
+      const extMspzRes = asExtendedMspz(current);
+      if (extMspzRes.isErr()) return err(extMspzRes.error);
+      const mentsuRes = parseMentsuFromExtendedMspz(extMspzRes.value);
+      if (mentsuRes.isErr()) return err(mentsuRes.error);
+      exposed.push(mentsuRes.value);
       current = "";
       mode = "closed";
     } else if (char === "(") {
       if (mode !== "closed")
-        throw new MspzParseError("Nested parentheses are not supported");
+        return err(new MspzParseError("Nested parentheses are not supported"));
       if (current.length > 0) closedParts.push(current);
-      // current = ""; // OLD
       current = "("; // NEW
       mode = "ankan";
     } else if (char === ")") {
       if (mode !== "ankan")
-        throw new MspzParseError("Unexpected closing parenthesis ')'");
+        return err(new MspzParseError("Unexpected closing parenthesis ')'"));
       current += ")"; // NEW
-      // exposed.push(parseMentsuString(current, "ankan")); // OLD
-      exposed.push(parseMentsuFromExtendedMspz(asExtendedMspz(current))); // NEW
+      const extMspzRes = asExtendedMspz(current);
+      if (extMspzRes.isErr()) return err(extMspzRes.error);
+      const mentsuRes = parseMentsuFromExtendedMspz(extMspzRes.value);
+      if (mentsuRes.isErr()) return err(mentsuRes.error);
+      exposed.push(mentsuRes.value);
       current = "";
       mode = "closed";
     } else {
@@ -137,18 +141,21 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
   // 残りのclosed部分
   if (current.length > 0) {
     if (mode !== "closed")
-      throw new MspzParseError("Unclosed bracket or parenthesis");
+      return err(new MspzParseError("Unclosed bracket or parenthesis"));
     closedParts.push(current);
   }
 
   // closed部分を結合してパース
   const fullClosedMspz = closedParts.join("");
-  const closedIds = parseMspzToHaiKindIds(asMspz(fullClosedMspz));
+  const mspzRes = asMspz(fullClosedMspz);
+  if (mspzRes.isErr()) return err(mspzRes.error);
 
-  return {
+  const closedIds = parseMspzToHaiKindIds(mspzRes.value);
+
+  return ok({
     closed: closedIds,
     exposed: exposed,
-  };
+  });
 }
 
 /**
@@ -157,7 +164,7 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
  */
 function parseMentsuFromExtendedMspz(
   block: ExtendedMspzString,
-): CompletedMentsu {
+): Result<CompletedMentsu, MspzParseError> {
   let mode: "open" | "ankan";
   let content: string;
 
@@ -168,15 +175,20 @@ function parseMentsuFromExtendedMspz(
     mode = "ankan";
     content = block.slice(1, -1);
   } else {
-    throw new MspzParseError(
-      `Invalid Extended MSPZ block: ${block} (must be [...] or (...))`,
+    return err(
+      new MspzParseError(
+        `Invalid Extended MSPZ block: ${block} (must be [...] or (...))`,
+      ),
     );
   }
 
   // 中身は標準MSPZ形式である必要がある
-  const ids = parseMspzToHaiKindIds(asMspz(content));
+  const mspzRes = asMspz(content);
+  if (mspzRes.isErr()) return err(mspzRes.error);
+
+  const ids = parseMspzToHaiKindIds(mspzRes.value);
   if (ids.length === 0) {
-    throw new MspzParseError("Empty mentsu specification");
+    return err(new MspzParseError("Empty mentsu specification"));
   }
 
   // 枚数チェック & 種類判定
@@ -186,78 +198,85 @@ function parseMentsuFromExtendedMspz(
   // 暗槓 (Ankan)
   if (mode === "ankan") {
     if (count !== 4 || !isAllSame) {
-      throw new MspzParseError(
-        `Invalid Ankan: ${block} (must be 4 identical tiles)`,
+      return err(
+        new MspzParseError(
+          `Invalid Ankan: ${block} (must be 4 identical tiles)`,
+        ),
       );
     }
     if (!isTuple4(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const kantsu: Kantsu = {
       type: MentsuType.Kantsu,
       hais: ids,
       // Ankan has no furo info (or minimal)
     };
-    return kantsu;
+    return ok(kantsu);
   }
 
   // 副露 (Open)
   if (count === 4 && isAllSame) {
     // Daiminkan
     if (!isTuple4(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const kantsu: Kantsu = {
       type: MentsuType.Kantsu,
       hais: ids,
       furo: { type: FuroType.Daiminkan, from: Tacha.Toimen }, // Default
     };
-    return kantsu;
+    return ok(kantsu);
   } else if (count === 3 && isAllSame) {
     // Pon
     if (!isTuple3(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const koutsu: Koutsu = {
       type: MentsuType.Koutsu,
       hais: ids,
       furo: { type: FuroType.Pon, from: Tacha.Toimen }, // Default
     };
-    return koutsu;
+    return ok(koutsu);
   } else if (count === 3) {
     // Chi (Should check continuity, strictly speaking but relying on user for now or implicit check)
     // Minimal check: sorted? mspzStringToHaiKindIds sorts by default?
     // mspzStringToHaiKindIds does NOT sort across different suits, but "123m" results in sorted array.
     // Let's assume valid sequence for now.
     if (!isTuple3(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const shuntsu: Shuntsu = {
       type: MentsuType.Shuntsu,
       hais: ids,
       furo: { type: FuroType.Chi, from: Tacha.Kamicha }, // Default
     };
-    return shuntsu;
+    return ok(shuntsu);
   }
 
-  throw new MspzParseError(
-    `Invalid Mentsu specification: ${block} (must be 3 or 4 tiles)`,
+  return err(
+    new MspzParseError(
+      `Invalid Mentsu specification: ${block} (must be 3 or 4 tiles)`,
+    ),
   );
 }
 
 /**
- * 文字列を MspzString 型として扱います。
- * 標準的なMSPZ形式（拡張記法を含まない）であることを検証します。
  *
- * @param input 変換対象の文字列
- * @throws {Error} 拡張記法が含まれている場合
- * @returns MspzString
  */
-export function asMspz(input: string): MspzString {
+export function asMspz(input: string): Result<MspzString, MspzParseError> {
   if (!isMspz(input)) {
-    throw new MspzParseError(`Invalid MSPZ string: ${input}`);
+    return err(new MspzParseError(`Invalid MSPZ string: ${input}`));
   }
-  return input;
+  return ok(input);
 }
 
 /**

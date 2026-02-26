@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -39,7 +39,10 @@ const checkShousuushii = (hand: HouraStructure): boolean => {
   return windKoutsuCount === 3 && isWindJantou;
 };
 
-export const shousuushiiDefinition: YakuDefinition = createYakuDefinition(
-  SHOUSUUSHII_YAKU,
-  checkShousuushii,
-);
+export const shousuushiiDefinition: YakuDefinition = createYaku(
+  SHOUSUUSHII_YAKU.name,
+  SHOUSUUSHII_YAKU.han.closed,
+  typeof SHOUSUUSHII_YAKU.han.open === "number" ? SHOUSUUSHII_YAKU.han.open : 0,
+)
+  .require(checkShousuushii)
+  .build();

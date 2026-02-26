@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -80,7 +80,12 @@ const checkChuurenPoutou = (
   return true;
 };
 
-export const chuurenPoutouDefinition: YakuDefinition = createYakuDefinition(
-  CHUUREN_POUTOU_YAKU,
-  checkChuurenPoutou,
-);
+export const chuurenPoutouDefinition: YakuDefinition = createYaku(
+  CHUUREN_POUTOU_YAKU.name,
+  CHUUREN_POUTOU_YAKU.han.closed,
+  typeof CHUUREN_POUTOU_YAKU.han.open === "number"
+    ? CHUUREN_POUTOU_YAKU.han.open
+    : 0,
+)
+  .require(checkChuurenPoutou)
+  .build();

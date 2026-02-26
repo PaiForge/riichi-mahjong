@@ -1,5 +1,5 @@
 import { isYaochu } from "../../../../core/hai";
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -29,7 +29,10 @@ const checkTanyao = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const tanyaoDefinition: YakuDefinition = createYakuDefinition(
-  TANYAO_YAKU,
-  checkTanyao,
-);
+export const tanyaoDefinition: YakuDefinition = createYaku(
+  TANYAO_YAKU.name,
+  TANYAO_YAKU.han.closed,
+  typeof TANYAO_YAKU.han.open === "number" ? TANYAO_YAKU.han.open : 0,
+)
+  .require(checkTanyao)
+  .build();
