@@ -18,7 +18,7 @@ import { haiIdToKindId } from "./hai";
  * 手牌の有効枚数を計算します。
  * 副露（槓子含む）は一律3枚として計算します。
  */
-export function calculateTehaiCount<T extends HaiKindId | HaiId>(
+function calculateTehaiCount<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): number {
   return tehai.closed.length + tehai.exposed.length * 3;

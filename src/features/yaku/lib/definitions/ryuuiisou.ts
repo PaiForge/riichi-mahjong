@@ -24,31 +24,14 @@ const GREEN_TILES = new Set<number>([
   HaiKind.Hatsu,
 ]);
 
+import { isAllHaisMatch } from "../helpers";
+
 const isGreen = (id: number): boolean => {
   return GREEN_TILES.has(id);
 };
 
 const checkRyuuiisou = (hand: HouraStructure): boolean => {
-  const allHais: number[] = [];
-
-  if (hand.type === "Mentsu") {
-    // 面子手の場合
-    for (const mentsu of hand.fourMentsu) {
-      allHais.push(...mentsu.hais);
-    }
-    allHais.push(...hand.jantou.hais);
-  } else if (hand.type === "Chiitoitsu") {
-    // 七対子の場合
-    for (const pair of hand.pairs) {
-      allHais.push(...pair.hais);
-    }
-  } else {
-    // 国士無双など
-    return false;
-  }
-
-  // 全ての牌が緑色牌であれば成立
-  return allHais.every(isGreen);
+  return isAllHaisMatch(hand, isGreen);
 };
 
 export const ryuuiisouDefinition: YakuDefinition = createYakuDefinition(

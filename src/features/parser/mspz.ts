@@ -1,11 +1,9 @@
 import { asHaiKindId, isTuple3, isTuple4 } from "../../utils/assertions";
-import { MspzParseError, ShoushaiError, TahaiError } from "../../errors";
+import { MspzParseError } from "../../errors";
 import {
   CompletedMentsu,
   FuroType,
-  HaiId,
   HaiKind,
-  HaiKindDistribution,
   HaiKindId,
   Kantsu,
   Koutsu,
@@ -13,8 +11,6 @@ import {
   Shuntsu,
   Tacha,
 } from "../../types";
-import { haiIdToKindId, haiKindToNumber } from "../../core/hai";
-import { countHaiKind } from "../../core/tehai";
 
 // 1つ以上の数字 + 1つのサフィックス (m, p, s, z)
 const BLOCK_PATTERN = "\\d+[mpsz]";
@@ -83,7 +79,7 @@ export function isMspz(input: string): input is MspzString {
 /**
  * 拡張MSPZ解析結果
  */
-export interface ExtendedMspzParseResult {
+interface ExtendedMspzParseResult {
   readonly closed: readonly HaiKindId[];
   readonly exposed: readonly CompletedMentsu[];
 }
@@ -247,93 +243,6 @@ function parseMentsuFromExtendedMspz(
   throw new MspzParseError(
     `Invalid Mentsu specification: ${block} (must be 3 or 4 tiles)`,
   );
-}
-
-/**
- * 13枚の牌種ID配列を 34種の牌種分布（所持数分布）に変換します。
- * 枚数バリデーション付きの countHaiKind ラッパーです。
- * @throws {ShoushaiError} 牌の数が13枚より少ない場合
- * @throws {TahaiError} 牌の数が13枚より多い場合
- */
-export function createDistribution(
-  hais: readonly HaiKindId[],
-): HaiKindDistribution {
-  if (hais.length < 13) {
-    throw new ShoushaiError(
-      `Invalid number of tiles: expected 13, got ${hais.length}`,
-    );
-  }
-  if (hais.length > 13) {
-    throw new TahaiError(
-      `Invalid number of tiles: expected 13, got ${hais.length}`,
-    );
-  }
-
-  return countHaiKind(hais);
-}
-
-/**
- * 13枚の牌ID配列を 34種の牌種分布（所持数分布）に変換します。
- * @throws {ShoushaiError} 牌の数が13枚より少ない場合
- * @throws {TahaiError} 牌の数が13枚より多い場合
- */
-export function haiIdsToDistribution(
-  // Branded type makes linter think it's mutable object, but it's primitive number.
-  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-  hais: readonly HaiId[],
-): HaiKindDistribution {
-  const kinds = hais.map(haiIdToKindId);
-  return createDistribution(kinds);
-}
-
-/**
- * 13枚の牌種ID配列を MSPZ形式の文字列（例: "123m456p..."）に変換します。
- * すべての牌をソートして表記します。
- * @throws {ShoushaiError} 牌の数が13枚より少ない場合
- * @throws {TahaiError} 牌の数が13枚より多い場合
- */
-export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
-  const counts = createDistribution(hais);
-  let result = "";
-
-  // 数牌（萬子・筒子・索子）
-  const suupaiGroups = [
-    { base: HaiKind.ManZu1, suffix: "m" },
-    { base: HaiKind.PinZu1, suffix: "p" },
-    { base: HaiKind.SouZu1, suffix: "s" },
-  ] as const;
-
-  for (const { base, suffix } of suupaiGroups) {
-    const nums: number[] = [];
-    for (let i = 0; i < 9; i++) {
-      const kind = asHaiKindId(base + i);
-      const count = counts[kind];
-      for (let j = 0; j < count; j++) {
-        const num = haiKindToNumber(kind);
-        if (num !== undefined) nums.push(num);
-      }
-    }
-    if (nums.length > 0) {
-      result += nums.join("") + suffix;
-    }
-  }
-
-  // 字牌
-  const jihai: number[] = [];
-  for (let i = 0; i < 7; i++) {
-    const kind = asHaiKindId(HaiKind.Ton + i);
-    const count = counts[kind];
-    for (let j = 0; j < count; j++) {
-      // 字牌は 1-7 で表すことが多い
-      const num = i + 1;
-      jihai.push(num);
-    }
-  }
-  if (jihai.length > 0) {
-    result += jihai.join("") + "z";
-  }
-
-  return result;
 }
 
 /**
