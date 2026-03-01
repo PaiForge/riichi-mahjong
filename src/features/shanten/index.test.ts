@@ -23,7 +23,9 @@ describe("calculateShanten (Integration)", () => {
         HaiKind.PinZu8,
         HaiKind.SouZu9,
       ]);
-      expect(calculateShanten(tehai)).toBe(0);
+      const res = calculateShanten(tehai);
+      expect(res.isOk()).toBe(true);
+      if (res.isOk()) expect(res.value).toBe(0);
     });
 
     it("国士無双の手が最善の場合、国士無双のシャンテン数を返すこと", () => {
@@ -43,7 +45,9 @@ describe("calculateShanten (Integration)", () => {
         HaiKind.Hatsu,
         HaiKind.Chun,
       ]);
-      expect(calculateShanten(tehai)).toBe(0);
+      const res = calculateShanten(tehai);
+      expect(res.isOk()).toBe(true);
+      if (res.isOk()) expect(res.value).toBe(0);
     });
 
     it("面子手の手が最善の場合、面子手のシャンテン数を返すこと", () => {
@@ -63,7 +67,9 @@ describe("calculateShanten (Integration)", () => {
         HaiKind.SouZu2,
         HaiKind.SouZu3,
       ]);
-      expect(calculateShanten(tehai)).toBe(0);
+      const res = calculateShanten(tehai);
+      expect(res.isOk()).toBe(true);
+      if (res.isOk()) expect(res.value).toBe(0);
     });
   });
 
@@ -87,7 +93,9 @@ describe("calculateShanten (Integration)", () => {
       ]);
 
       // Chiitoitsu無効なら 3 (面子手としての結果)
-      expect(calculateShanten(tehai, false, true)).toBe(3);
+      const res = calculateShanten(tehai, false, true);
+      expect(res.isOk()).toBe(true);
+      if (res.isOk()) expect(res.value).toBe(3);
     });
 
     it("useKokushi=false の場合、国士無双の形でも面子手として評価されること", () => {
@@ -109,9 +117,14 @@ describe("calculateShanten (Integration)", () => {
       ]);
 
       // Kokushi無効なら、七対子のシャンテン数(6)と面子手のシャンテン数(8)の最小値 -> 6
-      expect(calculateShanten(tehai, true, false)).toBe(6);
+      const res1 = calculateShanten(tehai, true, false);
+      expect(res1.isOk()).toBe(true);
+      if (res1.isOk()) expect(res1.value).toBe(6);
+
       // 七対子も無効なら 8 (面子手としての結果)
-      expect(calculateShanten(tehai, false, false)).toBe(8);
+      const res2 = calculateShanten(tehai, false, false);
+      expect(res2.isOk()).toBe(true);
+      if (res2.isOk()) expect(res2.value).toBe(8);
     });
   });
 
@@ -124,7 +137,8 @@ describe("calculateShanten (Integration)", () => {
       };
       // Note: calculateShanten calls validateTehai13
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-      expect(() => calculateShanten(badTehai as any)).toThrow();
+      const res = calculateShanten(badTehai as any);
+      expect(res.isErr()).toBe(true);
     });
   });
 });

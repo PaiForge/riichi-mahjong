@@ -10,7 +10,7 @@ import type {
 import type { Shuntsu } from "../../../../types";
 import { classifyMachi } from "../../../../core/machi";
 import { MahjongArgumentError } from "../../../../errors";
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 
 const PINFU_YAKU: Yaku = {
   name: "Pinfu",
@@ -58,7 +58,10 @@ const checkPinfu: (hand: HouraStructure, context: HouraContext) => boolean = (
   return waitType === "Ryanmen";
 };
 
-export const pinfuDefinition: YakuDefinition = createYakuDefinition(
-  PINFU_YAKU,
-  checkPinfu,
-);
+export const pinfuDefinition: YakuDefinition = createYaku(
+  PINFU_YAKU.name,
+  PINFU_YAKU.han.closed,
+  typeof PINFU_YAKU.han.open === "number" ? PINFU_YAKU.han.open : 0,
+)
+  .require(checkPinfu)
+  .build();

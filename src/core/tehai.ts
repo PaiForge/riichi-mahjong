@@ -4,6 +4,7 @@ import {
   ShoushaiError,
   TahaiError,
 } from "../errors";
+import { Result, ok, err } from "neverthrow";
 import type {
   HaiId,
   HaiKindDistribution,
@@ -12,13 +13,19 @@ import type {
   Tehai13,
   Tehai14,
 } from "../types";
+
+export type TehaiError =
+  | ShoushaiError
+  | TahaiError
+  | InvalidHaiQuantityError
+  | DuplicatedHaiIdError;
 import { haiIdToKindId } from "./hai";
 
 /**
  * 手牌の有効枚数を計算します。
  * 副露（槓子含む）は一律3枚として計算します。
  */
-export function calculateTehaiCount<T extends HaiKindId | HaiId>(
+function calculateTehaiCount<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): number {
   return tehai.closed.length + tehai.exposed.length * 3;
@@ -37,123 +44,88 @@ export function countHaiKind(hais: readonly HaiKindId[]): HaiKindDistribution {
 }
 
 /**
- * 手牌がTehai13（有効枚数13枚）であることを表明します。
- * バリデーション成功後、引数を Tehai13 型にナローイングします。
- * @throws {ShoushaiError} 枚数が不足している場合
- * @throws {TahaiError} 枚数が超過している場合
- */
-export function assertTehai13<T extends HaiKindId | HaiId>(
-  tehai: Tehai<T>,
-): asserts tehai is Tehai13<T> {
-  const count = calculateTehaiCount(tehai);
-  if (count < 13) {
-    throw new ShoushaiError();
-  }
-  if (count > 13) {
-    throw new TahaiError();
-  }
-  validateHaiConsistency(tehai);
-}
-
-/**
- * 手牌がTehai13（有効枚数13枚）であるか検証します。
- * 後方互換性のため assertTehai13 のラッパーとして提供。
- * @throws {ShoushaiError} 枚数が不足している場合
- * @throws {TahaiError} 枚数が超過している場合
+ * 手牌がTehai13（有効枚数13枚）であるか検証し、スマートコンストラクタとして機能します。
+ * バリデーション成功後、Tehai13 型にナローイングされたオブジェクトをResultで返します。
  */
 export function validateTehai13<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): asserts tehai is Tehai13<T> {
-  assertTehai13(tehai);
-}
-
-/**
- * 手牌がTehai14（有効枚数14枚）であることを表明します。
- * バリデーション成功後、引数を Tehai14 型にナローイングします。
- * @throws {ShoushaiError} 枚数が不足している場合
- * @throws {TahaiError} 枚数が超過している場合
- * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
- * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
- */
-export function assertTehai14<T extends HaiKindId | HaiId>(
-  tehai: Tehai<T>,
-): asserts tehai is Tehai14<T> {
+): Result<Tehai13<T>, TehaiError> {
   const count = calculateTehaiCount(tehai);
-  if (count < 14) {
-    throw new ShoushaiError();
+  if (count < 13) {
+    return err(new ShoushaiError());
   }
-  if (count > 14) {
-    throw new TahaiError();
+  if (count > 13) {
+    return err(new TahaiError());
   }
-  validateHaiConsistency(tehai);
+  const consRes = validateHaiConsistency(tehai);
+  if (consRes.isErr()) {
+    return err(consRes.error);
+  }
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return ok(tehai as Tehai13<T>);
 }
 
 /**
- * 手牌がTehai14（有効枚数14枚）であるか検証します。
- * 後方互換性のため assertTehai14 のラッパーとして提供。
- * @throws {ShoushaiError} 枚数が不足している場合
- * @throws {TahaiError} 枚数が超過している場合
- * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
- * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
+ * 手牌がTehai14（有効枚数14枚）であるか検証し、スマートコンストラクタとして機能します。
+ * バリデーション成功後、Tehai14 型にナローイングされたオブジェクトをResultで返します。
  */
 export function validateTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): asserts tehai is Tehai14<T> {
-  assertTehai14(tehai);
+): Result<Tehai14<T>, TehaiError> {
+  const count = calculateTehaiCount(tehai);
+  if (count < 14) {
+    return err(new ShoushaiError());
+  }
+  if (count > 14) {
+    return err(new TahaiError());
+  }
+  const consRes = validateHaiConsistency(tehai);
+  if (consRes.isErr()) {
+    return err(consRes.error);
+  }
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return ok(tehai as Tehai14<T>);
 }
 
 /**
- * 手牌がTehai13またはTehai14（有効枚数が13または14枚）であるか検証します。
- * シャンテン計算や待ち判定など、13枚/14枚の区別なく手牌として扱いたい場合に使用します。
  *
- * @throws {ShoushaiError} 枚数が不足している場合 (< 13)
- * @throws {TahaiError} 枚数が超過している場合 (> 14)
- * @throws {InvalidHaiQuantityError} 同一種の牌が5枚以上ある場合
- * @throws {DuplicatedHaiIdError} 物理牌モードでIDが重複している場合
  */
 export function validateTehai<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): void {
+): Result<Tehai<T>, TehaiError> {
   const count = calculateTehaiCount(tehai);
   if (count < 13) {
-    throw new ShoushaiError();
+    return err(new ShoushaiError());
   }
   if (count > 14) {
-    throw new TahaiError();
+    return err(new TahaiError());
   }
-  validateHaiConsistency(tehai);
+  const consRes = validateHaiConsistency(tehai);
+  if (consRes.isErr()) {
+    return err(consRes.error);
+  }
+  return ok(tehai);
 }
 
 /**
- * 手牌の整合性を検証します。
- * - 物理的な牌ID (`HaiId`) が使われている場合、重複チェックを行います。
- * - 牌種ID (`HaiKindId`) の場合（または変換後）、同一牌種が5枚以上ないかチェックします。
  *
- * @throws {DuplicatedHaiIdError}
- * @throws {InvalidHaiQuantityError}
  */
-function validateHaiConsistency<T extends HaiKindId | HaiId>(
+export function validateHaiConsistency<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
-): void {
+): Result<void, DuplicatedHaiIdError | InvalidHaiQuantityError> {
   const allHais: number[] = [
     ...tehai.closed,
     ...tehai.exposed.flatMap((m) => m.hais),
   ];
 
   // 1. Check for physical HaiId usage (any id > 33)
-  // HaiKindId is 0-33. Any value > 33 implies HaiId (0-135).
-  // Note: Low HaiIds (0-33) are ambiguous, but if mix of high and low exists, it's HaiId.
-  // If only low values exist, we can't strictly distinguish, but treating as KindId is safe
-  // unless the user provided [0, 0] intending HaiId 0 and HaiId 0.
-  // However, normally HaiKindId 0 is ManZu1.
-  // Strategy: If MAX(id) > 33, treat as HaiId.
   const isHaiIdMode = allHais.some((h) => h > 33);
 
   if (isHaiIdMode) {
     // Check for duplicate HaiIds
     const uniqueIds = new Set(allHais);
     if (uniqueIds.size !== allHais.length) {
-      throw new DuplicatedHaiIdError();
+      return err(new DuplicatedHaiIdError());
     }
   }
 
@@ -165,10 +137,11 @@ function validateHaiConsistency<T extends HaiKindId | HaiId>(
 
     const current = counts.get(kind) ?? 0;
     if (current + 1 > 4) {
-      throw new InvalidHaiQuantityError();
+      return err(new InvalidHaiQuantityError());
     }
     counts.set(kind, current + 1);
   }
+  return ok(undefined);
 }
 
 /**
@@ -177,12 +150,7 @@ function validateHaiConsistency<T extends HaiKindId | HaiId>(
 export function isTehai13<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): tehai is Tehai13<T> {
-  try {
-    validateTehai13(tehai);
-    return true;
-  } catch {
-    return false;
-  }
+  return validateTehai13(tehai).isOk();
 }
 
 /**
@@ -191,10 +159,5 @@ export function isTehai13<T extends HaiKindId | HaiId>(
 export function isTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): tehai is Tehai14<T> {
-  try {
-    validateTehai14(tehai);
-    return true;
-  } catch {
-    return false;
-  }
+  return validateTehai14(tehai).isOk();
 }

@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -25,7 +25,10 @@ const checkToitoi = (hand: HouraStructure): boolean => {
   );
 };
 
-export const toitoiDefinition: YakuDefinition = createYakuDefinition(
-  TOITOI_YAKU,
-  checkToitoi,
-);
+export const toitoiDefinition: YakuDefinition = createYaku(
+  TOITOI_YAKU.name,
+  TOITOI_YAKU.han.closed,
+  typeof TOITOI_YAKU.han.open === "number" ? TOITOI_YAKU.han.open : 0,
+)
+  .require(checkToitoi)
+  .build();

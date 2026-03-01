@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import { analyzeIshokuPattern } from "../../utils";
 import type {
   HouraStructure,
@@ -23,7 +23,10 @@ const checkHonitsu = (hand: HouraStructure): boolean => {
   return result.hasJihai && result.suupaiSuit !== undefined;
 };
 
-export const honitsuDefinition: YakuDefinition = createYakuDefinition(
-  HONITSU_YAKU,
-  checkHonitsu,
-);
+export const honitsuDefinition: YakuDefinition = createYaku(
+  HONITSU_YAKU.name,
+  HONITSU_YAKU.han.closed,
+  typeof HONITSU_YAKU.han.open === "number" ? HONITSU_YAKU.han.open : 0,
+)
+  .require(checkHonitsu)
+  .build();

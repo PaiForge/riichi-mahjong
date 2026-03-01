@@ -1,7 +1,5 @@
 import type {
   HouraStructure,
-  Kantsu,
-  Koutsu,
   Yaku,
   YakuDefinition,
   YakuHanConfig,
@@ -16,47 +14,13 @@ const SUUANKOU_YAKU: Yaku = {
   } satisfies YakuHanConfig,
 };
 
+import { countAnkou } from "../helpers";
+
 const checkSuuankou = (
   hand: HouraStructure,
   context: HouraContext,
 ): boolean => {
-  if (hand.type !== "Mentsu") {
-    return false;
-  }
-
-  // 1. 刻子・槓子を抽出
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
-
-  let ankouCount = 0;
-
-  for (const triplet of triplets) {
-    // 副露している刻子は暗刻ではない
-    if (triplet.furo) continue;
-
-    const isAgariHaiInTriplet = triplet.hais.includes(context.agariHai);
-
-    const isTanki = hand.jantou.hais[0] === context.agariHai;
-
-    if (context.isTsumo) {
-      // ツモなら、副露していなければ全て暗刻
-      ankouCount++;
-    } else {
-      // ロン和了の場合
-      if (isAgariHaiInTriplet) {
-        // 和了牌を含む刻子（シャボ待ちロン）は明刻
-        // 単騎待ちロンなら暗刻
-        if (isTanki) {
-          ankouCount++;
-        }
-      } else {
-        // 和了牌を含まない刻子は暗刻
-        ankouCount++;
-      }
-    }
-  }
-
+  const ankouCount = countAnkou(hand, context);
   return ankouCount === 4;
 };
 

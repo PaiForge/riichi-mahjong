@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -15,34 +15,20 @@ const TSUUIISOU_YAKU: Yaku = {
   } satisfies YakuHanConfig,
 };
 
+import { isAllHaisMatch } from "../helpers";
+
 const isJihai = (id: number): boolean => {
   return id >= HaiKind.Ton && id <= HaiKind.Chun;
 };
 
 const checkTsuuiisou = (hand: HouraStructure): boolean => {
-  const allHais: number[] = [];
-
-  if (hand.type === "Mentsu") {
-    // 面子手の場合
-    for (const mentsu of hand.fourMentsu) {
-      allHais.push(...mentsu.hais);
-    }
-    allHais.push(...hand.jantou.hais);
-  } else if (hand.type === "Chiitoitsu") {
-    // 七対子の場合
-    for (const pair of hand.pairs) {
-      allHais.push(...pair.hais);
-    }
-  } else {
-    // 国士無双など（国士は字一色にはなり得ないが、構造上は考慮）
-    return false;
-  }
-
-  // 全ての牌が字牌であれば成立
-  return allHais.every(isJihai);
+  return isAllHaisMatch(hand, isJihai);
 };
 
-export const tsuuiisouDefinition: YakuDefinition = createYakuDefinition(
-  TSUUIISOU_YAKU,
-  checkTsuuiisou,
-);
+export const tsuuiisouDefinition: YakuDefinition = createYaku(
+  TSUUIISOU_YAKU.name,
+  TSUUIISOU_YAKU.han.closed,
+  typeof TSUUIISOU_YAKU.han.open === "number" ? TSUUIISOU_YAKU.han.open : 0,
+)
+  .require(checkTsuuiisou)
+  .build();

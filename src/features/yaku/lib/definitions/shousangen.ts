@@ -1,8 +1,6 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
-  Kantsu,
-  Koutsu,
   Yaku,
   YakuDefinition,
   YakuHanConfig,
@@ -17,24 +15,15 @@ const SHOUSANGEN_YAKU: Yaku = {
   } satisfies YakuHanConfig,
 };
 
+import { countSpecificKoutsu } from "../helpers";
+
 const checkShousangen = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
     return false;
   }
 
   const sangenpai: HaiKindId[] = [HaiKind.Haku, HaiKind.Hatsu, HaiKind.Chun];
-
-  // 1. 三元牌の刻子・槓子をカウント
-  let sangenKoutsuCount = 0;
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
-
-  for (const triplet of triplets) {
-    if (sangenpai.includes(triplet.hais[0])) {
-      sangenKoutsuCount++;
-    }
-  }
+  const sangenKoutsuCount = countSpecificKoutsu(hand, sangenpai);
 
   // 2. 三元牌の雀頭があるかチェック
   const isSangenJantou = sangenpai.includes(hand.jantou.hais[0]);
@@ -43,7 +32,10 @@ const checkShousangen = (hand: HouraStructure): boolean => {
   return sangenKoutsuCount === 2 && isSangenJantou;
 };
 
-export const shousangenDefinition: YakuDefinition = createYakuDefinition(
-  SHOUSANGEN_YAKU,
-  checkShousangen,
-);
+export const shousangenDefinition: YakuDefinition = createYaku(
+  SHOUSANGEN_YAKU.name,
+  SHOUSANGEN_YAKU.han.closed,
+  typeof SHOUSANGEN_YAKU.han.open === "number" ? SHOUSANGEN_YAKU.han.open : 0,
+)
+  .require(checkShousangen)
+  .build();
