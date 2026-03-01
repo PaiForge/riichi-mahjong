@@ -1,8 +1,6 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
-  Kantsu,
-  Koutsu,
   Yaku,
   YakuDefinition,
   YakuHanConfig,
@@ -18,11 +16,9 @@ const DAISUUSHII_YAKU: Yaku = {
   } satisfies YakuHanConfig,
 };
 
-const checkDaisuushii = (hand: HouraStructure): boolean => {
-  if (hand.type !== "Mentsu") {
-    return false;
-  }
+import { countSpecificKoutsu } from "../helpers";
 
+const checkDaisuushii = (hand: HouraStructure): boolean => {
   const windTiles: HaiKindId[] = [
     HaiKind.Ton,
     HaiKind.Nan,
@@ -30,23 +26,16 @@ const checkDaisuushii = (hand: HouraStructure): boolean => {
     HaiKind.Pei,
   ];
 
-  // 1. 風牌の刻子・槓子をカウント
-  let windKoutsuCount = 0;
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
-
-  for (const triplet of triplets) {
-    if (windTiles.includes(triplet.hais[0])) {
-      windKoutsuCount++;
-    }
-  }
+  const windKoutsuCount = countSpecificKoutsu(hand, windTiles);
 
   // 大四喜の条件: 風牌の刻子が4つ全てあること
   return windKoutsuCount === 4;
 };
 
-export const daisuushiiDefinition: YakuDefinition = createYakuDefinition(
-  DAISUUSHII_YAKU,
-  checkDaisuushii,
-);
+export const daisuushiiDefinition: YakuDefinition = createYaku(
+  DAISUUSHII_YAKU.name,
+  DAISUUSHII_YAKU.han.closed,
+  typeof DAISUUSHII_YAKU.han.open === "number" ? DAISUUSHII_YAKU.han.open : 0,
+)
+  .require(checkDaisuushii)
+  .build();

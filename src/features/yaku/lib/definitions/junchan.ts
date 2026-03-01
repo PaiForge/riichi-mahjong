@@ -1,5 +1,5 @@
 import { isSuupai, isYaochu } from "../../../../core/hai";
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -34,7 +34,10 @@ const checkJunchan = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const junchanDefinition: YakuDefinition = createYakuDefinition(
-  JUNCHAN_YAKU,
-  checkJunchan,
-);
+export const junchanDefinition: YakuDefinition = createYaku(
+  JUNCHAN_YAKU.name,
+  JUNCHAN_YAKU.han.closed,
+  typeof JUNCHAN_YAKU.han.open === "number" ? JUNCHAN_YAKU.han.open : 0,
+)
+  .require(checkJunchan)
+  .build();

@@ -1,5 +1,5 @@
 import { isSuupai, isYaochu } from "../../../../core/hai";
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -30,7 +30,10 @@ const checkChinroutou = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const chinroutouDefinition: YakuDefinition = createYakuDefinition(
-  CHINROUTOU_YAKU,
-  checkChinroutou,
-);
+export const chinroutouDefinition: YakuDefinition = createYaku(
+  CHINROUTOU_YAKU.name,
+  CHINROUTOU_YAKU.han.closed,
+  typeof CHINROUTOU_YAKU.han.open === "number" ? CHINROUTOU_YAKU.han.open : 0,
+)
+  .require(checkChinroutou)
+  .build();

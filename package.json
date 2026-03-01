@@ -64,5 +64,8 @@
     "*.json": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "neverthrow": "^8.2.0"
   }
 }

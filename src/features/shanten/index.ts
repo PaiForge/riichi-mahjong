@@ -1,5 +1,6 @@
 import type { Tehai13 } from "../../types";
-import { validateTehai13 } from "../../core/tehai";
+import { validateTehai13, TehaiError } from "../../core/tehai";
+import { Result, ok, err } from "neverthrow";
 import { calculateChiitoitsuShanten } from "./logic/chiitoitsu";
 import { calculateKokushiShanten } from "./logic/kokushi";
 import { calculateMentsuTeShanten } from "./logic/mentsu-te";
@@ -24,9 +25,10 @@ export function calculateShanten(
   tehai: Tehai13,
   useChiitoitsu = true,
   useKokushi = true,
-): number {
+): Result<number, TehaiError> {
   // Facadeパターン: 公開APIのエントリーポイントで入力を保証する
-  validateTehai13(tehai);
+  const valRes = validateTehai13(tehai);
+  if (valRes.isErr()) return err(valRes.error);
 
   const chiitoitsuShanten = useChiitoitsu
     ? calculateChiitoitsuShanten(tehai)
@@ -34,5 +36,5 @@ export function calculateShanten(
   const kokushiShanten = useKokushi ? calculateKokushiShanten(tehai) : Infinity;
   const mentsuShanten = calculateMentsuTeShanten(tehai);
 
-  return Math.min(chiitoitsuShanten, kokushiShanten, mentsuShanten);
+  return ok(Math.min(chiitoitsuShanten, kokushiShanten, mentsuShanten));
 }

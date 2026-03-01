@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   Yaku,
@@ -33,7 +33,10 @@ const checkRyanpeikou = (hand: HouraStructure): boolean => {
   return pairCount >= 2;
 };
 
-export const ryanpeikouDefinition: YakuDefinition = createYakuDefinition(
-  RYANPEIKOU_YAKU,
-  checkRyanpeikou,
-);
+export const ryanpeikouDefinition: YakuDefinition = createYaku(
+  RYANPEIKOU_YAKU.name,
+  RYANPEIKOU_YAKU.han.closed,
+  typeof RYANPEIKOU_YAKU.han.open === "number" ? RYANPEIKOU_YAKU.han.open : 0,
+)
+  .require(checkRyanpeikou)
+  .build();

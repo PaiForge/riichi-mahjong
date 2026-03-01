@@ -78,8 +78,8 @@ export {
 // =============================================================================
 export {
   validateTehai,
-  assertTehai13,
-  assertTehai14,
+  validateTehai13,
+  validateTehai14,
   isTehai13,
   isTehai14,
 } from "./core/tehai";

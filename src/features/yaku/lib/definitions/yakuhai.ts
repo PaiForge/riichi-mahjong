@@ -1,5 +1,5 @@
 import { HaiKind, HaiKindId } from "../../../../types";
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   YakuDefinition,
@@ -25,7 +25,13 @@ function createYakuhaiDefinition(
     return false;
   };
 
-  return createYakuDefinition({ name, han: HAN_CONFIG }, check);
+  return createYaku(
+    name,
+    HAN_CONFIG.closed,
+    typeof HAN_CONFIG.open === "number" ? HAN_CONFIG.open : 0,
+  )
+    .require(check)
+    .build();
 }
 
 export const hakuDefinition = createYakuhaiDefinition("Haku", HaiKind.Haku);

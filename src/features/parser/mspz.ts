@@ -1,11 +1,10 @@
+import { Result, ok, err } from "neverthrow";
 import { asHaiKindId, isTuple3, isTuple4 } from "../../utils/assertions";
-import { MspzParseError, ShoushaiError, TahaiError } from "../../errors";
+import { MspzParseError } from "../../errors";
 import {
   CompletedMentsu,
   FuroType,
-  HaiId,
   HaiKind,
-  HaiKindDistribution,
   HaiKindId,
   Kantsu,
   Koutsu,
@@ -13,8 +12,6 @@ import {
   Shuntsu,
   Tacha,
 } from "../../types";
-import { haiIdToKindId, haiKindToNumber } from "../../core/hai";
-import { countHaiKind } from "../../core/tehai";
 
 // 1つ以上の数字 + 1つのサフィックス (m, p, s, z)
 const BLOCK_PATTERN = "\\d+[mpsz]";
@@ -57,18 +54,15 @@ export function isExtendedMspz(input: string): input is ExtendedMspzString {
 }
 
 /**
- * 文字列を ExtendedMspzString 型として扱います。
- * 拡張MSPZ形式であることを検証します。
  *
- * @param input 変換対象の文字列
- * @throws {Error} 拡張MSPZ形式でない場合
- * @returns ExtendedMspzString
  */
-export function asExtendedMspz(input: string): ExtendedMspzString {
+export function asExtendedMspz(
+  input: string,
+): Result<ExtendedMspzString, MspzParseError> {
   if (!isExtendedMspz(input)) {
-    throw new MspzParseError(`Invalid Extended MSPZ string: ${input}`);
+    return err(new MspzParseError(`Invalid Extended MSPZ string: ${input}`));
   }
-  return input;
+  return ok(input);
 }
 
 /**
@@ -83,7 +77,7 @@ export function isMspz(input: string): input is MspzString {
 /**
  * 拡張MSPZ解析結果
  */
-export interface ExtendedMspzParseResult {
+interface ExtendedMspzParseResult {
   readonly closed: readonly HaiKindId[];
   readonly exposed: readonly CompletedMentsu[];
 }
@@ -94,7 +88,9 @@ export interface ExtendedMspzParseResult {
  * @param input 拡張MSPZ形式の文字列
  * @returns 解析結果オブジェクト
  */
-export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
+export function parseExtendedMspz(
+  input: string,
+): Result<ExtendedMspzParseResult, MspzParseError> {
   const closedParts: string[] = [];
   const exposed: CompletedMentsu[] = [];
 
@@ -105,32 +101,36 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
   for (const char of input) {
     if (char === "[") {
       if (mode !== "closed")
-        throw new MspzParseError("Nested brackets are not supported");
+        return err(new MspzParseError("Nested brackets are not supported"));
       if (current.length > 0) closedParts.push(current);
-      // current = ""; // OLD
       current = "["; // NEW: Start capturing with bracket
       mode = "open";
     } else if (char === "]") {
       if (mode !== "open")
-        throw new MspzParseError("Unexpected closing bracket ']'");
+        return err(new MspzParseError("Unexpected closing bracket ']'"));
       current += "]"; // NEW: End capturing with bracket
-      // exposed.push(parseMentsuString(current, "open")); // OLD
-      exposed.push(parseMentsuFromExtendedMspz(asExtendedMspz(current))); // NEW
+      const extMspzRes = asExtendedMspz(current);
+      if (extMspzRes.isErr()) return err(extMspzRes.error);
+      const mentsuRes = parseMentsuFromExtendedMspz(extMspzRes.value);
+      if (mentsuRes.isErr()) return err(mentsuRes.error);
+      exposed.push(mentsuRes.value);
       current = "";
       mode = "closed";
     } else if (char === "(") {
       if (mode !== "closed")
-        throw new MspzParseError("Nested parentheses are not supported");
+        return err(new MspzParseError("Nested parentheses are not supported"));
       if (current.length > 0) closedParts.push(current);
-      // current = ""; // OLD
       current = "("; // NEW
       mode = "ankan";
     } else if (char === ")") {
       if (mode !== "ankan")
-        throw new MspzParseError("Unexpected closing parenthesis ')'");
+        return err(new MspzParseError("Unexpected closing parenthesis ')'"));
       current += ")"; // NEW
-      // exposed.push(parseMentsuString(current, "ankan")); // OLD
-      exposed.push(parseMentsuFromExtendedMspz(asExtendedMspz(current))); // NEW
+      const extMspzRes = asExtendedMspz(current);
+      if (extMspzRes.isErr()) return err(extMspzRes.error);
+      const mentsuRes = parseMentsuFromExtendedMspz(extMspzRes.value);
+      if (mentsuRes.isErr()) return err(mentsuRes.error);
+      exposed.push(mentsuRes.value);
       current = "";
       mode = "closed";
     } else {
@@ -141,18 +141,21 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
   // 残りのclosed部分
   if (current.length > 0) {
     if (mode !== "closed")
-      throw new MspzParseError("Unclosed bracket or parenthesis");
+      return err(new MspzParseError("Unclosed bracket or parenthesis"));
     closedParts.push(current);
   }
 
   // closed部分を結合してパース
   const fullClosedMspz = closedParts.join("");
-  const closedIds = parseMspzToHaiKindIds(asMspz(fullClosedMspz));
+  const mspzRes = asMspz(fullClosedMspz);
+  if (mspzRes.isErr()) return err(mspzRes.error);
 
-  return {
+  const closedIds = parseMspzToHaiKindIds(mspzRes.value);
+
+  return ok({
     closed: closedIds,
     exposed: exposed,
-  };
+  });
 }
 
 /**
@@ -161,7 +164,7 @@ export function parseExtendedMspz(input: string): ExtendedMspzParseResult {
  */
 function parseMentsuFromExtendedMspz(
   block: ExtendedMspzString,
-): CompletedMentsu {
+): Result<CompletedMentsu, MspzParseError> {
   let mode: "open" | "ankan";
   let content: string;
 
@@ -172,15 +175,20 @@ function parseMentsuFromExtendedMspz(
     mode = "ankan";
     content = block.slice(1, -1);
   } else {
-    throw new MspzParseError(
-      `Invalid Extended MSPZ block: ${block} (must be [...] or (...))`,
+    return err(
+      new MspzParseError(
+        `Invalid Extended MSPZ block: ${block} (must be [...] or (...))`,
+      ),
     );
   }
 
   // 中身は標準MSPZ形式である必要がある
-  const ids = parseMspzToHaiKindIds(asMspz(content));
+  const mspzRes = asMspz(content);
+  if (mspzRes.isErr()) return err(mspzRes.error);
+
+  const ids = parseMspzToHaiKindIds(mspzRes.value);
   if (ids.length === 0) {
-    throw new MspzParseError("Empty mentsu specification");
+    return err(new MspzParseError("Empty mentsu specification"));
   }
 
   // 枚数チェック & 種類判定
@@ -190,165 +198,85 @@ function parseMentsuFromExtendedMspz(
   // 暗槓 (Ankan)
   if (mode === "ankan") {
     if (count !== 4 || !isAllSame) {
-      throw new MspzParseError(
-        `Invalid Ankan: ${block} (must be 4 identical tiles)`,
+      return err(
+        new MspzParseError(
+          `Invalid Ankan: ${block} (must be 4 identical tiles)`,
+        ),
       );
     }
     if (!isTuple4(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const kantsu: Kantsu = {
       type: MentsuType.Kantsu,
       hais: ids,
       // Ankan has no furo info (or minimal)
     };
-    return kantsu;
+    return ok(kantsu);
   }
 
   // 副露 (Open)
   if (count === 4 && isAllSame) {
     // Daiminkan
     if (!isTuple4(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const kantsu: Kantsu = {
       type: MentsuType.Kantsu,
       hais: ids,
       furo: { type: FuroType.Daiminkan, from: Tacha.Toimen }, // Default
     };
-    return kantsu;
+    return ok(kantsu);
   } else if (count === 3 && isAllSame) {
     // Pon
     if (!isTuple3(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const koutsu: Koutsu = {
       type: MentsuType.Koutsu,
       hais: ids,
       furo: { type: FuroType.Pon, from: Tacha.Toimen }, // Default
     };
-    return koutsu;
+    return ok(koutsu);
   } else if (count === 3) {
     // Chi (Should check continuity, strictly speaking but relying on user for now or implicit check)
     // Minimal check: sorted? mspzStringToHaiKindIds sorts by default?
     // mspzStringToHaiKindIds does NOT sort across different suits, but "123m" results in sorted array.
     // Let's assume valid sequence for now.
     if (!isTuple3(ids)) {
-      throw new MspzParseError("Internal Error: ids length check mismatch");
+      return err(
+        new MspzParseError("Internal Error: ids length check mismatch"),
+      );
     }
     const shuntsu: Shuntsu = {
       type: MentsuType.Shuntsu,
       hais: ids,
       furo: { type: FuroType.Chi, from: Tacha.Kamicha }, // Default
     };
-    return shuntsu;
+    return ok(shuntsu);
   }
 
-  throw new MspzParseError(
-    `Invalid Mentsu specification: ${block} (must be 3 or 4 tiles)`,
+  return err(
+    new MspzParseError(
+      `Invalid Mentsu specification: ${block} (must be 3 or 4 tiles)`,
+    ),
   );
 }
 
 /**
- * 13枚の牌種ID配列を 34種の牌種分布（所持数分布）に変換します。
- * 枚数バリデーション付きの countHaiKind ラッパーです。
- * @throws {ShoushaiError} 牌の数が13枚より少ない場合
- * @throws {TahaiError} 牌の数が13枚より多い場合
- */
-export function createDistribution(
-  hais: readonly HaiKindId[],
-): HaiKindDistribution {
-  if (hais.length < 13) {
-    throw new ShoushaiError(
-      `Invalid number of tiles: expected 13, got ${hais.length}`,
-    );
-  }
-  if (hais.length > 13) {
-    throw new TahaiError(
-      `Invalid number of tiles: expected 13, got ${hais.length}`,
-    );
-  }
-
-  return countHaiKind(hais);
-}
-
-/**
- * 13枚の牌ID配列を 34種の牌種分布（所持数分布）に変換します。
- * @throws {ShoushaiError} 牌の数が13枚より少ない場合
- * @throws {TahaiError} 牌の数が13枚より多い場合
- */
-export function haiIdsToDistribution(
-  // Branded type makes linter think it's mutable object, but it's primitive number.
-  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-  hais: readonly HaiId[],
-): HaiKindDistribution {
-  const kinds = hais.map(haiIdToKindId);
-  return createDistribution(kinds);
-}
-
-/**
- * 13枚の牌種ID配列を MSPZ形式の文字列（例: "123m456p..."）に変換します。
- * すべての牌をソートして表記します。
- * @throws {ShoushaiError} 牌の数が13枚より少ない場合
- * @throws {TahaiError} 牌の数が13枚より多い場合
- */
-export function haiKindIdsToMspzString(hais: readonly HaiKindId[]): string {
-  const counts = createDistribution(hais);
-  let result = "";
-
-  // 数牌（萬子・筒子・索子）
-  const suupaiGroups = [
-    { base: HaiKind.ManZu1, suffix: "m" },
-    { base: HaiKind.PinZu1, suffix: "p" },
-    { base: HaiKind.SouZu1, suffix: "s" },
-  ] as const;
-
-  for (const { base, suffix } of suupaiGroups) {
-    const nums: number[] = [];
-    for (let i = 0; i < 9; i++) {
-      const kind = asHaiKindId(base + i);
-      const count = counts[kind];
-      for (let j = 0; j < count; j++) {
-        const num = haiKindToNumber(kind);
-        if (num !== undefined) nums.push(num);
-      }
-    }
-    if (nums.length > 0) {
-      result += nums.join("") + suffix;
-    }
-  }
-
-  // 字牌
-  const jihai: number[] = [];
-  for (let i = 0; i < 7; i++) {
-    const kind = asHaiKindId(HaiKind.Ton + i);
-    const count = counts[kind];
-    for (let j = 0; j < count; j++) {
-      // 字牌は 1-7 で表すことが多い
-      const num = i + 1;
-      jihai.push(num);
-    }
-  }
-  if (jihai.length > 0) {
-    result += jihai.join("") + "z";
-  }
-
-  return result;
-}
-
-/**
- * 文字列を MspzString 型として扱います。
- * 標準的なMSPZ形式（拡張記法を含まない）であることを検証します。
  *
- * @param input 変換対象の文字列
- * @throws {Error} 拡張記法が含まれている場合
- * @returns MspzString
  */
-export function asMspz(input: string): MspzString {
+export function asMspz(input: string): Result<MspzString, MspzParseError> {
   if (!isMspz(input)) {
-    throw new MspzParseError(`Invalid MSPZ string: ${input}`);
+    return err(new MspzParseError(`Invalid MSPZ string: ${input}`));
   }
-  return input;
+  return ok(input);
 }
 
 /**

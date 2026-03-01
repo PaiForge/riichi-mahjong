@@ -5,6 +5,8 @@ import {
   asExtendedMspz,
 } from "./mspz";
 import type { Tehai } from "../../types";
+import { Result, ok, err } from "neverthrow";
+import { MspzParseError } from "../../errors";
 
 export type { MspzString, ExtendedMspzString } from "./mspz";
 export { isExtendedMspz } from "./mspz";
@@ -16,12 +18,15 @@ export { isExtendedMspz } from "./mspz";
  * @param input MSPZ形式の文字列
  * @returns 手牌オブジェクト
  */
-export function parseMspz(input: string): Tehai {
-  const ids = parseMspzToHaiKindIds(asMspz(input));
-  return {
+export function parseMspz(input: string): Result<Tehai, MspzParseError> {
+  const mspzRes = asMspz(input);
+  if (mspzRes.isErr()) return err(mspzRes.error);
+
+  const ids = parseMspzToHaiKindIds(mspzRes.value);
+  return ok({
     closed: ids,
     exposed: [],
-  };
+  });
 }
 
 /**
@@ -31,8 +36,14 @@ export function parseMspz(input: string): Tehai {
  * @param input 拡張MSPZ形式の文字列
  * @returns 手牌オブジェクト
  */
-export function parseExtendedMspz(input: string): Tehai {
-  // parseExtendedMspz returns { closed: HaiKindId[], exposed: CompletedMentsu[] }
-  // which is compatible with Tehai interface.
-  return internalParseExtendedMspz(asExtendedMspz(input));
+export function parseExtendedMspz(
+  input: string,
+): Result<Tehai, MspzParseError> {
+  const extMspzRes = asExtendedMspz(input);
+  if (extMspzRes.isErr()) return err(extMspzRes.error);
+
+  const parsedRes = internalParseExtendedMspz(extMspzRes.value);
+  if (parsedRes.isErr()) return err(parsedRes.error);
+
+  return ok(parsedRes.value);
 }

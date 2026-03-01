@@ -40,41 +40,38 @@ describe("Tehai Validation (手牌の検証)", () => {
   describe("Tehai13 (13枚の手牌)", () => {
     it("13枚ちょうどの手牌で検証が通過すること", () => {
       const tehai = createTehai(13);
-      expect(() => {
-        validateTehai13(tehai);
-      }).not.toThrow();
+      const res = validateTehai13(tehai);
+      expect(res.isOk()).toBe(true);
       expect(isTehai13(tehai)).toBe(true);
     });
 
     it("純手牌10枚 + 面子1つで検証が通過すること", () => {
       const tehai = createTehai(10, [dummyMentsu]);
-      expect(() => {
-        validateTehai13(tehai);
-      }).not.toThrow();
+      const res = validateTehai13(tehai);
+      expect(res.isOk()).toBe(true);
       expect(isTehai13(tehai)).toBe(true);
     });
 
     it("純手牌10枚 + 槓子1つで検証が通過すること", () => {
       const tehai = createTehai(10, [dummyKantsu]);
-      expect(() => {
-        validateTehai13(tehai);
-      }).not.toThrow();
+      const res = validateTehai13(tehai);
+      expect(res.isOk()).toBe(true);
       expect(isTehai13(tehai)).toBe(true);
     });
 
     it("槓子を含まない13枚未満の場合に ShoushaiError がスローされること", () => {
       const tehai = createTehai(12);
-      expect(() => {
-        validateTehai13(tehai);
-      }).toThrow(ShoushaiError);
+      const res = validateTehai13(tehai);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(ShoushaiError);
       expect(isTehai13(tehai)).toBe(false);
     });
 
     it("槓子を含まない13枚を超える場合に TahaiError がスローされること", () => {
       const tehai = createTehai(14);
-      expect(() => {
-        validateTehai13(tehai);
-      }).toThrow(TahaiError);
+      const res = validateTehai13(tehai);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(TahaiError);
       expect(isTehai13(tehai)).toBe(false);
     });
   });
@@ -82,33 +79,31 @@ describe("Tehai Validation (手牌の検証)", () => {
   describe("Tehai14 (14枚の手牌)", () => {
     it("14枚ちょうどの手牌で検証が通過すること", () => {
       const tehai = createTehai(14);
-      expect(() => {
-        validateTehai14(tehai);
-      }).not.toThrow();
+      const res = validateTehai14(tehai);
+      expect(res.isOk()).toBe(true);
       expect(isTehai14(tehai)).toBe(true);
     });
 
     it("純手牌11枚 + 槓子1つで検証が通過すること", () => {
       const tehai = createTehai(11, [dummyKantsu]);
-      expect(() => {
-        validateTehai14(tehai);
-      }).not.toThrow();
+      const res = validateTehai14(tehai);
+      expect(res.isOk()).toBe(true);
       expect(isTehai14(tehai)).toBe(true);
     });
 
     it("槓子を含まない14枚未満の場合に ShoushaiError がスローされること", () => {
       const tehai = createTehai(13);
-      expect(() => {
-        validateTehai14(tehai);
-      }).toThrow(ShoushaiError);
+      const res = validateTehai14(tehai);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(ShoushaiError);
       expect(isTehai14(tehai)).toBe(false);
     });
 
     it("槓子を含まない14枚を超える場合に TahaiError がスローされること", () => {
       const tehai = createTehai(15);
-      expect(() => {
-        validateTehai14(tehai);
-      }).toThrow(TahaiError);
+      const res = validateTehai14(tehai);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(TahaiError);
       expect(isTehai14(tehai)).toBe(false);
     });
   });
@@ -133,9 +128,10 @@ describe("Tehai Validation (手牌の検証)", () => {
         ],
         exposed: [],
       };
-      expect(() => {
-        validateTehai13(tehai1m5);
-      }).toThrow(InvalidHaiQuantityError);
+      const res = validateTehai13(tehai1m5);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr())
+        expect(res.error).toBeInstanceOf(InvalidHaiQuantityError);
     });
 
     it("Tehai14でも同一の牌種が5枚以上ある場合に InvalidHaiQuantityError がスローされること", () => {
@@ -158,9 +154,10 @@ describe("Tehai Validation (手牌の検証)", () => {
         ],
         exposed: [],
       };
-      expect(() => {
-        validateTehai14(tehai1m5_14);
-      }).toThrow(InvalidHaiQuantityError);
+      const res = validateTehai14(tehai1m5_14);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr())
+        expect(res.error).toBeInstanceOf(InvalidHaiQuantityError);
     });
 
     it("HaiId指定で重複IDがある場合に DuplicatedHaiIdError がスローされること", () => {
@@ -184,10 +181,10 @@ describe("Tehai Validation (手牌の検証)", () => {
         ],
         exposed: [],
       };
-      expect(() => {
-        // @ts-expect-error Testing HaiId numbers directly
-        validateTehai13(tehaiDup);
-      }).toThrow(DuplicatedHaiIdError);
+      // @ts-expect-error Testing HaiId numbers directly
+      const res = validateTehai13(tehaiDup);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(DuplicatedHaiIdError);
     });
 
     it("HaiKindIdモードでは重複IDエラーは出ず、枚数チェックのみ行われること", () => {
@@ -213,10 +210,9 @@ describe("Tehai Validation (手牌の検証)", () => {
         exposed: [],
       };
 
-      expect(() => {
-        // @ts-expect-error Testing numbers
-        validateTehai13(tehaiLow);
-      }).not.toThrow();
+      // @ts-expect-error Testing numbers
+      const res = validateTehai13(tehaiLow);
+      expect(res.isOk()).toBe(true);
     });
   });
 });

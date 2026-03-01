@@ -1,4 +1,4 @@
-import { createYakuDefinition } from "../../factory";
+import { createYaku } from "../builder";
 import type {
   HouraStructure,
   YakuDefinition,
@@ -14,10 +14,10 @@ const KOKUSHI_HAN: YakuHanConfig = {
   open: 0,
 };
 
-export const kokushiDefinition: YakuDefinition = createYakuDefinition(
-  {
-    name: "KokushiMusou",
-    han: KOKUSHI_HAN,
-  },
-  checkKokushi,
-);
+export const kokushiDefinition: YakuDefinition = createYaku(
+  "KokushiMusou",
+  KOKUSHI_HAN.closed,
+  0,
+)
+  .require(checkKokushi)
+  .build();
