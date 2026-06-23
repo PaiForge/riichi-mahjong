@@ -29,20 +29,14 @@ describe("二盃口（リャンペーコー）の判定", () => {
 
     // 手動で構造を確認するか、あるいは全ての分解結果に対してチェックして、少なくとも1つがTrueになることを確認する。
     const hasRyanpeikou = hands.some((hand) =>
-      ryanpeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasRyanpeikou).toBe(true);
 
     // Hansu check (using one valid hand)
     const validHand = hands.find((hand) =>
-      ryanpeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
     expect(
       ryanpeikouDefinition.getHansu(
@@ -58,10 +52,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     const hands = getHouraStructuresForMentsuTe(tehai);
 
     const hasRyanpeikou = hands.some((hand) =>
-      ryanpeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasRyanpeikou).toBe(true);
@@ -78,12 +69,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
 
     // factoryの実装上、isSatisfiedは構造チェックのみを行うためtrueを返す可能性がある。
     // 一盃口(iipeikou.test.ts)と同様に、getHansuが0になることを確認する。
-    expect(
-      ryanpeikouDefinition.getHansu(
-        validHand as unknown as MentsuHouraStructure,
-        mockContextOpen,
-      ),
-    ).toBe(0);
+    expect(ryanpeikouDefinition.getHansu(validHand, mockContextOpen)).toBe(0);
   });
 
   it("一盃口が1つだけでは不成立", () => {
@@ -92,10 +78,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     const hands = getHouraStructuresForMentsuTe(tehai);
 
     const hasRyanpeikou = hands.some((hand) =>
-      ryanpeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasRyanpeikou).toBe(false);
@@ -108,10 +91,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     const hands = getHouraStructuresForMentsuTe(tehai);
 
     const hasRyanpeikou = hands.some((hand) =>
-      ryanpeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasRyanpeikou).toBe(false);
@@ -123,10 +103,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     const hands = getHouraStructuresForMentsuTe(tehai);
 
     const hasRyanpeikou = hands.some((hand) =>
-      ryanpeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasRyanpeikou).toBe(false);

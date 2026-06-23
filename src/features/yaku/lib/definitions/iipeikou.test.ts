@@ -55,10 +55,7 @@ describe("一盃口の判定", () => {
 
     // 全ての分解において一盃口が成立しないことを確認
     const hasIipeikou = hands.some((hand) =>
-      iipeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      iipeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasIipeikou).toBe(false);
@@ -70,10 +67,7 @@ describe("一盃口の判定", () => {
     const hands = getHouraStructuresForMentsuTe(tehai);
 
     const hasIipeikou = hands.some((hand) =>
-      iipeikouDefinition.isSatisfied(
-        hand as unknown as MentsuHouraStructure,
-        mockContextMenzen,
-      ),
+      iipeikouDefinition.isSatisfied(hand, mockContextMenzen),
     );
 
     expect(hasIipeikou).toBe(false);
