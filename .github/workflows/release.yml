@@ -1,0 +1,82 @@
+name: Release
+
+# main への push 時、package.json の version が npm 上にまだ無ければ
+# npm publish → git タグ vX.Y.Z → GitHub Release を自動作成する。
+# version を上げない push では何もしない（重複 publish しない）。
+#
+# 認証は npm Trusted Publishing（OIDC）を使用するためトークン登録は不要。
+# 事前準備: npmjs.com のパッケージ設定 → Trusted Publisher に
+#   GitHub Actions / PaiForge / riichi-mahjong / release.yml を登録すること。
+# provenance（来歴署名）は Trusted Publishing 時に自動付与される。
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  HUSKY: "0"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # タグ push と GitHub Release 作成に必要
+      id-token: write # npm Trusted Publishing（OIDC）に必要
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted Publishing には npm 11.5.1+ が必要なため最新へ更新する
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      # publish 前に品質ゲートを通す
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm vitest run src
+      - run: pnpm build
+
+      - name: Resolve version and publish state
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$VERSION is already published. Skipping release."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$VERSION is new. Will publish."
+          fi
+
+      # Trusted Publishing: id-token から自動で認証され、トークンは不要。
+      - name: Publish to npm (Trusted Publishing / OIDC)
+        if: steps.check.outputs.already_published == 'false'
+        run: npm publish
+
+      - name: Create git tag and GitHub Release
+        if: steps.check.outputs.already_published == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ steps.check.outputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+          gh release create "$TAG" --title "$TAG" --generate-notes
