@@ -90,7 +90,15 @@ describe("相互検証: シャンテン数計算 (mahjongライブラリ使用)"
   // テストケースを動的に生成
   CASES.forEach(([mpsz, expected], index) => {
     it(`${mpsz} -> ${expected} シャンテン`, () => {
-      const tehai = parseMspz(mpsz);
+      // parseMspz / calculateShanten は neverthrow の Result を返すため unwrap する
+      const parsed = parseMspz(mpsz);
+      if (parsed.isErr()) {
+        throw new Error(
+          `手牌のパースに失敗しました (${mpsz}): ${parsed.error.message}`,
+        );
+      }
+      const tehai = parsed.value;
+
       // 現在の calculateShanten は13枚の手牌のみをサポート
       if (tehai.closed.length + tehai.exposed.length !== 13) {
         console.warn(
@@ -102,7 +110,13 @@ describe("相互検証: シャンテン数計算 (mahjongライブラリ使用)"
       }
 
       // ローカル計算実行
-      const localResult = calculateShanten(tehai);
+      const shantenResult = calculateShanten(tehai);
+      if (shantenResult.isErr()) {
+        throw new Error(
+          `シャンテン計算に失敗しました (${mpsz}): ${shantenResult.error.message}`,
+        );
+      }
+      const localResult = shantenResult.value;
 
       // 1. 定義された期待値との検証 (Primary)
       if (localResult !== expected) {
