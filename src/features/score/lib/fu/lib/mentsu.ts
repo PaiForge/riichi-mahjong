@@ -1,4 +1,4 @@
-import type { FuResult } from "../types";
+import type { FuResult, FuRuleConfig } from "../types";
 import type { MentsuHouraStructure } from "../../../../../types";
 import type { HouraContext } from "../../../../yaku/types";
 import { isYaochu } from "../../../../../core/hai";
@@ -38,11 +38,13 @@ function toFu(value: number): Fu {
  * @param hand 面子手の構造
  * @param context 和了コンテキスト
  * @param isPinfu 平和成立フラグ
+ * @param ruleConfig 符計算のルール差分設定（任意）
  */
 export function calculateMentsuFu(
   hand: MentsuHouraStructure,
   context: HouraContext,
   isPinfu: boolean,
+  ruleConfig?: FuRuleConfig,
 ): FuResult {
   const details = {
     base: FU_BASE.NORMAL,
@@ -116,9 +118,11 @@ export function calculateMentsuFu(
     jantouFu += FU_JANTOU.YAKUHAI;
   }
 
-  // 連風牌の加算上限
-  if (jantouFu > FU_JANTOU.DOUBLE_WIND_CAP) {
-    jantouFu = FU_JANTOU.DOUBLE_WIND_CAP;
+  // 連風牌の加算上限（ルールにより2符または4符）
+  const doubleWindCap =
+    ruleConfig?.doubleWindJantouFu ?? FU_JANTOU.DOUBLE_WIND_DEFAULT;
+  if (jantouFu > doubleWindCap) {
+    jantouFu = doubleWindCap;
   }
   details.jantou = jantouFu;
 

@@ -18,8 +18,9 @@ export const FU_AGARI = {
 // 雀頭符 (JantouFu)
 export const FU_JANTOU = {
   YAKUHAI: 2,
-  // 連風牌の扱い（設定により4符または2符）
-  DOUBLE_WIND_CAP: 2,
+  // 連風牌（場風＝自風）の雀頭符のデフォルト上限。
+  // ルール設定 FuRuleConfig.doubleWindJantouFu で 4 に変更できる。
+  DOUBLE_WIND_DEFAULT: 2,
 } as const;
 
 // 待ち符 (MachiFu)

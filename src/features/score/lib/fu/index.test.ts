@@ -136,6 +136,32 @@ describe("calculateFu", () => {
       const result = calculateFu(hand, ctx);
       expect(result.details.jantou).toBe(2); // 4 capped to 2
     });
+
+    it("連風牌（ダブ東）の雀頭は doubleWindJantouFu=4 で4符", () => {
+      // Ton head, Jikaze=Ton, Bakaze=Ton。ルール設定で連風牌を4符にする
+      const hand = getStruct("123m456m789m123p11z");
+      const ctx = {
+        ...baseContext,
+        jikaze: HaiKind.Ton,
+        bakaze: HaiKind.Ton,
+        agariHai: HaiKind.ManZu3,
+      };
+      const result = calculateFu(hand, ctx, false, { doubleWindJantouFu: 4 });
+      expect(result.details.jantou).toBe(4); // 場風2符 + 自風2符
+    });
+
+    it("doubleWindJantouFu=4 でも単独風（自風のみ）の雀頭は2符", () => {
+      // Ton head, Jikaze=Ton, Bakaze=Nan（連風牌ではない）
+      const hand = getStruct("123m456m789m123p11z");
+      const ctx = {
+        ...baseContext,
+        jikaze: HaiKind.Ton,
+        bakaze: HaiKind.Nan,
+        agariHai: HaiKind.ManZu3,
+      };
+      const result = calculateFu(hand, ctx, false, { doubleWindJantouFu: 4 });
+      expect(result.details.jantou).toBe(2);
+    });
   });
 
   describe("待ち符の計算", () => {

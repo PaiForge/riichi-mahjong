@@ -1,7 +1,9 @@
 import type { Fu, HaiKindId, Kazehai, HouraStructure } from "../../types";
 import type { HouraContext, YakuResult } from "../yaku/types";
 import type { MachiType } from "../../core/machi";
-import type { FuResult } from "./lib/fu/types";
+import type { FuResult, FuRuleConfig } from "./lib/fu/types";
+
+export type { FuRuleConfig };
 
 /**
  * 点数計算用コンテキスト (ScoreContext)
@@ -30,6 +32,8 @@ export interface ScoreCalculationConfig {
   readonly doraMarkers: readonly HaiKindId[];
   /** 裏ドラ表示牌 (任意) */
   readonly uraDoraMarkers?: readonly HaiKindId[];
+  /** 符計算のルール差分設定（任意）。未指定時は標準ルール（連風牌2符）。 */
+  readonly ruleConfig?: FuRuleConfig;
 }
 
 /** ロン和了時の支払い */

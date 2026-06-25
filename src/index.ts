@@ -35,7 +35,11 @@ export type {
   ChiitoitsuHouraStructure,
   KokushiHouraStructure,
 } from "./types";
-export type { FuResult, FuDetails } from "./features/score/lib/fu/types";
+export type {
+  FuResult,
+  FuDetails,
+  FuRuleConfig,
+} from "./features/score/lib/fu/types";
 export type {
   ScoreResult,
   ScoreDetail,

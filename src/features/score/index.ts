@@ -29,6 +29,7 @@ import {
   type Ron,
   type KoTsumo,
   type OyaTsumo,
+  type FuRuleConfig,
 } from "./types";
 export type {
   ScoreCalculationConfig,
@@ -38,6 +39,7 @@ export type {
   Ron,
   KoTsumo,
   OyaTsumo,
+  FuRuleConfig,
 };
 export { ScoreLevel };
 
@@ -184,7 +186,7 @@ export function calculateScoreForTehai(
 
     // 2. 符の計算
     const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
-    const fuResult = calculateFu(hand, context, isPinfu);
+    const fuResult = calculateFu(hand, context, isPinfu, config.ruleConfig);
 
     // 3. ドラの計算
     const dora = countDora(tehai, context.doraMarkers);

@@ -45,6 +45,22 @@ export interface FuDetails {
 }
 
 /**
+ * 符計算のルール差分設定 (FuRuleConfig)
+ *
+ * 符計算にはローカルルールによる差異がある。標準ルールからの差分のみを
+ * ここで指定する。未指定のフィールドは標準ルールとして扱う。
+ */
+export interface FuRuleConfig {
+  /**
+   * 連風牌（場風＝自風）の雀頭符。
+   *
+   * - 2: 通常の役牌と同じく2符（デフォルト）
+   * - 4: 場風2符＋自風2符として4符
+   */
+  readonly doubleWindJantouFu?: 2 | 4;
+}
+
+/**
  * 符計算結果 (FuResult)
  */
 export interface FuResult {
