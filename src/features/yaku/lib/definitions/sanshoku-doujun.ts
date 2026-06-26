@@ -2,8 +2,7 @@ import { createYaku } from "../builder";
 
 import type { HouraStructure, Shuntsu, YakuDefinition } from "../../types";
 
-import { kindIdToSuitIndex } from "../../../../core/hai";
-import { getShuntsuCombinations3 } from "../helpers";
+import { getShuntsuCombinations3, isSanshoku } from "../helpers";
 
 const checkSanshokuDoujun = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
@@ -18,44 +17,10 @@ const checkSanshokuDoujun = (hand: HouraStructure): boolean => {
     return false;
   }
 
-  // 順子リストから3つの組み合わせを全てチェックし、三色同順の条件を満たすものを探す
-  // 条件:
-  // 1. 3つの順子がそれぞれ異なる色（萬子、筒子、索子）であること
-  // 2. 3つの順子の構成数字が同じであること（例: 123m, 123p, 123s）
-
-  // ヘルパーロジック:
-  // HaiKindId の範囲: 0-8 (ManZu), 9-17 (PinZu), 18-26 (SouZu)
-  // 9で割った商が色（0, 1, 2）、余りが数値（0-8）を表す
-
-  for (const [s1, s2, s3] of getShuntsuCombinations3(shuntsuList)) {
-    const firstHai1 = s1.hais[0];
-    const firstHai2 = s2.hais[0];
-    const firstHai3 = s3.hais[0];
-
-    const suit1 = kindIdToSuitIndex(firstHai1);
-    const suit2 = kindIdToSuitIndex(firstHai2);
-    const suit3 = kindIdToSuitIndex(firstHai3);
-
-    // 全て数牌でなければならない
-    // ※通常、Shuntsuに字牌は含まれないが、念のためチェック
-    if (suit1 === undefined || suit2 === undefined || suit3 === undefined)
-      continue;
-
-    // 異なる色（0, 1, 2）でなければならない
-    const suits = new Set([suit1, suit2, suit3]);
-    if (suits.size !== 3) continue;
-
-    // 数値（インデックス）が一致するかチェック
-    const num1 = firstHai1 % 9;
-    const num2 = firstHai2 % 9;
-    const num3 = firstHai3 % 9;
-
-    if (num1 === num2 && num2 === num3) {
-      return true;
-    }
-  }
-
-  return false;
+  // 順子の組み合わせ(3つ)が三色同順（異なる3色・同一数字）を満たすか総当りでチェック
+  return getShuntsuCombinations3(shuntsuList).some(([s1, s2, s3]) =>
+    isSanshoku([s1.hais[0], s2.hais[0], s3.hais[0]]),
+  );
 };
 
 export const sanshokuDoujunDefinition: YakuDefinition = createYaku(

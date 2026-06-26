@@ -1,7 +1,6 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
-import { kindIdToSuitIndex } from "../../../../core/hai";
-import { extractTriplets } from "../helpers";
+import { combinations3, extractTriplets, isSanshoku } from "../helpers";
 
 const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
   // 1. 刻子・槓子を抽出
@@ -11,46 +10,10 @@ const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
     return false;
   }
 
-  // 2. 刻子の組み合わせ(3つ)をチェック
-  for (let i = 0; i < triplets.length; i++) {
-    for (let j = i + 1; j < triplets.length; j++) {
-      for (let k = j + 1; k < triplets.length; k++) {
-        const t1 = triplets[i];
-        const t2 = triplets[j];
-        const t3 = triplets[k];
-
-        if (!t1 || !t2 || !t3) continue;
-
-        const id1 = t1.hais[0];
-        const id2 = t2.hais[0];
-        const id3 = t3.hais[0];
-
-        const suit1 = kindIdToSuitIndex(id1);
-        const suit2 = kindIdToSuitIndex(id2);
-        const suit3 = kindIdToSuitIndex(id3);
-
-        // 字牌が含まれていたら対象外
-        if (suit1 === undefined || suit2 === undefined || suit3 === undefined)
-          continue;
-
-        // ※ 0:萬子, 1:筒子, 2:索子
-        const suits = new Set([suit1, suit2, suit3]);
-        // 異なる3色でなければならない
-        if (suits.size !== 3) continue;
-
-        const num1 = id1 % 9;
-        const num2 = id2 % 9;
-        const num3 = id3 % 9;
-
-        // 同じ数字でなければならない
-        if (num1 === num2 && num2 === num3) {
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
+  // 2. 刻子の組み合わせ(3つ)が三色同刻を満たすか総当りでチェック
+  return combinations3(triplets).some(([t1, t2, t3]) =>
+    isSanshoku([t1.hais[0], t2.hais[0], t3.hais[0]]),
+  );
 };
 
 export const sanshokuDoukouDefinition: YakuDefinition = createYaku(
