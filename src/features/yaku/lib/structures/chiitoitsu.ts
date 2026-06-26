@@ -1,6 +1,7 @@
-import type { Tehai14, HaiKindId, Toitsu } from "../../../../types";
+import type { Tehai14, Toitsu } from "../../../../types";
 import type { ChiitoitsuHouraStructure } from "../../types";
 import { countHaiKind } from "../../../../core/tehai";
+import { asHaiKindId } from "../../../../utils/assertions";
 
 /**
  * 手牌を七対子（7つの対子）として構造化する。
@@ -15,8 +16,7 @@ export function getHouraStructuresForChiitoitsu(
   const pairs: Toitsu[] = [];
 
   for (let i = 0; i < 34; i++) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const kind = i as HaiKindId;
+    const kind = asHaiKindId(i);
     const count = counts[kind];
 
     if (count === 2) {

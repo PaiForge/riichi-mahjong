@@ -1,8 +1,8 @@
 import type { CompletedMentsu } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
 import { validateTehai14, countHaiKind } from "../../../../core/tehai";
-import { isTuple4 } from "../../../../utils/assertions";
-import type { Tehai14, HaiKindId, Shuntsu, Koutsu } from "../../../../types";
+import { asHaiKindId, isTuple4 } from "../../../../utils/assertions";
+import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
 
 /**
  * 手牌を標準形（4面子1雀頭）に構造化する。
@@ -36,8 +36,7 @@ export function getHouraStructuresForMentsuTe(
 
   // 1. 雀頭候補を探す
   for (let i = 0; i < 34; i++) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const kind = i as HaiKindId;
+    const kind = asHaiKindId(i);
     if ((counts[kind] ?? 0) >= 2) {
       // 雀頭抜き出し
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -100,8 +99,7 @@ function decomposeClosedMentsu(
   }
 
   const results: CompletedMentsu[][] = [];
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const kind = firstIndex as HaiKindId;
+  const kind = asHaiKindId(firstIndex);
 
   // 刻子を試す
   if ((counts[kind] ?? 0) >= 3) {
@@ -120,10 +118,8 @@ function decomposeClosedMentsu(
   // 数牌（0-26）かつ7を超えない（n, n+1, n+2を作れる）場合のみ有効
   if (kind < 27 && kind % 9 <= 6) {
     const k1 = kind;
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const k2 = (kind + 1) as HaiKindId;
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const k3 = (kind + 2) as HaiKindId;
+    const k2 = asHaiKindId(kind + 1);
+    const k3 = asHaiKindId(kind + 2);
 
     if ((counts[k2] ?? 0) > 0 && (counts[k3] ?? 0) > 0) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
