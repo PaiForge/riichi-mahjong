@@ -1,11 +1,12 @@
 import { isSuupai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
+import { getMentsuBlocks } from "../helpers";
 
 const checkJunchan = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") return false;
 
-  const allBlocks = [hand.jantou, ...hand.fourMentsu];
+  const allBlocks = getMentsuBlocks(hand);
 
   // 1. 全ての面子・雀頭に老頭牌（1・9）が含まれること
   // isYaochu(k) && isSuupai(k) で「字牌を除く么九牌」＝「老頭牌」となる

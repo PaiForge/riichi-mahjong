@@ -1,17 +1,15 @@
 import { createYaku } from "../builder";
 
-import type { HouraStructure, Shuntsu, YakuDefinition } from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 
-import { getShuntsuCombinations3, isSanshoku } from "../helpers";
+import {
+  extractShuntsu,
+  getShuntsuCombinations3,
+  isSanshoku,
+} from "../helpers";
 
 const checkSanshokuDoujun = (hand: HouraStructure): boolean => {
-  if (hand.type !== "Mentsu") {
-    return false;
-  }
-
-  const shuntsuList = hand.fourMentsu.filter(
-    (mentsu): mentsu is Shuntsu => mentsu.type === "Shuntsu",
-  );
+  const shuntsuList = extractShuntsu(hand);
 
   if (shuntsuList.length < 3) {
     return false;

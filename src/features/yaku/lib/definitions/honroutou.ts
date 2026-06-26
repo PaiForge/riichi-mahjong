@@ -1,12 +1,13 @@
 import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
+import { getMentsuBlocks } from "../helpers";
 
 const checkHonroutou = (hand: HouraStructure): boolean => {
   let blocks;
 
   if (hand.type === "Mentsu") {
-    blocks = [hand.jantou, ...hand.fourMentsu];
+    blocks = getMentsuBlocks(hand);
   } else if (hand.type === "Chiitoitsu") {
     blocks = hand.pairs;
   } else {

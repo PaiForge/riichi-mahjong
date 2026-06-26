@@ -1,7 +1,33 @@
-import type { HouraStructure, Kantsu, Koutsu, Shuntsu } from "../types";
+import type {
+  HouraStructure,
+  Kantsu,
+  Koutsu,
+  MentsuHouraStructure,
+  Shuntsu,
+  Toitsu,
+} from "../types";
 import { type HouraContext } from "../types";
-import type { HaiKindId } from "../../../types";
+import type { CompletedMentsu, HaiKindId } from "../../../types";
 import { kindIdToSuitIndex } from "../../../core/hai";
+
+/**
+ * 面子手の手牌枠（雀頭 + 4面子）を1つの配列として取得する。
+ * 帯幺九系・三元/四喜系など「雀頭を含む全ブロック」を走査する判定に使用。
+ */
+export const getMentsuBlocks = (
+  hand: MentsuHouraStructure,
+): readonly (CompletedMentsu | Toitsu)[] => [hand.jantou, ...hand.fourMentsu];
+
+/**
+ * 手牌枠から順子を抽出する。
+ * 面子手以外の場合は空配列を返す。
+ */
+export const extractShuntsu = (hand: HouraStructure): readonly Shuntsu[] => {
+  if (hand.type !== "Mentsu") {
+    return [];
+  }
+  return hand.fourMentsu.filter((m): m is Shuntsu => m.type === "Shuntsu");
+};
 
 /**
  * 手牌枠から刻子・槓子（トリプル）を抽出する。

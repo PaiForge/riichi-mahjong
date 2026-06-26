@@ -1,11 +1,12 @@
 import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
+import { getMentsuBlocks } from "../helpers";
 
 const checkHonchan = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") return false;
 
-  const allBlocks = [hand.jantou, ...hand.fourMentsu];
+  const allBlocks = getMentsuBlocks(hand);
 
   // 1. 全ての面子・雀頭に么九牌（1・9・字牌）が含まれること
   const allHasYaochu = allBlocks.every((block) =>
