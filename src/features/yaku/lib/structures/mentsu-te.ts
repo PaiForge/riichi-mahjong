@@ -1,6 +1,7 @@
 import type { CompletedMentsu } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
-import { validateTehai14, countHaiKind } from "../../../../core/tehai";
+import { validateTehai14 } from "../../../../core/tehai";
+import { countHaiKind } from "../../../../core/hai-count";
 import { asHaiKindId, isTuple4 } from "../../../../utils/assertions";
 import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
 

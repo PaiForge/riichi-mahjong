@@ -1,6 +1,6 @@
 import type { Tehai14, Toitsu } from "../../../../types";
 import type { ChiitoitsuHouraStructure } from "../../types";
-import { countHaiKind } from "../../../../core/tehai";
+import { countHaiKind } from "../../../../core/hai-count";
 import { asHaiKindId } from "../../../../utils/assertions";
 
 /**

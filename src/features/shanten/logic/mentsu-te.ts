@@ -1,6 +1,7 @@
 import type { Tehai } from "../../../types";
 
-import { countHaiKind, validateTehai } from "../../../core/tehai";
+import { validateTehai } from "../../../core/tehai";
+import { countHaiKind } from "../../../core/hai-count";
 
 /**
  * 面子手（4面子1雀頭）のシャンテン数を計算する
