@@ -1,6 +1,22 @@
 import type { HouraStructure, Kantsu, Koutsu, Shuntsu } from "../types";
 import { type HouraContext } from "../types";
 import type { HaiKindId } from "../../../types";
+
+/**
+ * 手牌枠から刻子・槓子（トリプル）を抽出する。
+ * 面子手以外の場合は空配列を返す。
+ */
+export const extractTriplets = (
+  hand: HouraStructure,
+): readonly (Koutsu | Kantsu)[] => {
+  if (hand.type !== "Mentsu") {
+    return [];
+  }
+  return hand.fourMentsu.filter(
+    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
+  );
+};
+
 /**
  * 手牌の刻子・槓子のうち、暗刻の数をカウントする
  * 四暗刻・三暗刻などの判定に使用
@@ -13,9 +29,7 @@ export const countAnkou = (
     return 0;
   }
 
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
+  const triplets = extractTriplets(hand);
 
   let ankouCount = 0;
 
@@ -56,14 +70,8 @@ export const countSpecificKoutsu = (
   hand: HouraStructure,
   targetKinds: readonly HaiKindId[],
 ): number => {
-  if (hand.type !== "Mentsu") {
-    return 0;
-  }
-
   let count = 0;
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
+  const triplets = extractTriplets(hand);
 
   for (const triplet of triplets) {
     if (targetKinds.includes(triplet.hais[0])) {

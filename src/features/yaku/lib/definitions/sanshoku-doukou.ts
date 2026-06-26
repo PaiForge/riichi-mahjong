@@ -1,21 +1,11 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Kantsu,
-  Koutsu,
-  YakuDefinition,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { kindIdToSuitIndex } from "../../../../core/hai";
+import { extractTriplets } from "../helpers";
 
 const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
-  if (hand.type !== "Mentsu") {
-    return false;
-  }
-
   // 1. 刻子・槓子を抽出
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
+  const triplets = extractTriplets(hand);
 
   if (triplets.length < 3) {
     return false;
