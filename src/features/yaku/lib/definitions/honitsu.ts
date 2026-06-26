@@ -1,19 +1,6 @@
 import { createYaku } from "../builder";
 import { analyzeIshokuPattern } from "../../utils";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const HONITSU_YAKU: Yaku = {
-  name: "Honitsu",
-  han: {
-    open: 2,
-    closed: 3,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkHonitsu = (hand: HouraStructure): boolean => {
   const result = analyzeIshokuPattern(hand);
@@ -23,10 +10,9 @@ const checkHonitsu = (hand: HouraStructure): boolean => {
   return result.hasJihai && result.suupaiSuit !== undefined;
 };
 
-export const honitsuDefinition: YakuDefinition = createYaku(
-  HONITSU_YAKU.name,
-  HONITSU_YAKU.han.closed,
-  typeof HONITSU_YAKU.han.open === "number" ? HONITSU_YAKU.han.open : 0,
-)
+export const honitsuDefinition: YakuDefinition = createYaku("Honitsu", {
+  open: 2,
+  closed: 3,
+})
   .require(checkHonitsu)
   .build();

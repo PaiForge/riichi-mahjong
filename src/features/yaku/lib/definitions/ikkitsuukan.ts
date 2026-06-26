@@ -1,30 +1,11 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Shuntsu,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 
-const IKKITSUUKAN_YAKU: Yaku = {
-  name: "Ikkitsuukan",
-  han: {
-    open: 1,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
-
-import { getShuntsuCombinations3 } from "../helpers";
+import { kindIdToSuitIndex } from "../../../../core/hai";
+import { extractShuntsu, getShuntsuCombinations3 } from "../helpers";
 
 const checkIkkitsuukan = (hand: HouraStructure): boolean => {
-  if (hand.type !== "Mentsu") {
-    return false;
-  }
-
-  const shuntsuList = hand.fourMentsu.filter(
-    (mentsu): mentsu is Shuntsu => mentsu.type === "Shuntsu",
-  );
+  const shuntsuList = extractShuntsu(hand);
 
   if (shuntsuList.length < 3) {
     return false;
@@ -41,15 +22,15 @@ const checkIkkitsuukan = (hand: HouraStructure): boolean => {
     const firstHai2 = s2.hais[0];
     const firstHai3 = s3.hais[0];
 
-    const suit1 = Math.floor(firstHai1 / 9);
-    const suit2 = Math.floor(firstHai2 / 9);
-    const suit3 = Math.floor(firstHai3 / 9);
+    const suit1 = kindIdToSuitIndex(firstHai1);
+    const suit2 = kindIdToSuitIndex(firstHai2);
+    const suit3 = kindIdToSuitIndex(firstHai3);
+
+    // 字牌が含まれていないかチェック（念のため）
+    if (suit1 === undefined) continue;
 
     // 全て同じ色でなければならない
     if (suit1 !== suit2 || suit2 !== suit3) continue;
-
-    // 字牌が含まれていないかチェック（念のため）
-    if (suit1 > 2) continue;
 
     // 数値（インデックス）を取得
     const num1 = firstHai1 % 9;
@@ -66,10 +47,9 @@ const checkIkkitsuukan = (hand: HouraStructure): boolean => {
   return false;
 };
 
-export const ikkitsuukanDefinition: YakuDefinition = createYaku(
-  IKKITSUUKAN_YAKU.name,
-  IKKITSUUKAN_YAKU.han.closed,
-  typeof IKKITSUUKAN_YAKU.han.open === "number" ? IKKITSUUKAN_YAKU.han.open : 0,
-)
+export const ikkitsuukanDefinition: YakuDefinition = createYaku("Ikkitsuukan", {
+  open: 1,
+  closed: 2,
+})
   .require(checkIkkitsuukan)
   .build();

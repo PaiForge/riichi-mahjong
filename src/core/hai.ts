@@ -53,6 +53,25 @@ export function isSuupai(kind: HaiKindId): boolean {
 }
 
 /**
+ * 字牌かどうかを判定する
+ */
+export function isJihai(kind: HaiKindId): boolean {
+  return kindIdToHaiType(kind) === HaiType.Jihai;
+}
+
+/**
+ * 牌種IDから数牌の色インデックス（0:萬子, 1:筒子, 2:索子）を取得する
+ * 字牌の場合は undefined を返す
+ */
+export function kindIdToSuitIndex(kind: HaiKindId): number | undefined {
+  const type = kindIdToHaiType(kind);
+  if (type === HaiType.Manzu) return 0;
+  if (type === HaiType.Pinzu) return 1;
+  if (type === HaiType.Souzu) return 2;
+  return undefined;
+}
+
+/**
  * 么九牌（1,9,字牌）の牌種IDセット
  */
 export const YAOCHU_KIND_IDS = [

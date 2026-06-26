@@ -1,26 +1,13 @@
-import { isYaochu, kindIdToHaiType } from "../../../../core/hai";
-import { HaiType } from "../../../../types";
+import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const HONROUTOU_YAKU: Yaku = {
-  name: "Honroutou",
-  han: {
-    open: 2,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
+import { getMentsuBlocks } from "../helpers";
 
 const checkHonroutou = (hand: HouraStructure): boolean => {
   let blocks;
 
   if (hand.type === "Mentsu") {
-    blocks = [hand.jantou, ...hand.fourMentsu];
+    blocks = getMentsuBlocks(hand);
   } else if (hand.type === "Chiitoitsu") {
     blocks = hand.pairs;
   } else {
@@ -35,18 +22,15 @@ const checkHonroutou = (hand: HouraStructure): boolean => {
   if (!allYaochu) return false;
 
   // 2. 少なくとも1つの字牌が含まれること（清老頭の除外）
-  const hasJihai = blocks.some((block) =>
-    block.hais.some((k) => kindIdToHaiType(k) === HaiType.Jihai),
-  );
+  const hasJihai = blocks.some((block) => block.hais.some((k) => isJihai(k)));
   if (!hasJihai) return false;
 
   return true;
 };
 
-export const honroutouDefinition: YakuDefinition = createYaku(
-  HONROUTOU_YAKU.name,
-  HONROUTOU_YAKU.han.closed,
-  typeof HONROUTOU_YAKU.han.open === "number" ? HONROUTOU_YAKU.han.open : 0,
-)
+export const honroutouDefinition: YakuDefinition = createYaku("Honroutou", {
+  open: 2,
+  closed: 2,
+})
   .require(checkHonroutou)
   .build();

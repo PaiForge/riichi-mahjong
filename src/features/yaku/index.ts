@@ -8,6 +8,7 @@ import type {
 } from "./types";
 
 import { getHouraStructures } from "./lib/structures";
+import { selectBestInterpretation } from "./lib/select";
 import { isMenzen } from "./utils";
 import { ALL_YAKU_DEFINITIONS } from "./lib/definitions";
 import type { HouraContext } from "./types";
@@ -103,18 +104,10 @@ export function detectYaku(
 
   const structuralInterpretations = getHouraStructures(tehai);
 
-  let bestResult: YakuResult = [];
-  let maxHan = -1;
+  const best = selectBestInterpretation(structuralInterpretations, (hand) => {
+    const result = detectYakuForStructure(hand, context);
+    return { score: getTotalHan(result), value: result };
+  });
 
-  for (const hand of structuralInterpretations) {
-    const currentResult = detectYakuForStructure(hand, context);
-    const currentHan = getTotalHan(currentResult);
-
-    if (currentHan > maxHan) {
-      maxHan = currentHan;
-      bestResult = currentResult;
-    }
-  }
-
-  return bestResult;
+  return best ?? [];
 }

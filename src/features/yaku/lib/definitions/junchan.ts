@@ -1,24 +1,12 @@
 import { isSuupai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const JUNCHAN_YAKU: Yaku = {
-  name: "Junchan",
-  han: {
-    open: 2,
-    closed: 3,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
+import { getMentsuBlocks } from "../helpers";
 
 const checkJunchan = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") return false;
 
-  const allBlocks = [hand.jantou, ...hand.fourMentsu];
+  const allBlocks = getMentsuBlocks(hand);
 
   // 1. 全ての面子・雀頭に老頭牌（1・9）が含まれること
   // isYaochu(k) && isSuupai(k) で「字牌を除く么九牌」＝「老頭牌」となる
@@ -34,10 +22,9 @@ const checkJunchan = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const junchanDefinition: YakuDefinition = createYaku(
-  JUNCHAN_YAKU.name,
-  JUNCHAN_YAKU.han.closed,
-  typeof JUNCHAN_YAKU.han.open === "number" ? JUNCHAN_YAKU.han.open : 0,
-)
+export const junchanDefinition: YakuDefinition = createYaku("Junchan", {
+  open: 2,
+  closed: 3,
+})
   .require(checkJunchan)
   .build();

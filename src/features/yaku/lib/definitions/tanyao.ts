@@ -1,19 +1,6 @@
 import { isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const TANYAO_YAKU: Yaku = {
-  name: "Tanyao",
-  han: {
-    open: 1,
-    closed: 1,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkTanyao = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") return false;
@@ -29,10 +16,9 @@ const checkTanyao = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const tanyaoDefinition: YakuDefinition = createYaku(
-  TANYAO_YAKU.name,
-  TANYAO_YAKU.han.closed,
-  typeof TANYAO_YAKU.han.open === "number" ? TANYAO_YAKU.han.open : 0,
-)
+export const tanyaoDefinition: YakuDefinition = createYaku("Tanyao", {
+  open: 1,
+  closed: 1,
+})
   .require(checkTanyao)
   .build();

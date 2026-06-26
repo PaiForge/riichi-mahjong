@@ -1,17 +1,11 @@
 import { HaiKind, HaiKindId } from "../../../../types";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 function createYakuhaiDefinition(
   name: "Haku" | "Hatsu" | "Chun",
   tile: HaiKindId,
 ): YakuDefinition {
-  const HAN_CONFIG: YakuHanConfig = { closed: 1, open: 1 };
-
   const check = (hand: HouraStructure): boolean => {
     if (hand.type !== "Mentsu") return false;
 
@@ -25,13 +19,7 @@ function createYakuhaiDefinition(
     return false;
   };
 
-  return createYaku(
-    name,
-    HAN_CONFIG.closed,
-    typeof HAN_CONFIG.open === "number" ? HAN_CONFIG.open : 0,
-  )
-    .require(check)
-    .build();
+  return createYaku(name, { open: 1, closed: 1 }).require(check).build();
 }
 
 export const hakuDefinition = createYakuhaiDefinition("Haku", HaiKind.Haku);

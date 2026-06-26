@@ -3,8 +3,10 @@ import { type HaiId, HaiKind, HaiType } from "../types";
 import {
   haiIdToKindId,
   haiKindToNumber,
+  isJihai,
   isSuupai,
   kindIdToHaiType,
+  kindIdToSuitIndex,
 } from "./hai";
 
 describe("kindIdToHaiType", () => {
@@ -93,5 +95,41 @@ describe("isSuupai", () => {
   it("字牌は false を返す", () => {
     expect(isSuupai(HaiKind.Ton)).toBe(false);
     expect(isSuupai(HaiKind.Chun)).toBe(false);
+  });
+});
+
+describe("isJihai", () => {
+  it("字牌は true を返す", () => {
+    expect(isJihai(HaiKind.Ton)).toBe(true);
+    expect(isJihai(HaiKind.Haku)).toBe(true);
+    expect(isJihai(HaiKind.Chun)).toBe(true);
+  });
+
+  it("数牌は false を返す", () => {
+    expect(isJihai(HaiKind.ManZu1)).toBe(false);
+    expect(isJihai(HaiKind.PinZu5)).toBe(false);
+    expect(isJihai(HaiKind.SouZu9)).toBe(false);
+  });
+});
+
+describe("kindIdToSuitIndex", () => {
+  it("萬子は 0 を返す", () => {
+    expect(kindIdToSuitIndex(HaiKind.ManZu1)).toBe(0);
+    expect(kindIdToSuitIndex(HaiKind.ManZu9)).toBe(0);
+  });
+
+  it("筒子は 1 を返す", () => {
+    expect(kindIdToSuitIndex(HaiKind.PinZu1)).toBe(1);
+    expect(kindIdToSuitIndex(HaiKind.PinZu9)).toBe(1);
+  });
+
+  it("索子は 2 を返す", () => {
+    expect(kindIdToSuitIndex(HaiKind.SouZu1)).toBe(2);
+    expect(kindIdToSuitIndex(HaiKind.SouZu9)).toBe(2);
+  });
+
+  it("字牌は undefined を返す", () => {
+    expect(kindIdToSuitIndex(HaiKind.Ton)).toBeUndefined();
+    expect(kindIdToSuitIndex(HaiKind.Chun)).toBeUndefined();
   });
 });

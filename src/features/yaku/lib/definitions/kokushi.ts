@@ -1,23 +1,13 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkKokushi = (hand: HouraStructure): boolean => {
   return hand.type === "Kokushi";
 };
 
-const KOKUSHI_HAN: YakuHanConfig = {
-  closed: 13,
+export const kokushiDefinition: YakuDefinition = createYaku("KokushiMusou", {
   open: 0,
-};
-
-export const kokushiDefinition: YakuDefinition = createYaku(
-  "KokushiMusou",
-  KOKUSHI_HAN.closed,
-  0,
-)
+  closed: 13,
+})
   .require(checkKokushi)
   .build();

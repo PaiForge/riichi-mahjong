@@ -1,27 +1,13 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const CHIITOITSU_YAKU: Yaku = {
-  name: "Chiitoitsu",
-  han: {
-    open: 0, // 門前限定
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkChiitoitsu = (hand: HouraStructure): boolean => {
   return hand.type === "Chiitoitsu";
 };
 
-export const chiitoitsuDefinition: YakuDefinition = createYaku(
-  CHIITOITSU_YAKU.name,
-  CHIITOITSU_YAKU.han.closed,
-  typeof CHIITOITSU_YAKU.han.open === "number" ? CHIITOITSU_YAKU.han.open : 0,
-)
+export const chiitoitsuDefinition: YakuDefinition = createYaku("Chiitoitsu", {
+  open: 0, // 門前限定
+  closed: 2,
+})
   .require(checkChiitoitsu)
   .build();

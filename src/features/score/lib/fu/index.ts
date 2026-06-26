@@ -1,8 +1,8 @@
 import type { HouraStructure } from "../../../../types";
 import type { HouraContext } from "../../../yaku/types";
 import type { FuResult, FuRuleConfig } from "./types";
-import { calculateChiitoitsuFu } from "./lib/chiitoitsu";
-import { calculateKokushiFu } from "./lib/kokushi";
+import { FU_BASE } from "./constants";
+import { createFixedFuResult } from "./lib/fixed";
 import { calculateMentsuFu } from "./lib/mentsu";
 
 /**
@@ -22,12 +22,12 @@ export function calculateFu(
 ): FuResult {
   // 1. 七対子 (ChiiToitsu)
   if (hand.type === "Chiitoitsu") {
-    return calculateChiitoitsuFu();
+    return createFixedFuResult(FU_BASE.CHIITOITSU);
   }
 
   // 2. 国士無双 (Kokushi)
   if (hand.type === "Kokushi") {
-    return calculateKokushiFu();
+    return createFixedFuResult(FU_BASE.KOKUSHI);
   }
 
   // 3. 面子手 (Mentsu)

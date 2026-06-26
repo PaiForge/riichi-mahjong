@@ -1,7 +1,8 @@
 import type { Tehai14, HaiKindId } from "../../../../types";
 import type { KokushiHouraStructure } from "../../types";
-import { countHaiKind } from "../../../../core/tehai";
+import { countHaiKind } from "../../../../core/hai-count";
 import { isYaochu } from "../../../../core/hai";
+import { asHaiKindId } from "../../../../utils/assertions";
 
 /**
  * 手牌を国士無双（13種の么九牌＋雀頭）として構造化する。
@@ -17,8 +18,7 @@ export function getHouraStructuresForKokushi(
   let jantou: HaiKindId | undefined;
 
   for (let i = 0; i < 34; i++) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const kind = i as HaiKindId;
+    const kind = asHaiKindId(i);
 
     const count = counts[kind];
 

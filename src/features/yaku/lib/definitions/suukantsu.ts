@@ -1,18 +1,5 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const SUUKANTSU_YAKU: Yaku = {
-  name: "Suukantsu",
-  han: {
-    open: 13,
-    closed: 13,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkSuukantsu = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
@@ -26,10 +13,9 @@ const checkSuukantsu = (hand: HouraStructure): boolean => {
   return kantsuList.length === 4;
 };
 
-export const suukantsuDefinition: YakuDefinition = createYaku(
-  SUUKANTSU_YAKU.name,
-  SUUKANTSU_YAKU.han.closed,
-  typeof SUUKANTSU_YAKU.han.open === "number" ? SUUKANTSU_YAKU.han.open : 0,
-)
+export const suukantsuDefinition: YakuDefinition = createYaku("Suukantsu", {
+  open: 13,
+  closed: 13,
+})
   .require(checkSuukantsu)
   .build();

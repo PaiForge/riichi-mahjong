@@ -1,18 +1,5 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const TOITOI_YAKU: Yaku = {
-  name: "Toitoi",
-  han: {
-    open: 2,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkToitoi = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
@@ -25,10 +12,9 @@ const checkToitoi = (hand: HouraStructure): boolean => {
   );
 };
 
-export const toitoiDefinition: YakuDefinition = createYaku(
-  TOITOI_YAKU.name,
-  TOITOI_YAKU.han.closed,
-  typeof TOITOI_YAKU.han.open === "number" ? TOITOI_YAKU.han.open : 0,
-)
+export const toitoiDefinition: YakuDefinition = createYaku("Toitoi", {
+  open: 2,
+  closed: 2,
+})
   .require(checkToitoi)
   .build();

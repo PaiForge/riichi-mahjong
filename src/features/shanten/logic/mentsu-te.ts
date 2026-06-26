@@ -1,6 +1,7 @@
 import type { Tehai } from "../../../types";
 
-import { countHaiKind, validateTehai } from "../../../core/tehai";
+import { validateTehai } from "../../../core/tehai";
+import { canStartShuntsuAt, countHaiKind } from "../../../core/hai-count";
 
 /**
  * 面子手（4面子1雀頭）のシャンテン数を計算する
@@ -88,22 +89,19 @@ function searchMentsu(counts: readonly number[]): SearchResult {
     }
 
     // B. 順子 (3枚) の場合
-    if (index < 27) {
-      const mod = index % 9;
-      if (mod < 7) {
-        if (
-          (w[index] ?? 0) > 0 &&
-          (w[index + 1] ?? 0) > 0 &&
-          (w[index + 2] ?? 0) > 0
-        ) {
-          w[index] = (w[index] ?? 0) - 1;
-          w[index + 1] = (w[index + 1] ?? 0) - 1;
-          w[index + 2] = (w[index + 2] ?? 0) - 1;
-          search(index, m + 1);
-          w[index] = (w[index] ?? 0) + 1;
-          w[index + 1] = (w[index + 1] ?? 0) + 1;
-          w[index + 2] = (w[index + 2] ?? 0) + 1;
-        }
+    if (canStartShuntsuAt(index)) {
+      if (
+        (w[index] ?? 0) > 0 &&
+        (w[index + 1] ?? 0) > 0 &&
+        (w[index + 2] ?? 0) > 0
+      ) {
+        w[index] = (w[index] ?? 0) - 1;
+        w[index + 1] = (w[index + 1] ?? 0) - 1;
+        w[index + 2] = (w[index + 2] ?? 0) - 1;
+        search(index, m + 1);
+        w[index] = (w[index] ?? 0) + 1;
+        w[index + 1] = (w[index + 1] ?? 0) + 1;
+        w[index + 2] = (w[index + 2] ?? 0) + 1;
       }
     }
 

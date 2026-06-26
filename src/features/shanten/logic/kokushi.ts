@@ -1,6 +1,7 @@
 import type { Tehai13 } from "../../../types";
 import { isYaochu } from "../../../core/hai";
-import { countHaiKind, validateTehai13 } from "../../../core/tehai";
+import { validateTehai13 } from "../../../core/tehai";
+import { countHaiKind } from "../../../core/hai-count";
 import { asHaiKindId } from "../../../utils/assertions";
 
 /**

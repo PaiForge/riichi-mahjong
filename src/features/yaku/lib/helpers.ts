@@ -1,6 +1,49 @@
-import type { HouraStructure, Kantsu, Koutsu, Shuntsu } from "../types";
+import type {
+  HouraStructure,
+  Kantsu,
+  Koutsu,
+  MentsuHouraStructure,
+  Shuntsu,
+  Toitsu,
+} from "../types";
 import { type HouraContext } from "../types";
-import type { HaiKindId } from "../../../types";
+import type { CompletedMentsu, HaiKindId } from "../../../types";
+import { kindIdToSuitIndex } from "../../../core/hai";
+
+/**
+ * 面子手の手牌枠（雀頭 + 4面子）を1つの配列として取得する。
+ * 帯幺九系・三元/四喜系など「雀頭を含む全ブロック」を走査する判定に使用。
+ */
+export const getMentsuBlocks = (
+  hand: MentsuHouraStructure,
+): readonly (CompletedMentsu | Toitsu)[] => [hand.jantou, ...hand.fourMentsu];
+
+/**
+ * 手牌枠から順子を抽出する。
+ * 面子手以外の場合は空配列を返す。
+ */
+export const extractShuntsu = (hand: HouraStructure): readonly Shuntsu[] => {
+  if (hand.type !== "Mentsu") {
+    return [];
+  }
+  return hand.fourMentsu.filter((m): m is Shuntsu => m.type === "Shuntsu");
+};
+
+/**
+ * 手牌枠から刻子・槓子（トリプル）を抽出する。
+ * 面子手以外の場合は空配列を返す。
+ */
+export const extractTriplets = (
+  hand: HouraStructure,
+): readonly (Koutsu | Kantsu)[] => {
+  if (hand.type !== "Mentsu") {
+    return [];
+  }
+  return hand.fourMentsu.filter(
+    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
+  );
+};
+
 /**
  * 手牌の刻子・槓子のうち、暗刻の数をカウントする
  * 四暗刻・三暗刻などの判定に使用
@@ -13,9 +56,7 @@ export const countAnkou = (
     return 0;
   }
 
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
+  const triplets = extractTriplets(hand);
 
   let ankouCount = 0;
 
@@ -56,14 +97,8 @@ export const countSpecificKoutsu = (
   hand: HouraStructure,
   targetKinds: readonly HaiKindId[],
 ): number => {
-  if (hand.type !== "Mentsu") {
-    return 0;
-  }
-
   let count = 0;
-  const triplets = hand.fourMentsu.filter(
-    (m): m is Koutsu | Kantsu => m.type === "Koutsu" || m.type === "Kantsu",
-  );
+  const triplets = extractTriplets(hand);
 
   for (const triplet of triplets) {
     if (targetKinds.includes(triplet.hais[0])) {
@@ -80,7 +115,7 @@ export const countSpecificKoutsu = (
  */
 export const isAllHaisMatch = (
   hand: HouraStructure,
-  predicate: (id: number) => boolean,
+  predicate: (id: HaiKindId) => boolean,
 ): boolean => {
   if (hand.type === "Mentsu") {
     const allHais = [
@@ -98,24 +133,48 @@ export const isAllHaisMatch = (
 };
 
 /**
- * 順子のリストから3つの組み合わせを全て抽出する
- * 一気通貫や三色同順などの判定に使用
+ * リストから3要素の組み合わせを全て抽出する。
+ * 三色同順・三色同刻・一気通貫など「3面子の組み合わせ」を総当りする判定に使用。
  */
-export const getShuntsuCombinations3 = (
-  shuntsuList: readonly Shuntsu[],
-): [Shuntsu, Shuntsu, Shuntsu][] => {
-  const combos: [Shuntsu, Shuntsu, Shuntsu][] = [];
-  for (let i = 0; i < shuntsuList.length; i++) {
-    for (let j = i + 1; j < shuntsuList.length; j++) {
-      for (let k = j + 1; k < shuntsuList.length; k++) {
-        const s1 = shuntsuList[i];
-        const s2 = shuntsuList[j];
-        const s3 = shuntsuList[k];
-        if (s1 && s2 && s3) {
-          combos.push([s1, s2, s3]);
+export const combinations3 = <T>(list: readonly T[]): [T, T, T][] => {
+  const combos: [T, T, T][] = [];
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      for (let k = j + 1; k < list.length; k++) {
+        const a = list[i];
+        const b = list[j];
+        const c = list[k];
+        if (a !== undefined && b !== undefined && c !== undefined) {
+          combos.push([a, b, c]);
         }
       }
     }
   }
   return combos;
+};
+
+/**
+ * 順子のリストから3つの組み合わせを全て抽出する
+ * 一気通貫や三色同順などの判定に使用
+ */
+export const getShuntsuCombinations3 = (
+  shuntsuList: readonly Shuntsu[],
+): [Shuntsu, Shuntsu, Shuntsu][] => combinations3(shuntsuList);
+
+/**
+ * 3つの面子の先頭牌が「三色（異なる3色）かつ同一数字」を満たすか判定する。
+ * 三色同順・三色同刻で共通のロジック。字牌が含まれる場合は false。
+ */
+export const isSanshoku = (
+  firstHais: readonly [HaiKindId, HaiKindId, HaiKindId],
+): boolean => {
+  const suits = firstHais.map(kindIdToSuitIndex);
+  if (suits.some((s) => s === undefined)) return false;
+
+  // 異なる3色でなければならない
+  if (new Set(suits).size !== 3) return false;
+
+  // 構成数字が一致しなければならない
+  const nums = firstHais.map((h) => h % 9);
+  return nums[0] === nums[1] && nums[1] === nums[2];
 };

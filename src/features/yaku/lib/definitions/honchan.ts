@@ -1,25 +1,12 @@
-import { isYaochu, kindIdToHaiType } from "../../../../core/hai";
-import { HaiType } from "../../../../types";
+import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const HONCHAN_YAKU: Yaku = {
-  name: "Honchan",
-  han: {
-    open: 1,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
+import { getMentsuBlocks } from "../helpers";
 
 const checkHonchan = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") return false;
 
-  const allBlocks = [hand.jantou, ...hand.fourMentsu];
+  const allBlocks = getMentsuBlocks(hand);
 
   // 1. 全ての面子・雀頭に么九牌（1・9・字牌）が含まれること
   const allHasYaochu = allBlocks.every((block) =>
@@ -33,17 +20,16 @@ const checkHonchan = (hand: HouraStructure): boolean => {
 
   // 3. 少なくとも1つの字牌が含まれること（純全帯幺九の除外）
   const hasJihai = allBlocks.some((block) =>
-    block.hais.some((k) => kindIdToHaiType(k) === HaiType.Jihai),
+    block.hais.some((k) => isJihai(k)),
   );
   if (!hasJihai) return false;
 
   return true;
 };
 
-export const honchanDefinition: YakuDefinition = createYaku(
-  HONCHAN_YAKU.name,
-  HONCHAN_YAKU.han.closed,
-  typeof HONCHAN_YAKU.han.open === "number" ? HONCHAN_YAKU.han.open : 0,
-)
+export const honchanDefinition: YakuDefinition = createYaku("Honchan", {
+  open: 1,
+  closed: 2,
+})
   .require(checkHonchan)
   .build();

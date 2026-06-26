@@ -1,24 +1,10 @@
 import { HaiKind, type HaiKindId } from "../../../../types";
 
-import type {
-  HouraStructure,
-  Yaku,
-  HouraContext,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, HouraContext, YakuDefinition } from "../../types";
 import type { Shuntsu } from "../../../../types";
 import { classifyMachi } from "../../../../core/machi";
 import { MahjongArgumentError } from "../../../../errors";
 import { createYaku } from "../builder";
-
-const PINFU_YAKU: Yaku = {
-  name: "Pinfu",
-  han: {
-    open: 0,
-    closed: 1,
-  } satisfies YakuHanConfig,
-};
 
 const checkPinfu: (hand: HouraStructure, context: HouraContext) => boolean = (
   hand,
@@ -58,10 +44,9 @@ const checkPinfu: (hand: HouraStructure, context: HouraContext) => boolean = (
   return waitType === "Ryanmen";
 };
 
-export const pinfuDefinition: YakuDefinition = createYaku(
-  PINFU_YAKU.name,
-  PINFU_YAKU.han.closed,
-  typeof PINFU_YAKU.han.open === "number" ? PINFU_YAKU.han.open : 0,
-)
+export const pinfuDefinition: YakuDefinition = createYaku("Pinfu", {
+  open: 0,
+  closed: 1,
+})
   .require(checkPinfu)
   .build();

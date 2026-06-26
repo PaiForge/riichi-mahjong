@@ -1,20 +1,6 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { HaiKind, type HaiKindId } from "../../../../types";
-
-const DAISANGEN_YAKU: Yaku = {
-  name: "Daisangen",
-  han: {
-    open: 13,
-    closed: 13,
-  } satisfies YakuHanConfig,
-};
-
 import { countSpecificKoutsu } from "../helpers";
 
 const checkDaisangen = (hand: HouraStructure): boolean => {
@@ -25,10 +11,9 @@ const checkDaisangen = (hand: HouraStructure): boolean => {
   return sangenKoutsuCount === 3;
 };
 
-export const daisangenDefinition: YakuDefinition = createYaku(
-  DAISANGEN_YAKU.name,
-  DAISANGEN_YAKU.han.closed,
-  typeof DAISANGEN_YAKU.han.open === "number" ? DAISANGEN_YAKU.han.open : 0,
-)
+export const daisangenDefinition: YakuDefinition = createYaku("Daisangen", {
+  open: 13,
+  closed: 13,
+})
   .require(checkDaisangen)
   .build();

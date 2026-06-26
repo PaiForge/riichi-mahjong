@@ -1,19 +1,6 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { countShuntsuPairs } from "../../utils";
-
-const IIPEIKO_YAKU: Yaku = {
-  name: "Iipeikou",
-  han: {
-    open: 0, // 門前限定
-    closed: 1,
-  } satisfies YakuHanConfig,
-};
 
 const checkIipeikou = (hand: HouraStructure): boolean => {
   const pairCount = countShuntsuPairs(hand);
@@ -22,10 +9,9 @@ const checkIipeikou = (hand: HouraStructure): boolean => {
   return pairCount === 1;
 };
 
-export const iipeikouDefinition: YakuDefinition = createYaku(
-  IIPEIKO_YAKU.name,
-  IIPEIKO_YAKU.han.closed,
-  typeof IIPEIKO_YAKU.han.open === "number" ? IIPEIKO_YAKU.han.open : 0,
-)
+export const iipeikouDefinition: YakuDefinition = createYaku("Iipeikou", {
+  open: 0, // 門前限定
+  closed: 1,
+})
   .require(checkIipeikou)
   .build();

@@ -1,5 +1,5 @@
 import type { HaiKindId, Tehai13 } from "../../types";
-import { countHaiKind } from "../../core/tehai";
+import { countHaiKind } from "../../core/hai-count";
 import { calculateMentsuTeShanten } from "../shanten";
 import { asHaiKindId } from "../../utils/assertions";
 
