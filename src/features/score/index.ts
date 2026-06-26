@@ -2,7 +2,11 @@ import { type Tehai14, type Fu, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
 import { countDora } from "../../core/dora";
 import { classifyMachi } from "../../core/machi";
-import { getHouraStructures, detectYakuForStructure } from "../yaku";
+import {
+  getHouraStructures,
+  detectYakuForStructure,
+  selectBestInterpretation,
+} from "../yaku";
 import { calculateFu } from "./lib/fu";
 import type { FuResult } from "./lib/fu/types";
 import { isMenzen } from "../yaku/utils";
@@ -173,38 +177,36 @@ export function calculateScoreForTehai(
 ): ScoreResult {
   const context = createScoreContext(tehai, config);
   const structuralInterpretations = getHouraStructures(tehai);
-  let bestResult: ScoreResult | undefined = undefined;
-  let maxTotalPoints = -1;
 
-  for (const hand of structuralInterpretations) {
-    // 1. 役の判定
-    const yakuResult = detectYakuForStructure(hand, context);
-    const yakuHansu = yakuResult.reduce((sum, [, han]) => sum + han, 0);
+  // 全ての構造解釈のうち、最も高得点となる解釈を採用する。
+  const bestResult = selectBestInterpretation(
+    structuralInterpretations,
+    (hand) => {
+      // 1. 役の判定
+      const yakuResult = detectYakuForStructure(hand, context);
+      const yakuHansu = yakuResult.reduce((sum, [, han]) => sum + han, 0);
 
-    // 役がない場合はこの構造は不成立
-    if (yakuHansu === 0) continue;
+      // 役がない場合はこの構造は不成立（スキップ）
+      if (yakuHansu === 0) return undefined;
 
-    // 2. 符の計算
-    const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
-    const fuResult = calculateFu(hand, context, isPinfu, config.ruleConfig);
+      // 2. 符の計算
+      const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
+      const fuResult = calculateFu(hand, context, isPinfu, config.ruleConfig);
 
-    // 3. ドラの計算
-    const dora = countDora(tehai, context.doraMarkers);
+      // 3. ドラの計算
+      const dora = countDora(tehai, context.doraMarkers);
 
-    // 4. 点数計算
-    const result = calculateScoreFromHanAndFu(
-      yakuHansu,
-      fuResult,
-      dora,
-      context,
-    );
-    const total = getPaymentTotal(result.payment);
+      // 4. 点数計算
+      const result = calculateScoreFromHanAndFu(
+        yakuHansu,
+        fuResult,
+        dora,
+        context,
+      );
+      const total = getPaymentTotal(result.payment);
 
-    if (total > maxTotalPoints) {
-      maxTotalPoints = total;
-      // 最高得点の構造が確定した時点で、その構造に紐づく詳細情報を保持する。
-      // 利用側が符の内訳を表示する際に、ライブラリと同じ構造解釈を
-      // 参照できるようにするため。
+      // 利用側が符の内訳を表示する際にライブラリと同じ構造解釈を参照できるよう、
+      // 採用した構造に紐づく詳細情報を value に含める。
       const machiType = classifyMachi(hand, context.agariHai);
       const detail: ScoreDetail = {
         structure: hand,
@@ -212,9 +214,10 @@ export function calculateScoreForTehai(
         fuResult,
         yakuResult,
       };
-      bestResult = { ...result, detail };
-    }
-  }
+
+      return { score: total, value: { ...result, detail } };
+    },
+  );
 
   if (!bestResult) {
     throw new NoYakuError();
