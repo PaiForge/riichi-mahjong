@@ -1,11 +1,7 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
-import { HaiKind } from "../../../../types";
+import { isJihai } from "../../../../core/hai";
 import { isAllHaisMatch } from "../helpers";
-
-const isJihai = (id: number): boolean => {
-  return id >= HaiKind.Ton && id <= HaiKind.Chun;
-};
 
 const checkTsuuiisou = (hand: HouraStructure): boolean => {
   return isAllHaisMatch(hand, isJihai);

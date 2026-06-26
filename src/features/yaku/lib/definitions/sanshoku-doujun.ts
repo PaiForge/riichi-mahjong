@@ -2,6 +2,7 @@ import { createYaku } from "../builder";
 
 import type { HouraStructure, Shuntsu, YakuDefinition } from "../../types";
 
+import { kindIdToSuitIndex } from "../../../../core/hai";
 import { getShuntsuCombinations3 } from "../helpers";
 
 const checkSanshokuDoujun = (hand: HouraStructure): boolean => {
@@ -31,17 +32,18 @@ const checkSanshokuDoujun = (hand: HouraStructure): boolean => {
     const firstHai2 = s2.hais[0];
     const firstHai3 = s3.hais[0];
 
-    const suit1 = Math.floor(firstHai1 / 9);
-    const suit2 = Math.floor(firstHai2 / 9);
-    const suit3 = Math.floor(firstHai3 / 9);
+    const suit1 = kindIdToSuitIndex(firstHai1);
+    const suit2 = kindIdToSuitIndex(firstHai2);
+    const suit3 = kindIdToSuitIndex(firstHai3);
+
+    // 全て数牌でなければならない
+    // ※通常、Shuntsuに字牌は含まれないが、念のためチェック
+    if (suit1 === undefined || suit2 === undefined || suit3 === undefined)
+      continue;
 
     // 異なる色（0, 1, 2）でなければならない
     const suits = new Set([suit1, suit2, suit3]);
     if (suits.size !== 3) continue;
-
-    // 全て数牌（0, 1, 2）でなければならない
-    // ※通常、Shuntsuに字牌は含まれないが、念のためチェック
-    if (suit1 > 2 || suit2 > 2 || suit3 > 2) continue;
 
     // 数値（インデックス）が一致するかチェック
     const num1 = firstHai1 % 9;

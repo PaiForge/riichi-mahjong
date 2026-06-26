@@ -1,6 +1,8 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
 import { HouraContext } from "../../types";
+import { type HaiKindId } from "../../../../types";
+import { isJihai, kindIdToSuitIndex } from "../../../../core/hai";
 
 const checkChuurenPoutou = (
   hand: HouraStructure,
@@ -13,7 +15,7 @@ const checkChuurenPoutou = (
 
   // 構造は Mentsu 手のみ（基本的には）
   // 構造解析結果がどうあれ、元の手牌構成が九蓮宝燈の形かどうかを確認する
-  const allHais: number[] = [];
+  const allHais: HaiKindId[] = [];
 
   if (hand.type === "Mentsu") {
     // 面子手の場合
@@ -35,13 +37,13 @@ const checkChuurenPoutou = (
   if (firstHai === undefined) return false;
 
   // 字牌が含まれていたらNG
-  if (firstHai >= 27) return false;
+  if (isJihai(firstHai)) return false;
 
-  const suit = Math.floor(firstHai / 9); // 0, 1, 2
+  const suit = kindIdToSuitIndex(firstHai); // 0, 1, 2
 
   for (const hai of allHais) {
-    if (hai >= 27) return false; // 字牌混入
-    if (Math.floor(hai / 9) !== suit) return false; // 色混在
+    // 字牌混入（undefined）または色混在を一括で除外
+    if (kindIdToSuitIndex(hai) !== suit) return false;
   }
 
   // 3. 数牌のカウントチェック

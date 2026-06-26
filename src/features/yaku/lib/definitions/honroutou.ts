@@ -1,5 +1,4 @@
-import { isYaochu, kindIdToHaiType } from "../../../../core/hai";
-import { HaiType } from "../../../../types";
+import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
 
@@ -22,9 +21,7 @@ const checkHonroutou = (hand: HouraStructure): boolean => {
   if (!allYaochu) return false;
 
   // 2. 少なくとも1つの字牌が含まれること（清老頭の除外）
-  const hasJihai = blocks.some((block) =>
-    block.hais.some((k) => kindIdToHaiType(k) === HaiType.Jihai),
-  );
+  const hasJihai = blocks.some((block) => block.hais.some((k) => isJihai(k)));
   if (!hasJihai) return false;
 
   return true;

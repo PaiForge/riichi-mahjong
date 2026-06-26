@@ -80,7 +80,7 @@ export const countSpecificKoutsu = (
  */
 export const isAllHaisMatch = (
   hand: HouraStructure,
-  predicate: (id: number) => boolean,
+  predicate: (id: HaiKindId) => boolean,
 ): boolean => {
   if (hand.type === "Mentsu") {
     const allHais = [

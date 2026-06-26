@@ -1,5 +1,4 @@
-import { isYaochu, kindIdToHaiType } from "../../../../core/hai";
-import { HaiType } from "../../../../types";
+import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
 
@@ -20,7 +19,7 @@ const checkHonchan = (hand: HouraStructure): boolean => {
 
   // 3. 少なくとも1つの字牌が含まれること（純全帯幺九の除外）
   const hasJihai = allBlocks.some((block) =>
-    block.hais.some((k) => kindIdToHaiType(k) === HaiType.Jihai),
+    block.hais.some((k) => isJihai(k)),
   );
   if (!hasJihai) return false;
 

@@ -5,6 +5,7 @@ import type {
   Koutsu,
   YakuDefinition,
 } from "../../types";
+import { kindIdToSuitIndex } from "../../../../core/hai";
 
 const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
@@ -34,12 +35,13 @@ const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
         const id2 = t2.hais[0];
         const id3 = t3.hais[0];
 
-        // 字牌が含まれていたら対象外 (字牌ID >= 27)
-        if (id1 >= 27 || id2 >= 27 || id3 >= 27) continue;
+        const suit1 = kindIdToSuitIndex(id1);
+        const suit2 = kindIdToSuitIndex(id2);
+        const suit3 = kindIdToSuitIndex(id3);
 
-        const suit1 = Math.floor(id1 / 9);
-        const suit2 = Math.floor(id2 / 9);
-        const suit3 = Math.floor(id3 / 9);
+        // 字牌が含まれていたら対象外
+        if (suit1 === undefined || suit2 === undefined || suit3 === undefined)
+          continue;
 
         // ※ 0:萬子, 1:筒子, 2:索子
         const suits = new Set([suit1, suit2, suit3]);
