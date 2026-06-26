@@ -1,19 +1,6 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { HouraContext } from "../../types";
-
-const CHUUREN_POUTOU_YAKU: Yaku = {
-  name: "ChuurenPoutou",
-  han: {
-    open: 0, // 門前限定
-    closed: 13,
-  } satisfies YakuHanConfig,
-};
 
 const checkChuurenPoutou = (
   hand: HouraStructure,
@@ -81,11 +68,8 @@ const checkChuurenPoutou = (
 };
 
 export const chuurenPoutouDefinition: YakuDefinition = createYaku(
-  CHUUREN_POUTOU_YAKU.name,
-  CHUUREN_POUTOU_YAKU.han.closed,
-  typeof CHUUREN_POUTOU_YAKU.han.open === "number"
-    ? CHUUREN_POUTOU_YAKU.han.open
-    : 0,
+  "ChuurenPoutou",
+  { open: 0, closed: 13 },
 )
   .require(checkChuurenPoutou)
   .build();

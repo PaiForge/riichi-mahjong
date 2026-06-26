@@ -1,19 +1,5 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Shuntsu,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const IKKITSUUKAN_YAKU: Yaku = {
-  name: "Ikkitsuukan",
-  han: {
-    open: 1,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, Shuntsu, YakuDefinition } from "../../types";
 
 import { getShuntsuCombinations3 } from "../helpers";
 
@@ -66,10 +52,9 @@ const checkIkkitsuukan = (hand: HouraStructure): boolean => {
   return false;
 };
 
-export const ikkitsuukanDefinition: YakuDefinition = createYaku(
-  IKKITSUUKAN_YAKU.name,
-  IKKITSUUKAN_YAKU.han.closed,
-  typeof IKKITSUUKAN_YAKU.han.open === "number" ? IKKITSUUKAN_YAKU.han.open : 0,
-)
+export const ikkitsuukanDefinition: YakuDefinition = createYaku("Ikkitsuukan", {
+  open: 1,
+  closed: 2,
+})
   .require(checkIkkitsuukan)
   .build();

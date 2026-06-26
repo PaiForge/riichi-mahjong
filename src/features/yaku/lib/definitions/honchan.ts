@@ -1,20 +1,7 @@
 import { isYaochu, kindIdToHaiType } from "../../../../core/hai";
 import { HaiType } from "../../../../types";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const HONCHAN_YAKU: Yaku = {
-  name: "Honchan",
-  han: {
-    open: 1,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkHonchan = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") return false;
@@ -40,10 +27,9 @@ const checkHonchan = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const honchanDefinition: YakuDefinition = createYaku(
-  HONCHAN_YAKU.name,
-  HONCHAN_YAKU.han.closed,
-  typeof HONCHAN_YAKU.han.open === "number" ? HONCHAN_YAKU.han.open : 0,
-)
+export const honchanDefinition: YakuDefinition = createYaku("Honchan", {
+  open: 1,
+  closed: 2,
+})
   .require(checkHonchan)
   .build();

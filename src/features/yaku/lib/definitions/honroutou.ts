@@ -1,20 +1,7 @@
 import { isYaochu, kindIdToHaiType } from "../../../../core/hai";
 import { HaiType } from "../../../../types";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const HONROUTOU_YAKU: Yaku = {
-  name: "Honroutou",
-  han: {
-    open: 2,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkHonroutou = (hand: HouraStructure): boolean => {
   let blocks;
@@ -43,10 +30,9 @@ const checkHonroutou = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const honroutouDefinition: YakuDefinition = createYaku(
-  HONROUTOU_YAKU.name,
-  HONROUTOU_YAKU.han.closed,
-  typeof HONROUTOU_YAKU.han.open === "number" ? HONROUTOU_YAKU.han.open : 0,
-)
+export const honroutouDefinition: YakuDefinition = createYaku("Honroutou", {
+  open: 2,
+  closed: 2,
+})
   .require(checkHonroutou)
   .build();

@@ -1,21 +1,6 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { HaiKind, type HaiKindId } from "../../../../types";
-
-const DAISUUSHII_YAKU: Yaku = {
-  name: "Daisuushii",
-  han: {
-    // TODO: ダブル役満（26翻）とするかはルールによるため、一旦通常の役満として実装
-    open: 13,
-    closed: 13,
-  } satisfies YakuHanConfig,
-};
-
 import { countSpecificKoutsu } from "../helpers";
 
 const checkDaisuushii = (hand: HouraStructure): boolean => {
@@ -32,10 +17,10 @@ const checkDaisuushii = (hand: HouraStructure): boolean => {
   return windKoutsuCount === 4;
 };
 
-export const daisuushiiDefinition: YakuDefinition = createYaku(
-  DAISUUSHII_YAKU.name,
-  DAISUUSHII_YAKU.han.closed,
-  typeof DAISUUSHII_YAKU.han.open === "number" ? DAISUUSHII_YAKU.han.open : 0,
-)
+// TODO: ダブル役満（26翻）とするかはルールによるため、一旦通常の役満として実装
+export const daisuushiiDefinition: YakuDefinition = createYaku("Daisuushii", {
+  open: 13,
+  closed: 13,
+})
   .require(checkDaisuushii)
   .build();

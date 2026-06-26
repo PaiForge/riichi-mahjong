@@ -1,19 +1,6 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { countShuntsuPairs } from "../../utils";
-
-const RYANPEIKOU_YAKU: Yaku = {
-  name: "Ryanpeikou",
-  han: {
-    open: 0, // 門前限定
-    closed: 3,
-  } satisfies YakuHanConfig,
-};
 
 const checkRyanpeikou = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
@@ -33,10 +20,9 @@ const checkRyanpeikou = (hand: HouraStructure): boolean => {
   return pairCount >= 2;
 };
 
-export const ryanpeikouDefinition: YakuDefinition = createYaku(
-  RYANPEIKOU_YAKU.name,
-  RYANPEIKOU_YAKU.han.closed,
-  typeof RYANPEIKOU_YAKU.han.open === "number" ? RYANPEIKOU_YAKU.han.open : 0,
-)
+export const ryanpeikouDefinition: YakuDefinition = createYaku("Ryanpeikou", {
+  open: 0, // 門前限定
+  closed: 3,
+})
   .require(checkRyanpeikou)
   .build();

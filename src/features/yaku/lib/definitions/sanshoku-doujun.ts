@@ -1,20 +1,6 @@
 import { createYaku } from "../builder";
 
-import type {
-  HouraStructure,
-  Shuntsu,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const SANSHOKU_DOUJUN_YAKU: Yaku = {
-  name: "SanshokuDoujun",
-  han: {
-    open: 1,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, Shuntsu, YakuDefinition } from "../../types";
 
 import { getShuntsuCombinations3 } from "../helpers";
 
@@ -71,11 +57,8 @@ const checkSanshokuDoujun = (hand: HouraStructure): boolean => {
 };
 
 export const sanshokuDoujunDefinition: YakuDefinition = createYaku(
-  SANSHOKU_DOUJUN_YAKU.name,
-  SANSHOKU_DOUJUN_YAKU.han.closed,
-  typeof SANSHOKU_DOUJUN_YAKU.han.open === "number"
-    ? SANSHOKU_DOUJUN_YAKU.han.open
-    : 0,
+  "SanshokuDoujun",
+  { open: 1, closed: 2 },
 )
   .require(checkSanshokuDoujun)
   .build();

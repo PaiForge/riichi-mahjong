@@ -1,19 +1,7 @@
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
+import type { HouraStructure, YakuDefinition } from "../../types";
 import { HaiKind } from "../../../../types";
-
-const RYUUIISOU_YAKU: Yaku = {
-  name: "Ryuuiisou",
-  han: {
-    open: 13,
-    closed: 13,
-  } satisfies YakuHanConfig,
-};
+import { isAllHaisMatch } from "../helpers";
 
 const GREEN_TILES = new Set<number>([
   HaiKind.SouZu2,
@@ -24,8 +12,6 @@ const GREEN_TILES = new Set<number>([
   HaiKind.Hatsu,
 ]);
 
-import { isAllHaisMatch } from "../helpers";
-
 const isGreen = (id: number): boolean => {
   return GREEN_TILES.has(id);
 };
@@ -34,10 +20,9 @@ const checkRyuuiisou = (hand: HouraStructure): boolean => {
   return isAllHaisMatch(hand, isGreen);
 };
 
-export const ryuuiisouDefinition: YakuDefinition = createYaku(
-  RYUUIISOU_YAKU.name,
-  RYUUIISOU_YAKU.han.closed,
-  typeof RYUUIISOU_YAKU.han.open === "number" ? RYUUIISOU_YAKU.han.open : 0,
-)
+export const ryuuiisouDefinition: YakuDefinition = createYaku("Ryuuiisou", {
+  open: 13,
+  closed: 13,
+})
   .require(checkRyuuiisou)
   .build();

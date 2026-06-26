@@ -4,6 +4,7 @@ import type {
   Hansu,
   Yaku,
   YakuDefinition,
+  YakuHanConfig,
   YakuName,
 } from "../types";
 
@@ -80,18 +81,8 @@ export class YakuBuilder {
 }
 
 /**
- *
+ * 役名と翻数設定から YakuBuilder を生成する。
  */
-export function createYaku(
-  name: YakuName,
-  closedHan: Hansu,
-  openHan: Hansu | 0 = 0,
-): YakuBuilder {
-  return new YakuBuilder({
-    name,
-    han: {
-      closed: closedHan,
-      open: openHan,
-    },
-  });
+export function createYaku(name: YakuName, han: YakuHanConfig): YakuBuilder {
+  return new YakuBuilder({ name, han });
 }

@@ -3,18 +3,8 @@ import type {
   HouraStructure,
   Kantsu,
   Koutsu,
-  Yaku,
   YakuDefinition,
-  YakuHanConfig,
 } from "../../types";
-
-const SANSHOKU_DOUKOU_YAKU: Yaku = {
-  name: "SanshokuDoukou",
-  han: {
-    open: 2,
-    closed: 2,
-  } satisfies YakuHanConfig,
-};
 
 const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
   if (hand.type !== "Mentsu") {
@@ -72,11 +62,8 @@ const checkSanshokuDoukou = (hand: HouraStructure): boolean => {
 };
 
 export const sanshokuDoukouDefinition: YakuDefinition = createYaku(
-  SANSHOKU_DOUKOU_YAKU.name,
-  SANSHOKU_DOUKOU_YAKU.han.closed,
-  typeof SANSHOKU_DOUKOU_YAKU.han.open === "number"
-    ? SANSHOKU_DOUKOU_YAKU.han.open
-    : 0,
+  "SanshokuDoukou",
+  { open: 2, closed: 2 },
 )
   .require(checkSanshokuDoukou)
   .build();

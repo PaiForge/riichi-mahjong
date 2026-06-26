@@ -1,19 +1,6 @@
 import { isSuupai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
-import type {
-  HouraStructure,
-  Yaku,
-  YakuDefinition,
-  YakuHanConfig,
-} from "../../types";
-
-const CHINROUTOU_YAKU: Yaku = {
-  name: "Chinroutou",
-  han: {
-    open: 13,
-    closed: 13,
-  } satisfies YakuHanConfig,
-};
+import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkChinroutou = (hand: HouraStructure): boolean => {
   // 老頭牌は6種類(1m,9m,1p,9p,1s,9s)しかないため、七対子(7種)は成立しない
@@ -30,10 +17,9 @@ const checkChinroutou = (hand: HouraStructure): boolean => {
   return true;
 };
 
-export const chinroutouDefinition: YakuDefinition = createYaku(
-  CHINROUTOU_YAKU.name,
-  CHINROUTOU_YAKU.han.closed,
-  typeof CHINROUTOU_YAKU.han.open === "number" ? CHINROUTOU_YAKU.han.open : 0,
-)
+export const chinroutouDefinition: YakuDefinition = createYaku("Chinroutou", {
+  open: 13,
+  closed: 13,
+})
   .require(checkChinroutou)
   .build();
