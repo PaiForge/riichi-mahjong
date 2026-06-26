@@ -1,7 +1,7 @@
 import type { CompletedMentsu } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
 import { validateTehai14 } from "../../../../core/tehai";
-import { countHaiKind } from "../../../../core/hai-count";
+import { canStartShuntsuAt, countHaiKind } from "../../../../core/hai-count";
 import { asHaiKindId, isTuple4 } from "../../../../utils/assertions";
 import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
 
@@ -117,7 +117,7 @@ function decomposeClosedMentsu(
 
   // 順子を試す
   // 数牌（0-26）かつ7を超えない（n, n+1, n+2を作れる）場合のみ有効
-  if (kind < 27 && kind % 9 <= 6) {
+  if (canStartShuntsuAt(kind)) {
     const k1 = kind;
     const k2 = asHaiKindId(kind + 1);
     const k3 = asHaiKindId(kind + 2);
