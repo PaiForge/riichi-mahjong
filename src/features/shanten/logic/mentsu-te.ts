@@ -1,46 +1,42 @@
 import type { Tehai } from "../../../types";
 
-import { validateTehai } from "../../../core/tehai";
 import { canStartShuntsuAt, countHaiKind } from "../../../core/hai-count";
 
 /**
  * 面子手（4面子1雀頭）のシャンテン数を計算する
  *
+ * 入力の妥当性検証は公開API（calculateShanten）側で行う。
+ *
  * @param tehai 手牌 (13枚 or 14枚)
  * @returns シャンテン数
  */
 export function calculateMentsuTeShanten(tehai: Tehai): number {
-  // 防御的プログラミング
-  validateTehai(tehai);
-
-  const counts = countHaiKind(tehai.closed);
-  // Mutation is required for the algorithm, so we convert to a mutable number array
-  const mutableCounts: number[] = Array.from(counts);
+  // アルゴリズム上ミューテーションが必要なため、可変の number 配列に複製する
+  const counts: number[] = Array.from(countHaiKind(tehai.closed));
   const exposedCount = tehai.exposed.length;
 
-  // 基本シャンテン数 (8 - 2 * 面子数)
-  let minShanten = 8 - 2 * exposedCount;
+  // 面子数 m・塔子数 t・雀頭の有無からシャンテン数を算出する標準式
+  const shantenOf = (m: number, t: number, hasJantou: boolean): number => {
+    const mentsuCount = exposedCount + m;
+    const effectiveTaatsu = Math.min(4 - mentsuCount, t);
+    return 8 - 2 * mentsuCount - effectiveTaatsu - (hasJantou ? 1 : 0);
+  };
 
-  // 1. 雀頭がある場合
+  // 1. 雀頭を固定しない場合
+  const noJantou = searchMentsu(counts);
+  let minShanten = shantenOf(noJantou.m, noJantou.t, false);
+
+  // 2. 各牌種を雀頭として抜き出した場合
   for (let i = 0; i < 34; i++) {
-    if ((mutableCounts[i] ?? 0) >= 2) {
-      mutableCounts[i] = (mutableCounts[i] ?? 0) - 2;
-      const { m, t } = searchMentsu(mutableCounts);
-      const currentMentsu = exposedCount + m;
-      const effectiveTaatsu = Math.min(4 - currentMentsu, t);
-      const shanten = 8 - 2 * currentMentsu - effectiveTaatsu - 1;
-      minShanten = Math.min(minShanten, shanten);
-      mutableCounts[i] = (mutableCounts[i] ?? 0) + 2;
-    }
-  }
+    if ((counts[i] ?? 0) < 2) continue;
 
-  // 2. 雀頭がない場合
-  {
-    const { m, t } = searchMentsu(mutableCounts);
-    const currentMentsu = exposedCount + m;
-    const effectiveTaatsu = Math.min(4 - currentMentsu, t);
-    const shanten = 8 - 2 * currentMentsu - effectiveTaatsu;
-    minShanten = Math.min(minShanten, shanten);
+    counts[i] = (counts[i] ?? 0) - 2;
+    const withJantou = searchMentsu(counts);
+    minShanten = Math.min(
+      minShanten,
+      shantenOf(withJantou.m, withJantou.t, true),
+    );
+    counts[i] = (counts[i] ?? 0) + 2;
   }
 
   return minShanten;
@@ -60,10 +56,14 @@ interface SearchResult {
 function searchMentsu(counts: readonly number[]): SearchResult {
   let maxScore = -1;
   let bestResult: SearchResult = { m: 0, t: 0 };
-  // copies needed because we mutate counts
+  // バックトラックでミューテーションするため複製する
   const w = [...counts];
+  const get = (i: number): number => w[i] ?? 0;
+  const add = (i: number, delta: number): void => {
+    w[i] = get(i) + delta;
+  };
 
-  const search = (index: number, m: number) => {
+  const search = (index: number, m: number): void => {
     // 34種類すべて見終わったら塔子を数える
     if (index >= 34) {
       const t = countTaatsu(w);
@@ -76,33 +76,32 @@ function searchMentsu(counts: readonly number[]): SearchResult {
     }
 
     // 牌がない場合は次に進む
-    if ((w[index] ?? 0) === 0) {
+    if (get(index) === 0) {
       search(index + 1, m);
       return;
     }
 
     // A. 刻子 (3枚) の場合
-    if ((w[index] ?? 0) >= 3) {
-      w[index] = (w[index] ?? 0) - 3;
+    if (get(index) >= 3) {
+      add(index, -3);
       search(index, m + 1);
-      w[index] = (w[index] ?? 0) + 3;
+      add(index, 3);
     }
 
     // B. 順子 (3枚) の場合
-    if (canStartShuntsuAt(index)) {
-      if (
-        (w[index] ?? 0) > 0 &&
-        (w[index + 1] ?? 0) > 0 &&
-        (w[index + 2] ?? 0) > 0
-      ) {
-        w[index] = (w[index] ?? 0) - 1;
-        w[index + 1] = (w[index + 1] ?? 0) - 1;
-        w[index + 2] = (w[index + 2] ?? 0) - 1;
-        search(index, m + 1);
-        w[index] = (w[index] ?? 0) + 1;
-        w[index + 1] = (w[index + 1] ?? 0) + 1;
-        w[index + 2] = (w[index + 2] ?? 0) + 1;
-      }
+    if (
+      canStartShuntsuAt(index) &&
+      get(index) > 0 &&
+      get(index + 1) > 0 &&
+      get(index + 2) > 0
+    ) {
+      add(index, -1);
+      add(index + 1, -1);
+      add(index + 2, -1);
+      search(index, m + 1);
+      add(index, 1);
+      add(index + 1, 1);
+      add(index + 2, 1);
     }
 
     // C. 面子として使わない場合
@@ -118,37 +117,35 @@ function searchMentsu(counts: readonly number[]): SearchResult {
  */
 function countTaatsu(counts: readonly number[]): number {
   let taatsu = 0;
-  // countsのコピーを作成
+  // ミューテーションするため複製する
   const w = [...counts];
+  const get = (i: number): number => w[i] ?? 0;
+  const take = (...indices: readonly number[]): void => {
+    for (const i of indices) w[i] = get(i) - 1;
+  };
 
   for (let i = 0; i < 34; i++) {
-    if ((w[i] ?? 0) === 0) continue;
+    if (get(i) === 0) continue;
 
     // 順子系の塔子 (1枚 + 1枚)
     if (i < 27) {
       const mod = i % 9;
       // 辺張・両面 (i, i+1)
-      if (mod < 8) {
-        if ((w[i] ?? 0) > 0 && (w[i + 1] ?? 0) > 0) {
-          w[i] = (w[i] ?? 0) - 1;
-          w[i + 1] = (w[i + 1] ?? 0) - 1;
-          taatsu++;
-        }
+      if (mod < 8 && get(i) > 0 && get(i + 1) > 0) {
+        take(i, i + 1);
+        taatsu++;
       }
 
       // 嵌張 (i, i+2)
-      if (mod < 7) {
-        if ((w[i] ?? 0) > 0 && (w[i + 2] ?? 0) > 0) {
-          w[i] = (w[i] ?? 0) - 1;
-          w[i + 2] = (w[i + 2] ?? 0) - 1;
-          taatsu++;
-        }
+      if (mod < 7 && get(i) > 0 && get(i + 2) > 0) {
+        take(i, i + 2);
+        taatsu++;
       }
     }
 
     // 対子 (2枚)
-    if ((w[i] ?? 0) >= 2) {
-      w[i] = (w[i] ?? 0) - 2;
+    if (get(i) >= 2) {
+      take(i, i);
       taatsu++;
     }
   }

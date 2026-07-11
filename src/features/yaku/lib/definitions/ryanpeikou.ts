@@ -1,7 +1,7 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
-import { countShuntsuPairs } from "../../utils";
-import { extractShuntsu } from "../helpers";
+
+import { countShuntsuPairs, extractShuntsu } from "../helpers";
 
 const checkRyanpeikou = (hand: HouraStructure): boolean => {
   // 順子が4つなければ二盃口はあり得ない

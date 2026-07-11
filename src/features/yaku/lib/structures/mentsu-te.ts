@@ -1,6 +1,5 @@
 import type { CompletedMentsu } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
-import { validateTehai14 } from "../../../../core/tehai";
 import { canStartShuntsuAt, countHaiKind } from "../../../../core/hai-count";
 import { asHaiKindId, isTuple4 } from "../../../../utils/assertions";
 import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
@@ -29,43 +28,41 @@ import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
 export function getHouraStructuresForMentsuTe(
   tehai: Tehai14,
 ): MentsuHouraStructure[] {
-  validateTehai14(tehai);
-
   // HaiKindDistributionはreadonlyなので、可変配列に複製する
-  const counts = [...countHaiKind(tehai.closed)];
-  const results: MentsuHouraStructure[] = [];
+  const counts: number[] = [...countHaiKind(tehai.closed)];
+  const get = (i: number): number => counts[i] ?? 0;
+  const add = (i: number, delta: number): void => {
+    counts[i] = get(i) + delta;
+  };
 
-  // 1. 雀頭候補を探す
+  const results: MentsuHouraStructure[] = [];
+  const requiredMentsuCount = 4 - tehai.exposed.length;
+
+  // 雀頭候補ごとに、残りの牌が面子に分解できるか試す
   for (let i = 0; i < 34; i++) {
     const kind = asHaiKindId(i);
-    if ((counts[kind] ?? 0) >= 2) {
-      // 雀頭抜き出し
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[kind]! -= 2;
+    if (get(kind) < 2) continue;
 
-      // 残りの牌で面子分解
-      const requiredMentsuCount = 4 - tehai.exposed.length;
-      const subResults = decomposeClosedMentsu(counts, requiredMentsuCount);
+    add(kind, -2); // 雀頭を抜き出す
 
-      // subResultsには閉じた部分で見つかった面子のリストが含まれる
-      for (const closedMentsu of subResults) {
-        // 副露面子と結合して完全な構成を作成する
-        const fullMentsuList = [...closedMentsu, ...tehai.exposed];
+    for (const closedMentsu of decomposeClosedMentsu(
+      counts,
+      requiredMentsuCount,
+    )) {
+      // 副露面子と結合して完全な構成を作成する
+      const fullMentsuList = [...closedMentsu, ...tehai.exposed];
 
-        // 4面子であることを確認（ロジック上は保証されているはずだが、念のため）
-        if (isTuple4(fullMentsuList)) {
-          results.push({
-            type: "Mentsu",
-            fourMentsu: fullMentsuList,
-            jantou: { type: "Toitsu", hais: [kind, kind] },
-          });
-        }
+      // 4面子であることを確認（ロジック上は保証されているはずだが、念のため）
+      if (isTuple4(fullMentsuList)) {
+        results.push({
+          type: "Mentsu",
+          fourMentsu: fullMentsuList,
+          jantou: { type: "Toitsu", hais: [kind, kind] },
+        });
       }
-
-      // バックトラック
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[kind]! += 2;
     }
+
+    add(kind, 2); // バックトラック
   }
 
   return results;
@@ -79,6 +76,11 @@ function decomposeClosedMentsu(
   counts: number[],
   requiredCount: number,
 ): CompletedMentsu[][] {
+  const get = (i: number): number => counts[i] ?? 0;
+  const add = (i: number, delta: number): void => {
+    counts[i] = get(i) + delta;
+  };
+
   if (requiredCount === 0) {
     // 全ての牌が使用されたか確認
     const remaining = counts.reduce((acc, c) => acc + c, 0);
@@ -86,16 +88,9 @@ function decomposeClosedMentsu(
   }
 
   // 面子の重複順列を防ぎ決定論的な順序を強制するため、カウントが0より大きい最初の牌を見つける
-  let firstIndex = -1;
-  for (let i = 0; i < 34; i++) {
-    if ((counts[i] ?? 0) > 0) {
-      firstIndex = i;
-      break;
-    }
-  }
-
+  const firstIndex = counts.findIndex((c) => c > 0);
   if (firstIndex === -1) {
-    // Should not happen if requiredCount > 0, unless invalid hand
+    // requiredCount > 0 で牌が残っていない＝不正な手牌
     return [];
   }
 
@@ -103,16 +98,13 @@ function decomposeClosedMentsu(
   const kind = asHaiKindId(firstIndex);
 
   // 刻子を試す
-  if ((counts[kind] ?? 0) >= 3) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    counts[kind]! -= 3;
-    const tails = decomposeClosedMentsu(counts, requiredCount - 1);
+  if (get(kind) >= 3) {
+    add(kind, -3);
     const koutsu: Koutsu = { type: "Koutsu", hais: [kind, kind, kind] };
-    for (const tail of tails) {
+    for (const tail of decomposeClosedMentsu(counts, requiredCount - 1)) {
       results.push([koutsu, ...tail]);
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    counts[kind]! += 3; // バックトラック
+    add(kind, 3); // バックトラック
   }
 
   // 順子を試す
@@ -122,26 +114,19 @@ function decomposeClosedMentsu(
     const k2 = asHaiKindId(kind + 1);
     const k3 = asHaiKindId(kind + 2);
 
-    if ((counts[k2] ?? 0) > 0 && (counts[k3] ?? 0) > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[k1]! -= 1;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[k2]! -= 1;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[k3]! -= 1;
+    if (get(k2) > 0 && get(k3) > 0) {
+      add(k1, -1);
+      add(k2, -1);
+      add(k3, -1);
 
-      const tails = decomposeClosedMentsu(counts, requiredCount - 1);
       const shuntsu: Shuntsu = { type: "Shuntsu", hais: [k1, k2, k3] };
-      for (const tail of tails) {
+      for (const tail of decomposeClosedMentsu(counts, requiredCount - 1)) {
         results.push([shuntsu, ...tail]);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[k1]! += 1;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[k2]! += 1;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      counts[k3]! += 1; // バックトラック
+      add(k1, 1);
+      add(k2, 1);
+      add(k3, 1); // バックトラック
     }
   }
 

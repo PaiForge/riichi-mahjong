@@ -6,13 +6,13 @@ import {
 } from "../errors";
 import { Result, ok, err } from "neverthrow";
 import type { HaiId, HaiKindId, Tehai, Tehai13, Tehai14 } from "../types";
+import { haiIdToKindId } from "./hai";
 
 export type TehaiError =
   | ShoushaiError
   | TahaiError
   | InvalidHaiQuantityError
   | DuplicatedHaiIdError;
-import { haiIdToKindId } from "./hai";
 
 /**
  * 手牌の有効枚数を計算します。
@@ -25,25 +25,45 @@ function calculateTehaiCount<T extends HaiKindId | HaiId>(
 }
 
 /**
+ * 手牌の有効枚数が [min, max] の範囲に収まっているか検証します。
+ * 少なければ少牌 (ShoushaiError)、多ければ多牌 (TahaiError) を返します。
+ */
+function validateTehaiCount<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+  min: number,
+  max: number,
+): Result<Tehai<T>, ShoushaiError | TahaiError> {
+  const count = calculateTehaiCount(tehai);
+  if (count < min) return err(new ShoushaiError());
+  if (count > max) return err(new TahaiError());
+  return ok(tehai);
+}
+
+/**
+ * 枚数検証と牌の整合性検証（重複ID・枚数超過）をまとめて行う共通処理。
+ */
+function validateTehaiStructure<T extends HaiKindId | HaiId>(
+  tehai: Tehai<T>,
+  min: number,
+  max: number,
+): Result<Tehai<T>, TehaiError> {
+  return validateTehaiCount(tehai, min, max).andThen((validated) =>
+    validateHaiConsistency(validated).map(() => validated),
+  );
+}
+
+/**
  * 手牌がTehai13（有効枚数13枚）であるか検証し、スマートコンストラクタとして機能します。
  * バリデーション成功後、Tehai13 型にナローイングされたオブジェクトをResultで返します。
  */
 export function validateTehai13<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): Result<Tehai13<T>, TehaiError> {
-  const count = calculateTehaiCount(tehai);
-  if (count < 13) {
-    return err(new ShoushaiError());
-  }
-  if (count > 13) {
-    return err(new TahaiError());
-  }
-  const consRes = validateHaiConsistency(tehai);
-  if (consRes.isErr()) {
-    return err(consRes.error);
-  }
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return ok(tehai as Tehai13<T>);
+  return validateTehaiStructure(tehai, 13, 13).map(
+    (validated) =>
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      validated as Tehai13<T>,
+  );
 }
 
 /**
@@ -53,43 +73,26 @@ export function validateTehai13<T extends HaiKindId | HaiId>(
 export function validateTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): Result<Tehai14<T>, TehaiError> {
-  const count = calculateTehaiCount(tehai);
-  if (count < 14) {
-    return err(new ShoushaiError());
-  }
-  if (count > 14) {
-    return err(new TahaiError());
-  }
-  const consRes = validateHaiConsistency(tehai);
-  if (consRes.isErr()) {
-    return err(consRes.error);
-  }
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return ok(tehai as Tehai14<T>);
+  return validateTehaiStructure(tehai, 14, 14).map(
+    (validated) =>
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      validated as Tehai14<T>,
+  );
 }
 
 /**
- *
+ * 手牌が有効枚数13〜14枚の範囲で整合しているか検証します。
+ * ツモ前後どちらの手牌も受け入れる汎用バリデーションです。
  */
 export function validateTehai<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): Result<Tehai<T>, TehaiError> {
-  const count = calculateTehaiCount(tehai);
-  if (count < 13) {
-    return err(new ShoushaiError());
-  }
-  if (count > 14) {
-    return err(new TahaiError());
-  }
-  const consRes = validateHaiConsistency(tehai);
-  if (consRes.isErr()) {
-    return err(consRes.error);
-  }
-  return ok(tehai);
+  return validateTehaiStructure(tehai, 13, 14);
 }
 
 /**
- *
+ * 手牌を構成する牌の整合性を検証します。
+ * 物理牌ID (HaiId) 使用時はIDの重複を、また牌種ごとの枚数が4枚を超えないことを確認します。
  */
 export function validateHaiConsistency<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
@@ -99,18 +102,18 @@ export function validateHaiConsistency<T extends HaiKindId | HaiId>(
     ...tehai.exposed.flatMap((m) => m.hais),
   ];
 
-  // 1. Check for physical HaiId usage (any id > 33)
+  // 1. 物理牌ID (HaiId) モードの判定 (34以上のIDが含まれるか)
   const isHaiIdMode = allHais.some((h) => h > 33);
 
   if (isHaiIdMode) {
-    // Check for duplicate HaiIds
+    // 物理牌IDは一意でなければならない
     const uniqueIds = new Set(allHais);
     if (uniqueIds.size !== allHais.length) {
       return err(new DuplicatedHaiIdError());
     }
   }
 
-  // 2. Check for Kind quantity (max 4 per kind)
+  // 2. 牌種ごとの枚数チェック (各種最大4枚)
   const counts = new Map<number, number>();
   for (const hai of allHais) {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

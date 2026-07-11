@@ -1,7 +1,28 @@
 import { HaiKind, type HaiKindId, type Tehai } from "../types";
-import { kindIdToHaiType } from "./hai";
-import { HaiType } from "../types";
+import { KAZEHAI_KIND_IDS, SANGENPAI_KIND_IDS } from "./hai";
 import { asHaiKindId } from "../utils/assertions";
+
+/**
+ * 数牌スートの循環列（1→2→...→9→1）を生成する
+ */
+function suupaiCycle(start: HaiKindId): readonly HaiKindId[] {
+  return Array.from({ length: 9 }, (_, i) => asHaiKindId(start + i));
+}
+
+/**
+ * ドラ表示牌から次の牌（ドラ）への循環グループ。
+ *
+ * - 数牌: 各スート内で 1→2→...→9→1
+ * - 風牌: 東→南→西→北→東
+ * - 三元牌: 白→發→中→白
+ */
+const DORA_CYCLES: readonly (readonly HaiKindId[])[] = [
+  suupaiCycle(HaiKind.ManZu1),
+  suupaiCycle(HaiKind.PinZu1),
+  suupaiCycle(HaiKind.SouZu1),
+  KAZEHAI_KIND_IDS,
+  SANGENPAI_KIND_IDS,
+];
 
 /**
  * ドラ表示牌から次の牌（ドラ）を求める
@@ -9,38 +30,11 @@ import { asHaiKindId } from "../utils/assertions";
  * @returns ドラ牌のID (HaiKindId)
  */
 export function getDoraNext(indicator: HaiKindId): HaiKindId {
-  const type = kindIdToHaiType(indicator);
+  const cycle = DORA_CYCLES.find((c) => c.includes(indicator));
+  if (cycle === undefined) return indicator; // 有効な HaiKindId なら到達しない
 
-  if (type === HaiType.Manzu) {
-    if (indicator === HaiKind.ManZu9) return HaiKind.ManZu1;
-    return asHaiKindId(indicator + 1);
-  }
-
-  if (type === HaiType.Pinzu) {
-    if (indicator === HaiKind.PinZu9) return HaiKind.PinZu1;
-    return asHaiKindId(indicator + 1);
-  }
-
-  if (type === HaiType.Souzu) {
-    if (indicator === HaiKind.SouZu9) return HaiKind.SouZu1;
-    return asHaiKindId(indicator + 1);
-  }
-
-  // Jihai
-  // Ton(27) -> Nan(28) -> Sha(29) -> Pei(30) -> Ton(27)
-  if (indicator === HaiKind.Pei) return HaiKind.Ton;
-  if (indicator >= HaiKind.Ton && indicator < HaiKind.Pei) {
-    return asHaiKindId(indicator + 1);
-  }
-
-  // Haku(31) -> Hatsu(32) -> Chun(33) -> Haku(31)
-  if (indicator === HaiKind.Chun) return HaiKind.Haku;
-  if (indicator >= HaiKind.Haku && indicator < HaiKind.Chun) {
-    return asHaiKindId(indicator + 1);
-  }
-
-  // Should not happen for valid HaiKindId
-  return indicator;
+  const nextIndex = (cycle.indexOf(indicator) + 1) % cycle.length;
+  return cycle[nextIndex] ?? indicator;
 }
 
 /**

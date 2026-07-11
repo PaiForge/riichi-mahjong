@@ -1,27 +1,20 @@
-import { validateTehai13 } from "../../../core/tehai";
 import { countHaiKind } from "../../../core/hai-count";
 import type { Tehai13 } from "../../../types";
 
 /**
  * 七対子のシャンテン数を計算する
  *
+ * 入力の妥当性検証は公開API（calculateShanten）側で行う。
+ *
  * @param tehai 手牌 (13枚)
- * @returns シャンテン数 (0: 聴牌, -1: 和了 - 理論上)
+ * @returns シャンテン数 (0: 聴牌)。副露している場合は Infinity。
  */
 export function calculateChiitoitsuShanten(tehai: Tehai13): number {
-  // 防御的プログラミング (Defensive Programming):
-  // 公開API（calculateShanten）側でもバリデーションが行われる想定だが（Facadeパターン）、
-  // 内部整合性を保つため、ここでも独立してバリデーションを実施する。
-  validateTehai13(tehai);
-
-  // シャンテン数を計算する前にバリデーションを実行する
   // 七対子は門前のみ
-
   if (tehai.exposed.length > 0) {
     return Infinity;
   }
 
-  // HaiId/HaiKindId の正規化は廃止。呼び出し元で HaiKindId を保証する。
   const haiCounts = countHaiKind(tehai.closed);
 
   let pairs = 0;
@@ -36,12 +29,8 @@ export function calculateChiitoitsuShanten(tehai: Tehai13): number {
     }
   }
 
-  let shanten = 6 - pairs;
-
-  // 種類不足ペナルティ
-  if (kinds < 7) {
-    shanten += 7 - kinds;
-  }
-
-  return shanten;
+  // 基本式: 6 - 対子数。同種3枚以上は1対子としか数えられないため、
+  // 牌の種類が7未満の場合は不足分をペナルティとして加算する。
+  const kindShortage = Math.max(0, 7 - kinds);
+  return 6 - pairs + kindShortage;
 }
