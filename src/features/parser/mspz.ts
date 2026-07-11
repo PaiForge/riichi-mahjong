@@ -1,4 +1,4 @@
-import { Result, ok, err } from "neverthrow";
+import { Result, err } from "neverthrow";
 import { MspzParseError } from "../../errors";
 import type { CompletedMentsu, HaiKindId } from "../../types";
 import { asExtendedMspz, asMspz } from "./mspz-string";
@@ -17,6 +17,15 @@ interface ExtendedMspzParseResult {
   readonly exposed: readonly CompletedMentsu[];
 }
 
+/** 囲み開始文字 → 対応する閉じ文字（`[...]`: 副露, `(...)`: 暗槓） */
+const CLOSING_CHAR_OF = new Map<string, string>([
+  ["[", "]"],
+  ["(", ")"],
+]);
+
+const OPENING_CHARS: ReadonlySet<string> = new Set(CLOSING_CHAR_OF.keys());
+const CLOSING_CHARS: ReadonlySet<string> = new Set(CLOSING_CHAR_OF.values());
+
 /**
  * 拡張MSPZ形式の文字列を解析して、純手牌と副露のリストに変換します。
  *
@@ -34,65 +43,43 @@ export function parseExtendedMspz(
   const exposed: CompletedMentsu[] = [];
 
   let current = "";
-  let mode: "closed" | "open" | "ankan" = "closed";
+  // 囲みブロックの解析中は、期待する閉じ文字を保持する
+  let expectedClosing: string | undefined;
 
-  // 文字単位でパース
   for (const char of input) {
-    if (char === "[") {
-      if (mode !== "closed")
-        return err(new MspzParseError("Nested brackets are not supported"));
+    if (OPENING_CHARS.has(char)) {
+      if (expectedClosing !== undefined) {
+        return err(new MspzParseError("Nested enclosures are not supported"));
+      }
       if (current.length > 0) closedParts.push(current);
-      current = "["; // NEW: Start capturing with bracket
-      mode = "open";
-    } else if (char === "]") {
-      if (mode !== "open")
-        return err(new MspzParseError("Unexpected closing bracket ']'"));
-      current += "]"; // NEW: End capturing with bracket
-      const extMspzRes = asExtendedMspz(current);
-      if (extMspzRes.isErr()) return err(extMspzRes.error);
-      const mentsuRes = parseMentsuFromExtendedMspz(extMspzRes.value);
+      current = char;
+      expectedClosing = CLOSING_CHAR_OF.get(char);
+    } else if (CLOSING_CHARS.has(char)) {
+      if (expectedClosing !== char) {
+        return err(
+          new MspzParseError(`Unexpected closing character '${char}'`),
+        );
+      }
+      const mentsuRes = asExtendedMspz(current + char).andThen(
+        parseMentsuFromExtendedMspz,
+      );
       if (mentsuRes.isErr()) return err(mentsuRes.error);
       exposed.push(mentsuRes.value);
       current = "";
-      mode = "closed";
-    } else if (char === "(") {
-      if (mode !== "closed")
-        return err(new MspzParseError("Nested parentheses are not supported"));
-      if (current.length > 0) closedParts.push(current);
-      current = "("; // NEW
-      mode = "ankan";
-    } else if (char === ")") {
-      if (mode !== "ankan")
-        return err(new MspzParseError("Unexpected closing parenthesis ')'"));
-      current += ")"; // NEW
-      const extMspzRes = asExtendedMspz(current);
-      if (extMspzRes.isErr()) return err(extMspzRes.error);
-      const mentsuRes = parseMentsuFromExtendedMspz(extMspzRes.value);
-      if (mentsuRes.isErr()) return err(mentsuRes.error);
-      exposed.push(mentsuRes.value);
-      current = "";
-      mode = "closed";
+      expectedClosing = undefined;
     } else {
       current += char;
     }
   }
 
-  // 残りのclosed部分
-  if (current.length > 0) {
-    if (mode !== "closed")
-      return err(new MspzParseError("Unclosed bracket or parenthesis"));
-    closedParts.push(current);
+  if (expectedClosing !== undefined) {
+    return err(new MspzParseError("Unclosed bracket or parenthesis"));
   }
+  if (current.length > 0) closedParts.push(current);
 
   // closed部分を結合してパース
-  const fullClosedMspz = closedParts.join("");
-  const mspzRes = asMspz(fullClosedMspz);
-  if (mspzRes.isErr()) return err(mspzRes.error);
-
-  const closedIds = parseMspzToHaiKindIds(mspzRes.value);
-
-  return ok({
-    closed: closedIds,
-    exposed: exposed,
-  });
+  return asMspz(closedParts.join("")).map((mspz) => ({
+    closed: parseMspzToHaiKindIds(mspz),
+    exposed,
+  }));
 }
