@@ -1,5 +1,5 @@
 import { createYaku } from "../builder";
-import { analyzeIshokuPattern } from "../../utils";
+import { analyzeIshokuPattern } from "../helpers";
 import type { HouraStructure, YakuDefinition } from "../../types";
 
 const checkHonitsu = (hand: HouraStructure): boolean => {

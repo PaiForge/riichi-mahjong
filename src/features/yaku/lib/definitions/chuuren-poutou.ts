@@ -1,8 +1,12 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
 import { HouraContext } from "../../types";
-import { type HaiKindId } from "../../../../types";
-import { isJihai, kindIdToSuitIndex } from "../../../../core/hai";
+import { kindIdToSuitIndex } from "../../../../core/hai";
+import { getMentsuBlocks } from "../helpers";
+
+// 各数字（1-9）の最低必要枚数: 1112345678999
+// 合計13枚が必須パーツで、残り1枚は同スートなら何でもよい。
+const REQUIRED_COUNTS = [3, 1, 1, 1, 1, 1, 1, 1, 3] as const;
 
 const checkChuurenPoutou = (
   hand: HouraStructure,
@@ -13,60 +17,29 @@ const checkChuurenPoutou = (
     return false;
   }
 
-  // 構造は Mentsu 手のみ（基本的には）
-  // 構造解析結果がどうあれ、元の手牌構成が九蓮宝燈の形かどうかを確認する
-  const allHais: HaiKindId[] = [];
-
-  if (hand.type === "Mentsu") {
-    // 面子手の場合
-    for (const mentsu of hand.fourMentsu) {
-      allHais.push(...mentsu.hais);
-    }
-    allHais.push(...hand.jantou.hais);
-  } else {
-    // 九蓮宝燈は通常、面子手の特殊形として扱われることが多いが、
-    // 構造解析器が Mentsu として解釈できない場合も考慮すべきか？
-    // 一旦 Mentsu 型として解釈されていることを前提とする
-    // （九蓮宝燈は 111+234+567+8999+α のように分解可能なので Mentsu になるはず）
+  // 九蓮宝燈は 111+234+567+8999+α のように必ず面子手に分解できるため、
+  // Mentsu 構造として解釈されていることを前提とする
+  if (hand.type !== "Mentsu") {
     return false;
   }
 
-  // 2. 混一色チェック（全て同じ色、字牌なし）
-  if (allHais.length === 0) return false;
+  const allHais = getMentsuBlocks(hand).flatMap((block) => block.hais);
   const firstHai = allHais[0];
   if (firstHai === undefined) return false;
 
-  // 字牌が含まれていたらNG
-  if (isJihai(firstHai)) return false;
+  // 2. 清一色チェック: 全て同一スートの数牌（字牌は suit が undefined）
+  const suit = kindIdToSuitIndex(firstHai);
+  if (suit === undefined) return false;
+  if (!allHais.every((hai) => kindIdToSuitIndex(hai) === suit)) return false;
 
-  const suit = kindIdToSuitIndex(firstHai); // 0, 1, 2
-
-  for (const hai of allHais) {
-    // 字牌混入（undefined）または色混在を一括で除外
-    if (kindIdToSuitIndex(hai) !== suit) return false;
-  }
-
-  // 3. 数牌のカウントチェック
-  // 1が3枚以上, 9が3枚以上, 2-8が1枚以上
-  const counts = Array(9).fill(0);
+  // 3. 数牌のカウントチェック: 1と9が3枚以上、2-8が1枚以上
+  const counts = Array.from({ length: 9 }, () => 0);
   for (const hai of allHais) {
     const num = hai % 9; // 0-8
-    counts[num]++;
+    counts[num] = (counts[num] ?? 0) + 1;
   }
 
-  // 1 (index 0) >= 3
-  if (counts[0] < 3) return false;
-  // 9 (index 8) >= 3
-  if (counts[8] < 3) return false;
-  // 2-8 (index 1-7) >= 1
-  for (let i = 1; i <= 7; i++) {
-    if (counts[i] < 1) return false;
-  }
-
-  // 合計14枚で上記を満たしていれば、必ず九蓮宝燈の形になる
-  // (3+3+7 = 13枚が必須パーツで、残り1枚は何でもよいため)
-
-  return true;
+  return REQUIRED_COUNTS.every((min, i) => (counts[i] ?? 0) >= min);
 };
 
 export const chuurenPoutouDefinition: YakuDefinition = createYaku(
