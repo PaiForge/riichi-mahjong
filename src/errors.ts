@@ -4,7 +4,7 @@
  */
 export class MahjongError extends Error {
   /**
-   *
+   * @param message エラーメッセージ
    */
   constructor(message: string) {
     super(message);
@@ -21,7 +21,7 @@ export class MahjongError extends Error {
  */
 export class ShoushaiError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "手牌が規定枚数（13枚）より少ないです。") {
     super(message);
@@ -35,7 +35,7 @@ export class ShoushaiError extends MahjongError {
  */
 export class TahaiError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "手牌が規定枚数（13枚）より多いです。") {
     super(message);
@@ -49,7 +49,7 @@ export class TahaiError extends MahjongError {
  */
 export class MahjongArgumentError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ
    */
   constructor(message: string) {
     super(message);
@@ -63,7 +63,7 @@ export class MahjongArgumentError extends MahjongError {
  */
 export class DuplicatedHaiIdError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "牌IDが重複しています。") {
     super(message);
@@ -77,7 +77,7 @@ export class DuplicatedHaiIdError extends MahjongError {
  */
 export class InvalidHaiQuantityError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "同種の牌が5枚以上存在します。") {
     super(message);
@@ -93,7 +93,7 @@ export class InvalidHaiQuantityError extends MahjongError {
  */
 export class ChomboError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "不正な和了です。") {
     super(message);
@@ -108,7 +108,7 @@ export class ChomboError extends MahjongError {
  */
 export class NoYakuError extends ChomboError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "役が成立していません。") {
     super(message);
@@ -123,7 +123,7 @@ export class NoYakuError extends ChomboError {
  */
 export class MspzParseError extends MahjongError {
   /**
-   *
+   * @param message エラーメッセージ（省略時は既定メッセージ）
    */
   constructor(message = "MSPZ文字列の解析に失敗しました。") {
     super(message);
