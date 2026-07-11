@@ -87,6 +87,17 @@ export const SANGENPAI_KIND_IDS = [
   HaiKind.Chun,
 ] as const;
 
+const SANGENPAI_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(
+  SANGENPAI_KIND_IDS,
+);
+
+/**
+ * 三元牌（白・發・中）かどうかを判定する
+ */
+export function isSangenpai(kind: HaiKindId): boolean {
+  return SANGENPAI_KIND_ID_SET.has(kind);
+}
+
 /**
  * 么九牌（1,9,字牌）の牌種IDセット
  */
