@@ -1,4 +1,5 @@
 import type { HaiKindId, Shuntsu, HouraStructure } from "../types";
+import { haiKindToNumber } from "./hai";
 
 /** 待ちの形 */
 export type MachiType =
@@ -55,17 +56,13 @@ function classifyShuntsuWait(
   const [a, b, c] = hais; // 順子はソートされている前提
 
   if (agariHai === a) {
-    // [Agari, b, c]
-    const valC = c % 9;
-    if (valC === 8) return "Penchan";
-    return "Ryanmen";
+    // [Agari, b, c]: 789 の 7 待ちのみ辺張、それ以外は両面
+    return haiKindToNumber(c) === 9 ? "Penchan" : "Ryanmen";
   }
 
   if (agariHai === c) {
-    // [a, b, Agari]
-    const valA = a % 9;
-    if (valA === 0) return "Penchan";
-    return "Ryanmen";
+    // [a, b, Agari]: 123 の 3 待ちのみ辺張、それ以外は両面
+    return haiKindToNumber(a) === 1 ? "Penchan" : "Ryanmen";
   }
 
   if (agariHai === b) {
