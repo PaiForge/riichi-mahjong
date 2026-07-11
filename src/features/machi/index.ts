@@ -12,7 +12,6 @@ import { asHaiKindId } from "../../utils/assertions";
  */
 export function getUkeire(tehai: Tehai13): HaiKindId[] {
   const currentShanten = calculateMentsuTeShanten(tehai);
-  const ukeireList: HaiKindId[] = [];
 
   // 手牌の全ての牌（純手牌 + 副露）をカウント
   const allHais: HaiKindId[] = [
@@ -22,37 +21,19 @@ export function getUkeire(tehai: Tehai13): HaiKindId[] {
   const haiCounts = countHaiKind(allHais);
 
   // 全34種の牌について、1枚加えてシャンテン数が下がるか試す
-  for (let i = 0; i < 34; i++) {
-    const tile = asHaiKindId(i);
-
+  return Array.from({ length: 34 }, (_, i) => asHaiKindId(i)).filter((tile) => {
     // 4枚使い切っている牌種はスキップ（山に残っていない）
     if (haiCounts[tile] >= 4) {
-      continue;
+      return false;
     }
 
-    // 手牌のコピーを作成（副作用を防ぐため、常に新しいオブジェクトで試行）
-    // Tehai13に1枚足すので、厳密にはTehai14として扱う必要があるが、
-    // calculateMentsuTeShanten は Tehai<HaiKindId> を受け付けるので、
-    // 構造的に { closed, exposed } が適合していればOK。
-    // ただし、Tehai13型に準拠したオブジェクトに1枚足すと枚数オーバーになるため、
-    // バリデーションを通過させるために Tehai14 として構築するか、
-    // calculateMentsuTeShanten 側が Generics で受け入れる点を利用する。
-
-    // 配列のコピーを作成
-    const newClosed = [...tehai.closed, tile];
-    const newTehai = {
-      closed: newClosed,
+    // 14枚になるため Tehai13 の枠を外れるが、calculateMentsuTeShanten は
+    // 汎用の Tehai を受け付けるため構造的に適合する。
+    const trialTehai = {
+      closed: [...tehai.closed, tile],
       exposed: tehai.exposed,
     };
 
-    // シャンテン数を計算
-    // ここでバリデーションエラーが出ないように、calculateMentsuTeShanten 側は validateTehai を使用している。
-    const newShanten = calculateMentsuTeShanten(newTehai);
-
-    if (newShanten < currentShanten) {
-      ukeireList.push(tile);
-    }
-  }
-
-  return ukeireList;
+    return calculateMentsuTeShanten(trialTehai) < currentShanten;
+  });
 }
