@@ -1,29 +1,14 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
-import { HaiKind, type HaiKindId } from "../../../../types";
-import { countSpecificKoutsu } from "../helpers";
+import { KAZEHAI_KIND_IDS } from "../../../../core/hai";
+import { countSpecificKoutsu, isJantouOf } from "../helpers";
 
-const checkShousuushii = (hand: HouraStructure): boolean => {
-  if (hand.type !== "Mentsu") {
-    return false;
-  }
-
-  const windTiles: HaiKindId[] = [
-    HaiKind.Ton,
-    HaiKind.Nan,
-    HaiKind.Sha,
-    HaiKind.Pei,
-  ];
-
-  const windKoutsuCount = countSpecificKoutsu(hand, windTiles);
-
-  // 2. 風牌の雀頭があるかチェック
-  const isWindJantou = windTiles.includes(hand.jantou.hais[0]);
-
-  // 小四喜の条件: 風牌の刻子が3つ かつ 風牌の雀頭が1つ
-  // (合計で4種類の風牌が揃うことになる。例: 東東東 南南南 西西西 北北)
-  return windKoutsuCount === 3 && isWindJantou;
-};
+// 小四喜の条件: 風牌の刻子が3つ かつ 風牌の雀頭が1つ
+// (合計で4種類の風牌が揃うことになる。例: 東東東 南南南 西西西 北北)
+const checkShousuushii = (hand: HouraStructure): boolean =>
+  hand.type === "Mentsu" &&
+  countSpecificKoutsu(hand, KAZEHAI_KIND_IDS) === 3 &&
+  isJantouOf(hand, KAZEHAI_KIND_IDS);
 
 export const shousuushiiDefinition: YakuDefinition = createYaku("Shousuushii", {
   open: 13,

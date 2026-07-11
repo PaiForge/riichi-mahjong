@@ -1,9 +1,14 @@
-import type { FuResult, FuRuleConfig } from "../types";
-import type { MentsuHouraStructure } from "../../../../../types";
+import type { FuResult, FuDetails, FuRuleConfig } from "../types";
+import type {
+  CompletedMentsu,
+  Koutsu,
+  MentsuHouraStructure,
+  Toitsu,
+} from "../../../../../types";
 import type { HouraContext } from "../../../../yaku/types";
-import { isYaochu } from "../../../../../core/hai";
-import { HaiKind, type Fu } from "../../../../../types";
-import { classifyMachi } from "../../../../../core/machi";
+import { isSangenpai, isYaochu } from "../../../../../core/hai";
+import { type Fu } from "../../../../../types";
+import { classifyMachi, type MachiType } from "../../../../../core/machi";
 import { MahjongError } from "../../../../../errors";
 import {
   FU_BASE,
@@ -33,6 +38,107 @@ function toFu(value: number): Fu {
 }
 
 /**
+ * 刻子が明刻扱いになるか判定する。
+ * 副露している場合に加え、ロン和了でその和了牌を含む刻子も明刻扱いとなる。
+ */
+function isOpenKoutsu(mentsu: Koutsu, context: HouraContext): boolean {
+  if (mentsu.furo) return true;
+  return !context.isTsumo && mentsu.hais.includes(context.agariHai);
+}
+
+/**
+ * 面子1つの符を計算する。順子は0符。
+ * 刻子・槓子は「么九牌か数牌か」×「明か暗か」で符が決まる。
+ */
+function calculateSingleMentsuFu(
+  mentsu: CompletedMentsu,
+  context: HouraContext,
+): number {
+  if (mentsu.type === "Shuntsu") return 0;
+
+  const table = mentsu.type === "Koutsu" ? FU_KOUTSU : FU_KANTSU;
+  const isOpen =
+    mentsu.type === "Koutsu"
+      ? isOpenKoutsu(mentsu, context)
+      : Boolean(mentsu.furo);
+
+  if (isYaochu(mentsu.hais[0])) {
+    return isOpen ? table.YAOCHU_OPEN : table.YAOCHU_CLOSED;
+  }
+  return isOpen ? table.SUUPAI_OPEN : table.SUUPAI_CLOSED;
+}
+
+/**
+ * 雀頭符を計算する。
+ * 三元牌・場風・自風それぞれに2符加算し、連風牌（場風＝自風）は
+ * ルール設定の上限（デフォルト2符、設定により4符）でキャップする。
+ */
+function calculateJantouFu(
+  jantou: Toitsu,
+  context: HouraContext,
+  ruleConfig?: FuRuleConfig,
+): number {
+  const headHai = jantou.hais[0];
+
+  const yakuhaiMatches =
+    (isSangenpai(headHai) ? 1 : 0) +
+    (headHai === context.bakaze ? 1 : 0) +
+    (headHai === context.jikaze ? 1 : 0);
+  const fu = yakuhaiMatches * FU_JANTOU.YAKUHAI;
+
+  const doubleWindCap =
+    ruleConfig?.doubleWindJantouFu ?? FU_JANTOU.DOUBLE_WIND_DEFAULT;
+  return Math.min(fu, doubleWindCap);
+}
+
+const MACHI_FU_TABLE: Readonly<Record<MachiType, number>> = {
+  Kanchan: FU_MACHI.KANCHAN,
+  Penchan: FU_MACHI.PENCHAN,
+  Tanki: FU_MACHI.TANKI,
+  Ryanmen: FU_MACHI.RYANMEN,
+  Shanpon: FU_MACHI.SHANPON,
+};
+
+/**
+ * 待ち符を計算する。単騎・嵌張・辺張は2符、両面・双碰は0符。
+ */
+function calculateMachiFu(
+  hand: MentsuHouraStructure,
+  context: HouraContext,
+): number {
+  const machiType = classifyMachi(hand, context.agariHai);
+  return machiType === undefined ? 0 : MACHI_FU_TABLE[machiType];
+}
+
+/**
+ * 和了符を計算する。ツモ2符（平和は0符）、門前ロン10符。
+ */
+function calculateAgariFu(context: HouraContext, isPinfu: boolean): number {
+  if (context.isTsumo) {
+    return isPinfu ? 0 : FU_AGARI.TSUMO;
+  }
+  return context.isMenzen ? FU_AGARI.MENZEN_RON : 0;
+}
+
+/**
+ * 符の内訳を合計し、10符単位に切り上げて最終符数を求める。
+ * 喰い平和形（副露ロンで20符）は例外的に30符へ切り上げる。
+ */
+function roundUpFu(details: FuDetails, context: HouraContext): Fu {
+  const sum =
+    details.base +
+    details.mentsu +
+    details.jantou +
+    details.machi +
+    details.agari;
+
+  if (sum === 20 && !context.isTsumo && !context.isMenzen) {
+    return toFu(FU_OPEN_PINFU_GLAZE);
+  }
+  return toFu(Math.ceil(sum / 10) * 10);
+}
+
+/**
  * 面子手の符を計算する
  *
  * @param hand 面子手の構造
@@ -46,126 +152,21 @@ export function calculateMentsuFu(
   isPinfu: boolean,
   ruleConfig?: FuRuleConfig,
 ): FuResult {
-  const details = {
+  const details: FuDetails = {
     base: FU_BASE.NORMAL,
-    mentsu: 0,
-    jantou: 0,
-    machi: 0,
-    agari: 0,
+    mentsu: hand.fourMentsu.reduce(
+      (sum, mentsu) => sum + calculateSingleMentsuFu(mentsu, context),
+      0,
+    ),
+    jantou: calculateJantouFu(hand.jantou, context, ruleConfig),
+    machi: calculateMachiFu(hand, context),
+    agari: calculateAgariFu(context, isPinfu),
   };
 
-  // 1. 面子符 (MentsuFu)
-  for (const mentsu of hand.fourMentsu) {
-    let fu = 0;
-    const isYaochuMentsu = isYaochu(mentsu.hais[0]);
-
-    if (mentsu.type === "Koutsu") {
-      // 刻子
-      const openFu = isYaochuMentsu
-        ? FU_KOUTSU.YAOCHU_OPEN
-        : FU_KOUTSU.SUUPAI_OPEN;
-      const closedFu = isYaochuMentsu
-        ? FU_KOUTSU.YAOCHU_CLOSED
-        : FU_KOUTSU.SUUPAI_CLOSED;
-
-      fu = closedFu;
-
-      // 明刻判定
-      let isOpen = !!mentsu.furo;
-      if (!isOpen && !context.isTsumo) {
-        // ロン和了で、かつその牌を含む刻子であれば明刻扱い
-        if (mentsu.hais.includes(context.agariHai)) {
-          isOpen = true;
-        }
-      }
-
-      if (isOpen) {
-        fu = openFu;
-      }
-      details.mentsu += fu;
-    } else if (mentsu.type === "Kantsu") {
-      // 槓子
-      const openFu = isYaochuMentsu
-        ? FU_KANTSU.YAOCHU_OPEN
-        : FU_KANTSU.SUUPAI_OPEN;
-      const closedFu = isYaochuMentsu
-        ? FU_KANTSU.YAOCHU_CLOSED
-        : FU_KANTSU.SUUPAI_CLOSED;
-
-      fu = closedFu;
-      if (mentsu.furo) {
-        fu = openFu;
-      }
-      details.mentsu += fu;
-    }
-  }
-
-  // 2. 雀頭符 (JantouFu)
-  const headHai = hand.jantou.hais[0];
-  let jantouFu = 0;
-
-  if (
-    headHai === HaiKind.Haku ||
-    headHai === HaiKind.Hatsu ||
-    headHai === HaiKind.Chun
-  ) {
-    jantouFu += FU_JANTOU.YAKUHAI;
-  }
-  if (headHai === context.bakaze) {
-    jantouFu += FU_JANTOU.YAKUHAI;
-  }
-  if (headHai === context.jikaze) {
-    jantouFu += FU_JANTOU.YAKUHAI;
-  }
-
-  // 連風牌の加算上限（ルールにより2符または4符）
-  const doubleWindCap =
-    ruleConfig?.doubleWindJantouFu ?? FU_JANTOU.DOUBLE_WIND_DEFAULT;
-  if (jantouFu > doubleWindCap) {
-    jantouFu = doubleWindCap;
-  }
-  details.jantou = jantouFu;
-
-  // 3. 待ち符 (MachiFu)
-  const machiType = classifyMachi(hand, context.agariHai);
-  if (machiType === "Kanchan") details.machi = FU_MACHI.KANCHAN;
-  else if (machiType === "Penchan") details.machi = FU_MACHI.PENCHAN;
-  else if (machiType === "Tanki") details.machi = FU_MACHI.TANKI;
-  else details.machi = 0; // Ryanmen, Shanpon
-
-  // 4. 和了符 (AgariFu)
-  if (context.isTsumo) {
-    if (!isPinfu) {
-      details.agari = FU_AGARI.TSUMO;
-    }
-  } else {
-    if (context.isMenzen) {
-      details.agari = FU_AGARI.MENZEN_RON;
-    }
-  }
-
-  // 合計
-  let sum =
-    details.base +
-    details.mentsu +
-    details.jantou +
-    details.machi +
-    details.agari;
-
-  // 平和ツモ例外
+  // 平和ツモ例外: 内訳に関わらず20符固定
   if (isPinfu && context.isTsumo) {
     return { total: FU_PINFU_TSUMO, details };
   }
 
-  // 切り上げ (喰いタン平和形など)
-  if (sum === 20 && !context.isTsumo && !context.isMenzen) {
-    sum = FU_OPEN_PINFU_GLAZE;
-  } else {
-    sum = Math.ceil(sum / 10) * 10;
-  }
-
-  return {
-    total: toFu(sum),
-    details,
-  };
+  return { total: roundUpFu(details, context), details };
 }

@@ -1,25 +1,19 @@
-import { HaiKind, HaiKindId } from "../../../../types";
+import { HaiKind, type HaiKindId } from "../../../../types";
 import { createYaku } from "../builder";
-import type { HouraStructure, YakuDefinition } from "../../types";
+import type { YakuDefinition } from "../../types";
+import { countSpecificKoutsu } from "../helpers";
 
+/**
+ * 三元牌の役牌定義を生成する。
+ * 対象牌の刻子・槓子が1つでもあれば成立する。
+ */
 function createYakuhaiDefinition(
   name: "Haku" | "Hatsu" | "Chun",
   tile: HaiKindId,
 ): YakuDefinition {
-  const check = (hand: HouraStructure): boolean => {
-    if (hand.type !== "Mentsu") return false;
-
-    for (const mentsu of hand.fourMentsu) {
-      if (mentsu.type === "Koutsu" || mentsu.type === "Kantsu") {
-        if (mentsu.hais[0] === tile) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  return createYaku(name, { open: 1, closed: 1 }).require(check).build();
+  return createYaku(name, { open: 1, closed: 1 })
+    .require((hand) => countSpecificKoutsu(hand, [tile]) > 0)
+    .build();
 }
 
 export const hakuDefinition = createYakuhaiDefinition("Haku", HaiKind.Haku);

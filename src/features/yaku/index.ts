@@ -48,15 +48,12 @@ export function detectYakuForStructure(
   hand: HouraStructure,
   context: HouraContext,
 ): YakuResult {
-  const result: [YakuName, Hansu][] = [];
-
-  for (const definition of ALL_YAKU_DEFINITIONS) {
-    if (definition.isSatisfied(hand, context)) {
+  const result = ALL_YAKU_DEFINITIONS.flatMap<[YakuName, Hansu]>(
+    (definition) => {
       const hansu = definition.getHansu(hand, context);
-      if (hansu === 0) continue;
-      result.push([definition.yaku.name, hansu]);
-    }
-  }
+      return hansu === 0 ? [] : [[definition.yaku.name, hansu]];
+    },
+  );
 
   // 一般ルール: 役満（13翻以上）が成立した場合、役満未満の通常役は複合しない。
   // 複数の役満が同時に成立した場合（例: 字一色 + 大四喜）、全ての役満を返す。

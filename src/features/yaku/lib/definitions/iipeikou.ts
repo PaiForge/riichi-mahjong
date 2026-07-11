@@ -1,6 +1,6 @@
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
-import { countShuntsuPairs } from "../../utils";
+import { countShuntsuPairs } from "../helpers";
 
 const checkIipeikou = (hand: HouraStructure): boolean => {
   const pairCount = countShuntsuPairs(hand);

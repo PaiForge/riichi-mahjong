@@ -8,81 +8,69 @@ import type {
   YakuName,
 } from "../types";
 
+/**
+ * 役の成立条件を表す述語関数。
+ */
 export type YakuPredicate = (
   hand: HouraStructure,
   context: HouraContext,
 ) => boolean;
 
+type HansuCalculator = (
+  hand: HouraStructure,
+  context: HouraContext,
+) => Hansu | 0;
+
 /**
+ * 役定義 (YakuDefinition) を組み立てる不変ビルダー。
  *
+ * require / dynamicHan は自身を変更せず、条件を追加した新しいビルダーを返す。
  */
-export class YakuBuilder {
-  private predicates: YakuPredicate[] = [];
-  private hanCalculator?: (
-    hand: HouraStructure,
-    context: HouraContext,
-  ) => Hansu | 0;
+export interface YakuBuilder {
+  /** 成立条件を追加した新しいビルダーを返す */
+  readonly require: (predicate: YakuPredicate) => YakuBuilder;
+  /** 翻数を動的に算出する関数を設定した新しいビルダーを返す（例: 四暗刻単騎のダブル役満） */
+  readonly dynamicHan: (calculator: HansuCalculator) => YakuBuilder;
+  /** 役定義を確定する */
+  readonly build: () => YakuDefinition;
+}
 
-  /**
-   *
-   */
-  constructor(private readonly yaku: Yaku) {}
+/**
+ * 内部状態（役・条件リスト・翻数計算関数）を引数で受け渡す不変ビルダーの実装。
+ */
+function createBuilder(
+  yaku: Yaku,
+  predicates: readonly YakuPredicate[],
+  hanCalculator: HansuCalculator | undefined,
+): YakuBuilder {
+  return {
+    require: (predicate) =>
+      createBuilder(yaku, [...predicates, predicate], hanCalculator),
+    dynamicHan: (calculator) => createBuilder(yaku, predicates, calculator),
+    build: () => {
+      const isSatisfied: YakuPredicate = (hand, context) =>
+        predicates.every((pred) => pred(hand, context));
 
-  /**
-   *
-   */
-  public require(predicate: YakuPredicate): this {
-    this.predicates.push(predicate);
-    return this;
-  }
-
-  /**
-   *
-   */
-  public menzenOnly(): this {
-    this.predicates.push((hand, context) => context.isMenzen);
-    return this;
-  }
-
-  /**
-   *
-   */
-  public dynamicHan(
-    calculator: (hand: HouraStructure, context: HouraContext) => Hansu | 0,
-  ): this {
-    this.hanCalculator = calculator;
-    return this;
-  }
-
-  /**
-   *
-   */
-  public build(): YakuDefinition {
-    const yaku = this.yaku;
-    const predicates = this.predicates;
-    const calculator = this.hanCalculator;
-
-    return {
-      yaku,
-      isSatisfied(hand: HouraStructure, context: HouraContext): boolean {
-        return predicates.every((pred) => pred(hand, context));
-      },
-      getHansu(hand: HouraStructure, context: HouraContext): Hansu | 0 {
-        if (!this.isSatisfied(hand, context)) {
-          return 0;
-        }
-        if (calculator) {
-          return calculator(hand, context);
-        }
-        return context.isMenzen ? yaku.han.closed : yaku.han.open;
-      },
-    };
-  }
+      return {
+        yaku,
+        isSatisfied,
+        getHansu: (hand, context) => {
+          if (!isSatisfied(hand, context)) {
+            return 0;
+          }
+          if (hanCalculator) {
+            return hanCalculator(hand, context);
+          }
+          return context.isMenzen ? yaku.han.closed : yaku.han.open;
+        },
+      };
+    },
+  };
 }
 
 /**
  * 役名と翻数設定から YakuBuilder を生成する。
  */
 export function createYaku(name: YakuName, han: YakuHanConfig): YakuBuilder {
-  return new YakuBuilder({ name, han });
+  return createBuilder({ name, han }, [], undefined);
 }

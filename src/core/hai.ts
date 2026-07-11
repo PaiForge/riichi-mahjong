@@ -36,13 +36,10 @@ export function haiIdToKindId(id: HaiId): HaiKindId {
  * 字牌の場合は undefined を返す
  */
 export function haiKindToNumber(kind: HaiKindId): number | undefined {
-  const type = kindIdToHaiType(kind);
-  if (type === HaiType.Jihai) return undefined;
+  if (kindIdToHaiType(kind) === HaiType.Jihai) return undefined;
 
-  if (type === HaiType.Manzu) return kind - HaiKind.ManZu1 + 1;
-  if (type === HaiType.Pinzu) return kind - HaiKind.PinZu1 + 1;
-  // if (kindIdToHaiType(kind) === HaiType.Souzu)
-  return kind - HaiKind.SouZu1 + 1;
+  // 数牌は各スートとも9種連続で並んでいるため、剰余で数値を導出できる
+  return (kind % 9) + 1;
 }
 
 /**
@@ -72,6 +69,36 @@ export function kindIdToSuitIndex(kind: HaiKindId): number | undefined {
 }
 
 /**
+ * 風牌（東・南・西・北）の牌種IDセット
+ */
+export const KAZEHAI_KIND_IDS = [
+  HaiKind.Ton,
+  HaiKind.Nan,
+  HaiKind.Sha,
+  HaiKind.Pei,
+] as const;
+
+/**
+ * 三元牌（白・發・中）の牌種IDセット
+ */
+export const SANGENPAI_KIND_IDS = [
+  HaiKind.Haku,
+  HaiKind.Hatsu,
+  HaiKind.Chun,
+] as const;
+
+const SANGENPAI_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(
+  SANGENPAI_KIND_IDS,
+);
+
+/**
+ * 三元牌（白・發・中）かどうかを判定する
+ */
+export function isSangenpai(kind: HaiKindId): boolean {
+  return SANGENPAI_KIND_ID_SET.has(kind);
+}
+
+/**
  * 么九牌（1,9,字牌）の牌種IDセット
  */
 export const YAOCHU_KIND_IDS = [
@@ -81,18 +108,15 @@ export const YAOCHU_KIND_IDS = [
   HaiKind.PinZu9,
   HaiKind.SouZu1,
   HaiKind.SouZu9,
-  HaiKind.Ton,
-  HaiKind.Nan,
-  HaiKind.Sha,
-  HaiKind.Pei,
-  HaiKind.Haku,
-  HaiKind.Hatsu,
-  HaiKind.Chun,
+  ...KAZEHAI_KIND_IDS,
+  ...SANGENPAI_KIND_IDS,
 ] as const;
+
+const YAOCHU_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(YAOCHU_KIND_IDS);
 
 /**
  * 么九牌（1,9,字牌）かどうかを判定する
  */
 export function isYaochu(kind: HaiKindId): boolean {
-  return YAOCHU_KIND_IDS.some((k) => k === kind);
+  return YAOCHU_KIND_ID_SET.has(kind);
 }

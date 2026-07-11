@@ -1,8 +1,6 @@
 import type { Tehai13 } from "../../../types";
-import { isYaochu } from "../../../core/hai";
-import { validateTehai13 } from "../../../core/tehai";
+import { YAOCHU_KIND_IDS } from "../../../core/hai";
 import { countHaiKind } from "../../../core/hai-count";
-import { asHaiKindId } from "../../../utils/assertions";
 
 /**
  * 国士無双のシャンテン数を計算します。
@@ -15,15 +13,12 @@ import { asHaiKindId } from "../../../utils/assertions";
  * 計算式:
  * シャンテン数 = 13 - (么九牌の種類数) - (么九牌の対子があるか ? 1 : 0)
  *
+ * 入力の妥当性検証は公開API（calculateShanten）側で行う。
+ *
  * @param tehai 手牌
- * @returns シャンテン数 (0: 聴牌, -1: 和了(理論上))。副露している場合は Infinity。
+ * @returns シャンテン数 (0: 聴牌)。副露している場合は Infinity。
  */
 export function calculateKokushiShanten(tehai: Tehai13): number {
-  // 防御的プログラミング (Defensive Programming):
-  // 公開API（calculateShanten）側でもバリデーションが行われる想定だが（Facadeパターン）、
-  // 内部整合性を保つため、ここでも独立してバリデーションを実施する。
-  validateTehai13(tehai);
-
   // 国士無双は門前のみ
   if (tehai.exposed.length > 0) {
     return Infinity;
@@ -31,19 +26,12 @@ export function calculateKokushiShanten(tehai: Tehai13): number {
 
   const dist = countHaiKind(tehai.closed);
 
-  // 么九牌の種類数をカウント
-  // 同時に、么九牌の対子が存在するかもチェック
   let uniqueYaochuCount = 0;
   let hasYaochuPair = false;
 
-  for (let i = 0; i < dist.length; i++) {
-    const kind = asHaiKindId(i);
-    if (!isYaochu(kind)) {
-      continue;
-    }
-
-    const count = dist[i];
-    if (count !== undefined && count > 0) {
+  for (const kind of YAOCHU_KIND_IDS) {
+    const count = dist[kind];
+    if (count > 0) {
       uniqueYaochuCount++;
       if (count >= 2) {
         hasYaochuPair = true;
@@ -52,7 +40,5 @@ export function calculateKokushiShanten(tehai: Tehai13): number {
   }
 
   const pairBonus = hasYaochuPair ? 1 : 0;
-
-  // シャンテン数 = 13 - (種類の数) - (対子ボーナス)
   return 13 - uniqueYaochuCount - pairBonus;
 }
