@@ -68,6 +68,22 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
+  describe("getYakumanMultiplier", () => {
+    it("関数としてエクスポートされていること", () => {
+      expect(PublicApi.getYakumanMultiplier).toBeDefined();
+      expect(typeof PublicApi.getYakumanMultiplier).toBe("function");
+    });
+
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.getYakumanMultiplier satisfies (
+        yakuResult: PublicApi.YakuResult,
+        ruleConfig?: PublicApi.YakumanRuleConfig,
+      ) => number;
+
+      expect(true).toBe(true);
+    });
+  });
+
   describe("Parser (parseMspz / parseExtendedMspz)", () => {
     it("関数としてエクスポートされていること", () => {
       expect(PublicApi.parseMspz).toBeDefined();
