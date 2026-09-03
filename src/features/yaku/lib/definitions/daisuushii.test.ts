@@ -34,6 +34,31 @@ describe("大四喜（ダイスーシー）の判定", () => {
     expect(daisuushiiDefinition.getHansu(hand, context)).toBe(13);
   });
 
+  it("大四喜ダブルルール有効なら26翻（ダブル役満）であること", () => {
+    const tehai = createTehai("111z222z333z444z55m");
+    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const context: HouraContext = {
+      ...mockContext,
+      yakumanRuleConfig: { daisuushii: true },
+    };
+
+    expect(daisuushiiDefinition.getHansu(hand, context)).toBe(26);
+  });
+
+  it("大四喜ダブルルール有効なら副露していても26翻であること", () => {
+    const tehai = createTehai("111z222z333z55m[444z]");
+    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const context: HouraContext = {
+      ...mockContext,
+      isMenzen: false,
+      yakumanRuleConfig: { daisuushii: true },
+    };
+
+    expect(daisuushiiDefinition.getHansu(hand, context)).toBe(26);
+  });
+
   it("小四喜（風牌の刻子3つ＋雀頭）の場合は不成立", () => {
     // 111z(東), 222z(南), 333z(西), 44z(北雀頭), 555p
     const tehai = createTehai("111z222z333z44z555p");

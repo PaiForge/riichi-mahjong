@@ -80,4 +80,58 @@ describe("九蓮宝燈（チューレンポートー）の判定", () => {
       false,
     );
   });
+
+  describe("純正九蓮宝燈（九面待ち）ダブルルール", () => {
+    const contextWithRule = (agariHai: HouraContext["agariHai"]) => ({
+      ...mockContextMenzen,
+      agariHai,
+      yakumanRuleConfig: { junseiChuurenPoutou: true },
+    });
+
+    it("純正形（和了前が1112345678999）は、ルール有効なら26翻（ダブル役満）であること", () => {
+      // 1112345678999m + 1m（和了前が純正形の九面待ち）
+      const tehai = createTehai("1111m2345678m999m");
+      const hands = getHouraStructuresForMentsuTe(tehai);
+      const hand = hands[0] as unknown as MentsuHouraStructure;
+
+      expect(
+        chuurenPoutouDefinition.getHansu(hand, contextWithRule(HaiKind.ManZu1)),
+      ).toBe(26);
+    });
+
+    it("純正形の5待ちも、ルール有効なら26翻であること", () => {
+      // 1112345678999m + 5m
+      const tehai = createTehai("111m234m55m678m999m");
+      const hands = getHouraStructuresForMentsuTe(tehai);
+      const hand = hands[0] as unknown as MentsuHouraStructure;
+
+      expect(
+        chuurenPoutouDefinition.getHansu(hand, contextWithRule(HaiKind.ManZu5)),
+      ).toBe(26);
+    });
+
+    it("純正でない九蓮宝燈（和了前に対子があり待ちが狭い形）は、ルール有効でも13翻であること", () => {
+      // 和了前: 1112245678999m（3m待ち）→ 3mで和了
+      const tehai = createTehai("11122345678999m");
+      const hands = getHouraStructuresForMentsuTe(tehai);
+      const hand = hands[0] as unknown as MentsuHouraStructure;
+
+      expect(chuurenPoutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
+        true,
+      );
+      expect(
+        chuurenPoutouDefinition.getHansu(hand, contextWithRule(HaiKind.ManZu3)),
+      ).toBe(13);
+    });
+
+    it("純正形でも、既定（ルール設定なし）では13翻であること", () => {
+      const tehai = createTehai("1111m2345678m999m");
+      const hands = getHouraStructuresForMentsuTe(tehai);
+      const hand = hands[0] as unknown as MentsuHouraStructure;
+
+      expect(chuurenPoutouDefinition.getHansu(hand, mockContextMenzen)).toBe(
+        13,
+      );
+    });
+  });
 });
