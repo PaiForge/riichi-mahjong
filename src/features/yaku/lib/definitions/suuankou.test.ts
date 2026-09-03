@@ -31,7 +31,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
     expect(suuankouDefinition.getHansu(hand, mockContextTsumo)).toBe(13);
   });
 
-  it("単騎待ちロン和了の場合、ダブル役満（26翻）であること", () => {
+  it("単騎待ちでも、既定（ルール設定なし）では13翻（役満）であること", () => {
     // 111m 222m 333m 444m 9s (ロン 9s)
     const context: HouraContext = {
       ...mockContextRon,
@@ -43,15 +43,32 @@ describe("四暗刻（スーアンコウ）の判定", () => {
     const hand = hands[0] as unknown as MentsuHouraStructure;
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
+    expect(suuankouDefinition.getHansu(hand, context)).toBe(13);
+  });
+
+  it("単騎待ちロン和了の場合、単騎ダブルルール有効ならダブル役満（26翻）であること", () => {
+    // 111m 222m 333m 444m 9s (ロン 9s)
+    const context: HouraContext = {
+      ...mockContextRon,
+      agariHai: HaiKind.SouZu9,
+      doraMarkers: [],
+      yakumanRuleConfig: { suuankouTanki: true },
+    };
+    const tehai = createTehai("111m222m333m444m99s");
+    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hand = hands[0] as unknown as MentsuHouraStructure;
+
+    expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(26);
   });
 
-  it("単騎待ちツモ和了の場合も、ダブル役満（26翻）であること", () => {
+  it("単騎待ちツモ和了の場合も、単騎ダブルルール有効ならダブル役満（26翻）であること", () => {
     // 111m 222m 333m 444m 9s (ツモ 9s)
     const context: HouraContext = {
       ...mockContextTsumo,
       agariHai: HaiKind.SouZu9,
       doraMarkers: [],
+      yakumanRuleConfig: { suuankouTanki: true },
     };
     const tehai = createTehai("111m222m333m444m99s");
     const hands = getHouraStructuresForMentsuTe(tehai);
@@ -62,6 +79,22 @@ describe("四暗刻（スーアンコウ）の判定", () => {
     // 実装(suuankou.ts)では `hand.jantou.hais[0] === context.agariHai` で判定しているので、
     // ツモでも単騎待ちなら26になるはず。
     expect(suuankouDefinition.getHansu(hand, context)).toBe(26);
+  });
+
+  it("シャボ待ちツモ和了の場合、単騎ダブルルール有効でも13翻（役満）であること", () => {
+    // 111m 222m 333m 444m 99s (ツモ 1m) -> 単騎ではない
+    const context: HouraContext = {
+      ...mockContextTsumo,
+      agariHai: HaiKind.ManZu1,
+      doraMarkers: [],
+      yakumanRuleConfig: { suuankouTanki: true },
+    };
+    const tehai = createTehai("111m222m333m444m99s");
+    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hand = hands[0] as unknown as MentsuHouraStructure;
+
+    expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
+    expect(suuankouDefinition.getHansu(hand, context)).toBe(13);
   });
 
   it("シャボ待ちロン和了の場合、和了牌の刻子が明刻扱いとなり不成立", () => {

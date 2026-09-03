@@ -107,6 +107,42 @@ export type YakuName = TehaiYaku;
 export type YakuResult = readonly [YakuName, Hansu][];
 
 /**
+ * 役満ルール設定 (YakumanRuleConfig)
+ *
+ * ダブル役満・複合役満の採否はローカルルールで割れるため、
+ * 標準ルールからの差分としてここで指定する。**すべて既定 false**
+ * （ダブル役満なし・複合の合算なし）。
+ *
+ * 判定パターンは2系統ある:
+ *
+ * - **形によるダブル役満**（`suuankouTanki` 等の4フラグ）:
+ *   単一の役の翻数が待ち形などの条件で 13 → 26 に変わる。
+ *   各役定義の翻数算出（dynamicHan）が {@link HouraContext} 経由で参照する
+ * - **複合役満の合算**（`fukugouYakuman`）:
+ *   複数の役満が同時成立したとき（字一色 + 大三元 等）に支払いを
+ *   合算するか。個々の役の翻数は変わらないため役定義では扱えず、
+ *   点数計算層が役満単位（{@link getYakumanMultiplier}）の集計で扱う
+ */
+export interface YakumanRuleConfig {
+  /** 四暗刻の単騎待ちをダブル役満（26翻）とするか */
+  readonly suuankouTanki?: boolean;
+  /** 大四喜をダブル役満（26翻）とするか */
+  readonly daisuushii?: boolean;
+  /** 国士無双の十三面待ちをダブル役満（26翻）とするか */
+  readonly kokushiMusouJuusanmen?: boolean;
+  /** 純正九蓮宝燈（九面待ち）をダブル役満（26翻）とするか */
+  readonly junseiChuurenPoutou?: boolean;
+  /**
+   * 複数役満の複合を合算するか
+   *
+   * - false: 支払いは最高位の役満1つ分（単体でダブル役満が成立して
+   *   いる場合はその2個分。合算しない設定でも単体の成立は減らない）
+   * - true: 各役満の役満単位（役満=1・ダブル役満=2）の合計分を支払う
+   */
+  readonly fukugouYakuman?: boolean;
+}
+
+/**
  * 役判定コンフィグ (DetectYakuConfig)
  *
  * detectYaku に渡す設定オブジェクト。
@@ -125,6 +161,8 @@ export interface DetectYakuConfig {
   readonly uraDoraMarkers?: readonly HaiKindId[];
   /** ツモ和了かどうか */
   readonly isTsumo?: boolean;
+  /** 役満ルール設定（任意）。未指定時はダブル役満・複合の合算なし */
+  readonly ruleConfig?: YakumanRuleConfig;
 }
 
 export interface HouraContext {
@@ -148,6 +186,14 @@ export interface HouraContext {
    * 裏ドラ表示牌のリスト (リーチ時のみ有効)
    */
   readonly uraDoraMarkers?: readonly HaiKindId[];
+
+  /**
+   * 役満ルール設定
+   *
+   * 翻数が採用ルールで変わる役定義（四暗刻単騎等）が dynamicHan から
+   * 参照する。省略時はすべて標準ルール（ダブル役満なし）。
+   */
+  readonly yakumanRuleConfig?: YakumanRuleConfig | undefined;
 }
 
 export interface Yaku {

@@ -1,4 +1,5 @@
 import type { Fu } from "../../../types";
+import type { Hansu, YakuName, YakumanRuleConfig } from "../../yaku/types";
 import type { FuResult } from "./fu/types";
 import {
   BASE_SCORE_LIMIT,
@@ -56,16 +57,47 @@ export function getPaymentTotal(payment: Readonly<Payment>): number {
 }
 
 /**
+ * 役満単位を算出する (YakumanMultiplier)
+ *
+ * 支払いが役満何個分かを、成立した役満役の集計から求める。
+ * 各役満役の単位は 翻数 / 13（役満 = 1、ダブル役満 = 2）。
+ *
+ * - 役満役がなければ 0（数え役満もここでは 0。数え役満を役満として
+ *   扱うのは {@link getScoreLevel} の役割）
+ * - 複合の合算（`ruleConfig.fukugouYakuman`）が有効なら全役満の単位の合計
+ * - 無効なら最高位の役満1つ分（単体で成立しているダブル役満は
+ *   合算しない設定でも 2 のまま減らない）
+ *
+ * @param yakuResult 成立した役と翻数のリスト
+ * @param ruleConfig 役満ルール設定（省略時は複合の合算なし）
+ * @returns 役満単位（0 = 役満役なし）
+ */
+export function getYakumanMultiplier(
+  yakuResult: readonly (readonly [YakuName, Hansu])[],
+  ruleConfig?: Readonly<YakumanRuleConfig>,
+): number {
+  const units = yakuResult
+    .filter(([, han]) => han >= HAN_YAKUMAN)
+    .map(([, han]) => han / HAN_YAKUMAN);
+  if (units.length === 0) return 0;
+  return ruleConfig?.fukugouYakuman === true
+    ? units.reduce((sum, unit) => sum + unit, 0)
+    : Math.max(...units);
+}
+
+/**
  * 翻数と基本点から点数レベルを判定する
+ *
+ * 翻数ベースの区分は役満（13翻以上）が上限。数え役満は翻数がいくら
+ * 積み上がっても役満止まりで、ダブル役満（DoubleYakuman）は役満単位
+ * （{@link getYakumanMultiplier}）が2以上のときに点数計算側で付く区分の
+ * ため、この関数からは返らない。
  *
  * @param han 翻数
  * @param basePoints 基本点（符 × 2^(2+翻)）
  * @returns 点数レベル
  */
 export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
-  if (han >= 26) {
-    return ScoreLevel.DoubleYakuman;
-  }
   if (han >= HAN_YAKUMAN) {
     return ScoreLevel.Yakuman;
   }
@@ -111,15 +143,38 @@ function getLimitBasePoints(level: ScoreLevel): number | undefined {
 
 /**
  * 翻数・符・ドラから点数（支払い情報を含む結果）を計算する純粋関数
+ *
+ * @param yakuHansu 役の翻数合計（ドラを含まない）
+ * @param fuResult 符計算結果
+ * @param dora ドラの数
+ * @param context 点数計算用コンテキスト
+ * @param yakumanMultiplier 役満単位（{@link getYakumanMultiplier} で算出。
+ *   1 以上なら翻数・符によらず役満単位分の固定支払いになる。
+ *   省略時は 0 = 役満役なしとして翻数・符から計算する）
  */
 export function calculateScoreFromHanAndFu(
   yakuHansu: number,
   fuResult: Readonly<FuResult>,
   dora: number,
   context: Readonly<ScoreContext>,
+  yakumanMultiplier = 0,
 ): ScoreResult {
   const totalHan = yakuHansu + dora;
   const fu = fuResult.total;
+
+  // 役満役が成立していれば、支払いは役満単位で決まる（翻数・符は使わない）
+  if (yakumanMultiplier >= 1) {
+    const basePoints = SCORE_BASE_YAKUMAN * yakumanMultiplier;
+    const scoreLevel =
+      yakumanMultiplier >= 2 ? ScoreLevel.DoubleYakuman : ScoreLevel.Yakuman;
+    return {
+      han: totalHan,
+      fu: fu,
+      scoreLevel,
+      payment: calculatePayment(basePoints, context),
+      yakumanMultiplier,
+    };
+  }
 
   // 基本点の計算
   const rawBasePoints = calculateBasePoints(fu, totalHan);
@@ -138,6 +193,7 @@ export function calculateScoreFromHanAndFu(
     fu: fu,
     scoreLevel,
     payment,
+    yakumanMultiplier: 0,
   };
 }
 

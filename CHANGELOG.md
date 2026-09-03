@@ -1,3 +1,21 @@
+## 0.5.0 (2026-09-03)
+
+### Added
+
+- 役満ルール設定 `YakumanRuleConfig` を追加（`DetectYakuConfig.ruleConfig` / `ScoreCalculationConfig.ruleConfig`）
+  - 形によるダブル役満の採否をフラグで指定: 四暗刻単騎 (`suuankouTanki`)・大四喜 (`daisuushii`)・国士無双十三面待ち (`kokushiMusouJuusanmen`)・純正九蓮宝燈 (`junseiChuurenPoutou`)
+  - 複合役満の合算 (`fukugouYakuman`): 複数役満の同時成立時に役満単位を合算して支払う（トリプル以上も表現可能）
+- `ScoreResult.yakumanMultiplier` を追加（支払いが役満何個分か。0 = 役満役なし）
+- `getYakumanMultiplier` を公開（役満単位の集計ルールの実装）
+- `RuleConfig` 型を追加（`FuRuleConfig` + `YakumanRuleConfig` の統合。`ScoreCalculationConfig.ruleConfig` の型）
+
+### Changed
+
+- **破壊的変更**: ダブル役満は既定で無効になった
+  - 四暗刻単騎はルール未指定なら 13 翻（従来はハードコードで 26 翻）
+  - `getScoreLevel` が `DoubleYakuman` を返さなくなった（26 翻以上でも `Yakuman`。数え役満は役満止まり。`DoubleYakuman` は役満単位が 2 以上のときに点数計算側で付く）
+  - 役満役なしで 26 翻以上に達した手（リーチ+裏+ドラ等）が誤ってダブル役満の支払いになる問題もこれで解消
+
 ## 0.4.2 (2026-07-12)
 
 ### Changed
