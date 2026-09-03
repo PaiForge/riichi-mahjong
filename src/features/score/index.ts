@@ -9,7 +9,11 @@ import {
 } from "../yaku";
 import { calculateFu } from "./lib/fu";
 import { isMenzen } from "../yaku/utils";
-import { calculateScoreFromHanAndFu, getPaymentTotal } from "./lib/calculation";
+import {
+  calculateScoreFromHanAndFu,
+  getPaymentTotal,
+  getYakumanMultiplier,
+} from "./lib/calculation";
 import {
   ScoreLevel,
   type ScoreCalculationConfig,
@@ -27,6 +31,7 @@ export type {
   KoTsumo,
   OyaTsumo,
   FuRuleConfig,
+  RuleConfig,
 } from "./types";
 export { ScoreLevel };
 
@@ -36,6 +41,7 @@ export {
   getScoreLevel,
   getPaymentTotal,
   calculateScoreFromHanAndFu,
+  getYakumanMultiplier,
 } from "./lib/calculation";
 
 /**
@@ -58,6 +64,8 @@ function createScoreContext(
     isOya: config.jikaze === HaiKind.Ton,
     doraMarkers: config.doraMarkers,
     ...(config.uraDoraMarkers ? { uraDoraMarkers: config.uraDoraMarkers } : {}),
+    // RuleConfig は YakumanRuleConfig を内包するためそのまま渡せる
+    yakumanRuleConfig: config.ruleConfig,
   };
 }
 
@@ -98,12 +106,17 @@ export function calculateScoreForTehai(
       // 3. ドラの計算
       const dora = countDora(tehai, context.doraMarkers);
 
-      // 4. 点数計算
+      // 4. 点数計算（役満役が成立していれば役満単位の固定支払いになる）
+      const yakumanMultiplier = getYakumanMultiplier(
+        yakuResult,
+        config.ruleConfig,
+      );
       const result = calculateScoreFromHanAndFu(
         yakuHansu,
         fuResult,
         dora,
         context,
+        yakumanMultiplier,
       );
       const total = getPaymentTotal(result.payment);
 

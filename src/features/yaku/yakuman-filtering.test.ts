@@ -41,7 +41,7 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       expect(result).not.toContainEqual(expect.arrayContaining(["Toitoi"]));
     });
 
-    it("四暗刻単騎時にダブル役満(26翻)のみ返されること", () => {
+    it("四暗刻単騎（単騎ダブルルール有効）時にダブル役満(26翻)のみ返されること", () => {
       // 111m 222p 333s 444s 55z (5z単騎待ちツモ)
       const hand = createTehai("111m222p333s444s55z");
       const agari = getHaiKindId("5z");
@@ -53,6 +53,7 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         doraMarkers: [],
         uraDoraMarkers: [],
         isTsumo: true,
+        ruleConfig: { suuankouTanki: true },
       });
 
       expect(result).toContainEqual(["Suuankou", 26]);
@@ -205,8 +206,8 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       expect(result).not.toContainEqual(expect.arrayContaining(["Honroutou"]));
       expect(result).not.toContainEqual(expect.arrayContaining(["Junchan"]));
       expect(result).not.toContainEqual(expect.arrayContaining(["Honchan"]));
-      // 四暗刻も同時成立（単騎待ちツモなのでダブル役満）
-      expect(result).toContainEqual(["Suuankou", 26]);
+      // 四暗刻も同時成立（単騎待ちツモだが既定ではダブル役満なし）
+      expect(result).toContainEqual(["Suuankou", 13]);
     });
   });
 
@@ -579,6 +580,7 @@ describe("役満フィルタリング: エッジケース", () => {
         jikaze: HaiKind.Nan,
         doraMarkers: [],
         isTsumo: true,
+        yakumanRuleConfig: { suuankouTanki: true },
       };
 
       const result = detectYakuForStructure(hand, context);
@@ -616,6 +618,7 @@ describe("役満フィルタリング: エッジケース", () => {
         jikaze: HaiKind.Nan,
         doraMarkers: [],
         isTsumo: true,
+        yakumanRuleConfig: { suuankouTanki: true },
       };
 
       const result = detectYakuForStructure(hand, context);
@@ -726,7 +729,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
     expect(getPaymentTotal(result.payment)).toBe(32000);
   });
 
-  it("四暗刻単騎ツモ: 子で64000点(ダブル役満)になること", () => {
+  it("四暗刻単騎ツモ（単騎ダブルルール有効）: 子で64000点(ダブル役満)になること", () => {
     // 111m222p333s444s55z + 5zツモ(単騎)
     const tehai = createTehai("111m222p333s444s55z");
     const config: ScoreCalculationConfig = {
@@ -735,6 +738,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       jikaze: HaiKind.Nan,
       bakaze: HaiKind.Ton,
       doraMarkers: [],
+      ruleConfig: { suuankouTanki: true },
     };
 
     const result = calculateScoreForTehai(tehai, config);
@@ -783,6 +787,96 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
     // 親ツモ役満: 16000オール = 48000
     expect(result.payment.type).toBe("oyaTsumo");
     expect(getPaymentTotal(result.payment)).toBe(48000);
+  });
+
+  it("複合役満（大三元+字一色）: 合算なし（既定）では役満1つ分の32000点", () => {
+    // 白白白 發發發 中中中 東東東 北北 + 東ロン（明刻になるため四暗刻は不成立）
+    const tehai = createTehai("555z666z777z111z44z");
+    const config: ScoreCalculationConfig = {
+      agariHai: getHaiKindId("1z"),
+      isTsumo: false,
+      jikaze: HaiKind.Nan,
+      bakaze: HaiKind.Ton,
+      doraMarkers: [],
+    };
+
+    const result = calculateScoreForTehai(tehai, config);
+
+    // 内訳は事実として両方返る（翻数は 13 + 13 = 26）
+    expect(result.detail?.yakuResult).toContainEqual(["Daisangen", 13]);
+    expect(result.detail?.yakuResult).toContainEqual(["Tsuuiisou", 13]);
+    expect(result.han).toBe(26);
+    // 支払いは最高位の役満1つ分
+    expect(result.scoreLevel).toBe("Yakuman");
+    expect(result.yakumanMultiplier).toBe(1);
+    expect(getPaymentTotal(result.payment)).toBe(32000);
+  });
+
+  it("複合役満（大三元+字一色）: 合算ルール有効ならダブル役満の64000点", () => {
+    const tehai = createTehai("555z666z777z111z44z");
+    const config: ScoreCalculationConfig = {
+      agariHai: getHaiKindId("1z"),
+      isTsumo: false,
+      jikaze: HaiKind.Nan,
+      bakaze: HaiKind.Ton,
+      doraMarkers: [],
+      ruleConfig: { fukugouYakuman: true },
+    };
+
+    const result = calculateScoreForTehai(tehai, config);
+
+    expect(result.scoreLevel).toBe("DoubleYakuman");
+    expect(result.yakumanMultiplier).toBe(2);
+    expect(getPaymentTotal(result.payment)).toBe(64000);
+  });
+
+  it("形のダブル役満と複合の合算の掛け合わせ: 四暗刻単騎(2) + 字一色(1) + 小四喜(1) = 役満4つ分", () => {
+    // 東東東 南南南 西西西 白白白 北北 + 北単騎ツモ
+    const tehai = createTehai("111z222z333z555z44z");
+    const config: ScoreCalculationConfig = {
+      agariHai: getHaiKindId("4z"),
+      isTsumo: true,
+      jikaze: HaiKind.Nan,
+      bakaze: HaiKind.Ton,
+      doraMarkers: [],
+      ruleConfig: { suuankouTanki: true, fukugouYakuman: true },
+    };
+
+    const result = calculateScoreForTehai(tehai, config);
+
+    expect(result.detail?.yakuResult).toContainEqual(["Suuankou", 26]);
+    expect(result.detail?.yakuResult).toContainEqual(["Tsuuiisou", 13]);
+    expect(result.detail?.yakuResult).toContainEqual(["Shousuushii", 13]);
+    expect(result.scoreLevel).toBe("DoubleYakuman");
+    expect(result.yakumanMultiplier).toBe(4);
+    // 子ツモ 8000×4ベース: 32000/64000 = 計128000
+    expect(getPaymentTotal(result.payment)).toBe(128000);
+  });
+
+  it("数え役満相当の翻数（役満役なし）はダブル役満にならないこと", () => {
+    // 清一色+二盃口+平和+ツモ など役満役なしの手にドラを大量に載せても
+    // 役満止まり（数え役満は合算ルールが有効でも倍化しない）
+    // 123m123m 456m456m 99m + 9mツモ = 清一色(6)+二盃口(3)+ツモ(1) = 10翻
+    // ドラ表示牌 8m×2 → 9m(2枚)がドラ×2 = +4翻 で計14翻（数え役満相当）
+    const tehai = createTehai("112233445566m99m");
+    const config: ScoreCalculationConfig = {
+      agariHai: getHaiKindId("9m"),
+      isTsumo: true,
+      jikaze: HaiKind.Nan,
+      bakaze: HaiKind.Ton,
+      doraMarkers: [getHaiKindId("8m"), getHaiKindId("8m")],
+      ruleConfig: { fukugouYakuman: true },
+    };
+
+    const result = calculateScoreForTehai(tehai, config);
+
+    // 役満役は成立していない
+    expect(result.detail?.yakuResult.every(([, han]) => han < 13)).toBe(true);
+    expect(result.yakumanMultiplier).toBe(0);
+    // 翻数が13を超えていても役満（32000）止まり
+    expect(result.han).toBeGreaterThanOrEqual(13);
+    expect(result.scoreLevel).toBe("Yakuman");
+    expect(getPaymentTotal(result.payment)).toBe(32000);
   });
 
   it("役満成立時にドラの翻数が加算されていないこと", () => {
