@@ -22,6 +22,7 @@ export type {
   YakuHanConfig,
   Yakuhai,
   DetectYakuConfig,
+  YakumanRuleConfig,
 } from "./types";
 export * from "./lib";
 export { getHouraStructures } from "./lib/structures";
@@ -97,6 +98,7 @@ export function detectYaku(
     doraMarkers: config.doraMarkers ?? [],
     uraDoraMarkers: config.uraDoraMarkers ?? [],
     isTsumo: config.isTsumo,
+    yakumanRuleConfig: config.ruleConfig,
   };
 
   const structuralInterpretations = getHouraStructures(tehai);

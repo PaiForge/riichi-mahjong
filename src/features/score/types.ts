@@ -1,9 +1,22 @@
 import type { Fu, HaiKindId, Kazehai, HouraStructure } from "../../types";
-import type { HouraContext, YakuResult } from "../yaku/types";
+import type {
+  HouraContext,
+  YakuResult,
+  YakumanRuleConfig,
+} from "../yaku/types";
 import type { MachiType } from "../../core/machi";
 import type { FuResult, FuRuleConfig } from "./lib/fu/types";
 
 export type { FuRuleConfig };
+
+/**
+ * 点数計算のルール差分設定 (RuleConfig)
+ *
+ * 符計算（{@link FuRuleConfig}）と役満（{@link YakumanRuleConfig}）の
+ * ルール差分をまとめて指定する。未指定のフィールドはすべて標準ルール
+ * （連風牌2符・ダブル役満なし・複合役満の合算なし）として扱う。
+ */
+export interface RuleConfig extends FuRuleConfig, YakumanRuleConfig {}
 
 /**
  * 点数計算用コンテキスト (ScoreContext)
@@ -32,8 +45,11 @@ export interface ScoreCalculationConfig {
   readonly doraMarkers: readonly HaiKindId[];
   /** 裏ドラ表示牌 (任意) */
   readonly uraDoraMarkers?: readonly HaiKindId[];
-  /** 符計算のルール差分設定（任意）。未指定時は標準ルール（連風牌2符）。 */
-  readonly ruleConfig?: FuRuleConfig;
+  /**
+   * ルール差分設定（任意）。未指定時は標準ルール
+   * （連風牌2符・ダブル役満なし・複合役満の合算なし）。
+   */
+  readonly ruleConfig?: RuleConfig;
 }
 
 /** ロン和了時の支払い */
@@ -77,9 +93,21 @@ export const ScoreLevel = {
   Baiman: "Baiman",
   /** 三倍満（11-12翻） */
   Sanbaiman: "Sanbaiman",
-  /** 役満（13翻以上） */
+  /**
+   * 役満
+   *
+   * 役満役の成立（役満単位1）または数え役満（13翻以上）。
+   * 数え役満は翻数がいくら積み上がっても役満止まり。
+   */
   Yakuman: "Yakuman",
-  /** ダブル役満（26翻以上、または役満複合） */
+  /**
+   * ダブル役満（役満2個分以上の支払い）
+   *
+   * 役満単位（{@link ScoreResult.yakumanMultiplier}）が2以上のときの区分。
+   * ルール設定（{@link YakumanRuleConfig}）でダブル役満の形や複合の合算を
+   * 有効にした場合のみ現れる。トリプル以上もこの区分になるため、正確な
+   * 倍数は yakumanMultiplier を参照すること。
+   */
   DoubleYakuman: "DoubleYakuman",
 } as const;
 
@@ -126,6 +154,17 @@ export interface ScoreResult {
   readonly fu: Fu;
   readonly scoreLevel: ScoreLevel;
   readonly payment: Payment;
+  /**
+   * 役満単位 (YakumanMultiplier)
+   *
+   * 支払いが役満何個分かを表す。0 = 役満役なし（数え役満を含む）、
+   * 1 = 役満、2 = ダブル役満、3 以上 = トリプル役満以上。
+   *
+   * ScoreLevel の Yakuman / DoubleYakuman はこの値から導かれた粗い区分
+   * （数え役満は 0 でも Yakuman）であり、支払いの倍数の正確な値は
+   * こちらを参照すること。集計ルールは {@link getYakumanMultiplier} を参照。
+   */
+  readonly yakumanMultiplier: number;
   /**
    * ライブラリが最高得点として選択した構造解釈の詳細情報
    *

@@ -28,6 +28,7 @@ export type {
   YakuName,
   Hansu,
   DetectYakuConfig,
+  YakumanRuleConfig,
 } from "./features/yaku";
 export type {
   HouraStructure,
@@ -44,6 +45,7 @@ export type {
   ScoreResult,
   ScoreDetail,
   ScoreCalculationConfig,
+  RuleConfig,
   Payment,
   Ron,
   KoTsumo,
@@ -135,4 +137,8 @@ export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 // =============================================================================
 // Features - Score
 // =============================================================================
-export { calculateScoreForTehai, getPaymentTotal } from "./features/score";
+export {
+  calculateScoreForTehai,
+  getPaymentTotal,
+  getYakumanMultiplier,
+} from "./features/score";
