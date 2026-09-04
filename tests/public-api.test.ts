@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Result } from "neverthrow";
 import * as PublicApi from "../src/index";
 import type { HaiKindId, Tehai13 } from "../src/index";
 
@@ -17,7 +18,7 @@ describe("公開APIのエクスポート", () => {
         tehai: Tehai13,
         useChiitoitsu?: boolean,
         useKokushi?: boolean,
-      ) => number;
+      ) => Result<number, PublicApi.TehaiError>;
 
       expect(true).toBe(true);
     });
@@ -62,9 +63,30 @@ describe("公開APIのエクスポート", () => {
       PublicApi.calculateScoreForTehai satisfies (
         tehai: PublicApi.Tehai14,
         config: PublicApi.ScoreCalculationConfig,
-      ) => PublicApi.ScoreResult;
+      ) => Result<PublicApi.ScoreResult, PublicApi.NoYakuError>;
 
       expect(true).toBe(true);
+    });
+
+    it("役が成立しない手では NoYakuError を Err として返すこと", () => {
+      // 234m 234p 456s 678s + 55z(白) は役なし
+      const tehai = PublicApi.parseMspz("234m234p456s678s55z");
+      if (tehai.isErr()) throw tehai.error;
+      const validated = PublicApi.validateTehai14(tehai.value);
+      if (validated.isErr()) throw validated.error;
+
+      const result = PublicApi.calculateScoreForTehai(validated.value, {
+        agariHai: 3, // 4m
+        isTsumo: false,
+        jikaze: PublicApi.HaiKind.Nan,
+        bakaze: PublicApi.HaiKind.Ton,
+        doraMarkers: [],
+      });
+
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(PublicApi.NoYakuError);
+      }
     });
   });
 
@@ -138,13 +160,18 @@ describe("公開APIのエクスポート", () => {
     });
 
     it("parseMspz が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseMspz satisfies (input: string) => PublicApi.Tehai; // パーサーは Branded ではない Tehai を返す
+      // パーサーは Branded ではない Tehai を Result で返す
+      PublicApi.parseMspz satisfies (
+        input: string,
+      ) => Result<PublicApi.Tehai, PublicApi.MspzParseError>;
 
       expect(true).toBe(true);
     });
 
     it("parseExtendedMspz が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseExtendedMspz satisfies (input: string) => PublicApi.Tehai;
+      PublicApi.parseExtendedMspz satisfies (
+        input: string,
+      ) => Result<PublicApi.Tehai, PublicApi.MspzParseError>;
 
       expect(true).toBe(true);
     });

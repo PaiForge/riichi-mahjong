@@ -1,3 +1,4 @@
+import { type Result, ok, err } from "neverthrow";
 import { type Tehai14, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
 import { selectHouraInterpretation } from "../houra";
@@ -68,15 +69,17 @@ function createScoreContext(
  * 処理（{@link selectHouraInterpretation}）で行われるため、両APIの役リスト・
  * 翻数・符が食い違うことはありません。
  *
+ * 役が一つも成立しない手（役なしの形式和了）はドメイン上の失敗であり、
+ * 呼び出し側で必ず扱う必要があるため {@link NoYakuError} を Err として返します。
+ *
  * @param tehai 手牌 (14枚)
  * @param config 点数計算の設定 (場風、自風、ドラなど)
- * @returns 点数計算結果
- * @throws 役が一つも成立する解釈が無い場合は {@link NoYakuError}
+ * @returns 点数計算結果。役が成立する解釈が無ければ Err
  */
 export function calculateScoreForTehai(
   tehai: Tehai14,
   config: Readonly<ScoreCalculationConfig>,
-): ScoreResult {
+): Result<ScoreResult, NoYakuError> {
   const context = createScoreContext(tehai, config);
 
   const interpretation = selectHouraInterpretation(
@@ -85,7 +88,7 @@ export function calculateScoreForTehai(
     config.ruleConfig,
   );
   if (interpretation === undefined) {
-    throw new NoYakuError();
+    return err(new NoYakuError());
   }
 
   const result = calculateScoreFromHanAndFu(
@@ -106,5 +109,5 @@ export function calculateScoreForTehai(
     yakuResult: interpretation.yakuResult,
   };
 
-  return { ...result, detail };
+  return ok({ ...result, detail });
 }

@@ -5,7 +5,6 @@ import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import { HaiKind } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
-import { MahjongArgumentError } from "../../../../errors";
 
 describe("平和の判定", () => {
   const baseContext: HouraContext = {
@@ -15,28 +14,6 @@ describe("平和の判定", () => {
     bakaze: HaiKind.Ton,
     jikaze: HaiKind.Nan,
   };
-
-  it("場風が指定されていない場合はエラーを投げること", () => {
-    // 123m 456m 789p 234s 99s
-    const tehai = createTehai("123m456m789p234s99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
-
-    const context = { ...baseContext, bakaze: undefined };
-    expect(() => pinfuDefinition.isSatisfied(hand, context)).toThrow(
-      MahjongArgumentError,
-    );
-  });
-
-  it("自風が指定されていない場合はエラーを投げること", () => {
-    const tehai = createTehai("123m456m789p234s99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
-    const context = { ...baseContext, jikaze: undefined };
-    expect(() => pinfuDefinition.isSatisfied(hand, context)).toThrow(
-      MahjongArgumentError,
-    );
-  });
 
   it("条件を満たす場合、正しく判定されること", () => {
     const tehai = createTehai("123m456m789p234s99s");

@@ -90,6 +90,7 @@ export {
   isTehai13,
   isTehai14,
 } from "./core/tehai";
+export type { TehaiError } from "./core/tehai";
 
 // =============================================================================
 // Core - Mentsu (Meld) Validation

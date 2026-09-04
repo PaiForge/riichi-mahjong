@@ -1,0 +1,9 @@
+// src に加えてテスト・ビルド設定も型チェックの対象にする構成（lint と typecheck が参照）
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*", "tests/**/*", "vite.config.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  }
+}

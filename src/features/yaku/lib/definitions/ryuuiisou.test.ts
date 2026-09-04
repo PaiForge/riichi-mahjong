@@ -10,6 +10,8 @@ describe("緑一色（リューイーソー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.SouZu2,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 

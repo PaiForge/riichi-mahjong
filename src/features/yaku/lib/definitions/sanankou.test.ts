@@ -10,6 +10,8 @@ describe("三暗刻（サンアンコウ）の判定", () => {
   const mockContextTsumo: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
     isTsumo: true,
   };
@@ -17,6 +19,8 @@ describe("三暗刻（サンアンコウ）の判定", () => {
   const mockContextRon: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
     isTsumo: false,
   };

@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { calculateShanten, parseMspz } from "../../src/index";
+import { calculateShanten, parseMspz, validateTehai13 } from "../../src/index";
 
 // ============================================================================
 // テストケース定義 (MSPZ文字列, 期待されるシャンテン数)
@@ -110,7 +110,13 @@ describe("相互検証: シャンテン数計算 (mahjongライブラリ使用)"
       }
 
       // ローカル計算実行
-      const shantenResult = calculateShanten(tehai);
+      const validated = validateTehai13(tehai);
+      if (validated.isErr()) {
+        throw new Error(
+          `手牌の検証に失敗しました (${mpsz}): ${validated.error.message}`,
+        );
+      }
+      const shantenResult = calculateShanten(validated.value);
       if (shantenResult.isErr()) {
         throw new Error(
           `シャンテン計算に失敗しました (${mpsz}): ${shantenResult.error.message}`,

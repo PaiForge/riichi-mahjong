@@ -10,6 +10,8 @@ describe("小四喜（ショウスーシー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.Ton,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 

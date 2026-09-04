@@ -719,7 +719,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     // 役満は13翻
     expect(result.han).toBe(13);
@@ -741,7 +743,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { suuankouTanki: true },
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.han).toBe(26);
     expect(result.scoreLevel).toBe("DoubleYakuman");
@@ -760,7 +764,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.han).toBe(13);
     expect(result.scoreLevel).toBe("Yakuman");
@@ -780,7 +786,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.han).toBe(13);
     expect(result.scoreLevel).toBe("Yakuman");
@@ -800,7 +808,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     // 内訳は事実として両方返る（翻数は 13 + 13 = 26）
     expect(result.detail?.yakuResult).toContainEqual(["Daisangen", 13]);
@@ -823,7 +833,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { fukugouYakuman: true },
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.scoreLevel).toBe("DoubleYakuman");
     expect(result.yakumanMultiplier).toBe(2);
@@ -842,7 +854,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { suuankouTanki: true, fukugouYakuman: true },
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.detail?.yakuResult).toContainEqual(["Suuankou", 26]);
     expect(result.detail?.yakuResult).toContainEqual(["Tsuuiisou", 13]);
@@ -868,7 +882,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { fukugouYakuman: true },
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     // 役満役は成立していない
     expect(result.detail?.yakuResult.every(([, han]) => han < 13)).toBe(true);
@@ -894,7 +910,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ],
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     // 役満ではドラが加算されても、点数レベルは役満のまま
     // (ドラは翻数に加算されるが、既に13翻以上なので役満)
@@ -914,7 +932,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     // 平和ツモ: 20符2翻 -> 400/700
     expect(result.han).toBe(2);

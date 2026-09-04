@@ -10,6 +10,8 @@ describe("タンヤオの判定", () => {
   const baseContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu4,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [],
   };
 

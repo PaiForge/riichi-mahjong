@@ -26,6 +26,8 @@ describe("calculateScoreFromHanAndFu", () => {
     isTsumo,
     isMenzen: true,
     agariHai: HaiKind.ManZu1, // dummy
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [],
   });
 
@@ -288,6 +290,8 @@ describe("切り上げ満貫 (kiriageMangan)", () => {
     isTsumo,
     isMenzen: true,
     agariHai: HaiKind.ManZu1, // dummy
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [],
   });
 
@@ -421,7 +425,9 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 切り上げ満
   } as const;
 
   it("既定では 4翻30符 7700点となること", () => {
-    const result = calculateScoreForTehai(tehai, config);
+    const res = calculateScoreForTehai(tehai, config);
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.han).toBe(4);
     expect(result.fu).toBe(30);
@@ -430,10 +436,12 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 切り上げ満
   });
 
   it("切り上げ満貫が有効なら翻・符はそのままで満貫の支払いになること", () => {
-    const result = calculateScoreForTehai(tehai, {
+    const res = calculateScoreForTehai(tehai, {
       ...config,
       ruleConfig: { kiriageMangan: true },
     });
+    if (res.isErr()) throw res.error;
+    const result = res.value;
 
     expect(result.han).toBe(4);
     expect(result.fu).toBe(30);
