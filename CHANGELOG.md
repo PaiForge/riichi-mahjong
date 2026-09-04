@@ -1,4 +1,41 @@
-## Unreleased
+## 0.8.0 (2026-09-04)
+
+場風・自風の役牌を役として判定するようになりました。`YakuName` にキーが増えるため、
+役名を網羅する対応表を持つ利用側はコンパイルエラーになります。移行手順は
+「移行ガイド」を参照してください。
+
+### 移行ガイド (0.7.x → 0.8.0)
+
+#### 1. `YakuName` に `"Bakaze"` / `"Jikaze"` が増えた
+
+`Record<YakuName, ...>` のように役名を網羅する対応表には 2 つのキーを追加してください。
+
+```ts
+const YAKU_NAME_JA: Record<YakuName, string> = {
+  // ...
+  Haku: "白",
+  Hatsu: "發",
+  Chun: "中",
+  Bakaze: "場風牌", // 追加
+  Jikaze: "自風牌", // 追加
+};
+```
+
+#### 2. 利用側で風牌の役牌を補完していた場合は削除する
+
+0.7.x までは `detectYaku` が風牌の役牌を返さなかったため、利用側で手牌の風牌を
+数えて翻を足していた場合があります。0.8.0 では `detectYaku` の結果と
+`calculateScoreForTehai` の翻数に含まれるので、そのままでは二重に数えます。
+
+```ts
+// 0.7.x: 利用側で補完していた
+const yaku = detectYaku(tehai, config);
+const kazeHan = countKoutsu(tehai, config.bakaze) > 0 ? 1 : 0; // 削除する
+
+// 0.8.0: ライブラリが返す
+const yaku = detectYaku(tehai, config);
+// 東場・東家で東の刻子があれば [["Bakaze", 1], ["Jikaze", 1], ...]
+```
 
 ### Added
 
