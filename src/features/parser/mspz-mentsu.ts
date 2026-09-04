@@ -1,5 +1,6 @@
 import { Result, ok, err } from "neverthrow";
 import { isTuple3, isTuple4 } from "../../utils/assertions";
+import { isValidShuntsu } from "../../core/mentsu";
 import { MspzParseError } from "../../errors";
 import {
   CompletedMentsu,
@@ -40,7 +41,7 @@ function stripEnclosure(
  * 牌ID列と囲み種別から面子種別を判定して CompletedMentsu を生成する。
  *
  * - 暗槓 `(...)`: 同一4枚のみ許容（furo情報なし）
- * - 副露 `[...]`: 同一4枚=大明槓、同一3枚=ポン、3枚=チーとして解釈
+ * - 副露 `[...]`: 同一4枚=大明槓、同一3枚=ポン、連続する3枚=チーとして解釈
  *
  * 鳴き元はデフォルト値（チー=上家、ポン/大明槓=対面）を設定する。
  */
@@ -77,10 +78,23 @@ function classifyMentsu(
     });
   }
   if (isTuple3(ids)) {
-    // チー。連続性の検証は現状行わず、正しい並びで入力されることを前提とする。
+    // チーは同色の連続3枚に限る（拡張MSPZの仕様）
+    if (!isValidShuntsu(ids)) {
+      return err(
+        new MspzParseError(
+          `Invalid Chi: ${block} (must be 3 consecutive tiles of the same suit)`,
+        ),
+      );
+    }
+    // 表記上の並び順に意味はないため、順子は昇順に正規化する。
+    // 待ちの判定など、順子がソート済みであることを前提とする処理があるため。
+    const sorted = [...ids].sort((a, b) => a - b);
+    if (!isTuple3(sorted)) {
+      return err(new MspzParseError(`Invalid Chi: ${block}`));
+    }
     return ok({
       type: MentsuType.Shuntsu,
-      hais: ids,
+      hais: sorted,
       furo: { type: FuroType.Chi, from: Tacha.Kamicha },
     });
   }
