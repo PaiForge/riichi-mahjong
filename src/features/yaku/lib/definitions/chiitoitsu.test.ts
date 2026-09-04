@@ -7,6 +7,8 @@ describe("七対子", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 

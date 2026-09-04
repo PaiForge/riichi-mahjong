@@ -1,6 +1,6 @@
 {
   "name": "@pai-forge/riichi-mahjong",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -24,7 +24,7 @@
   "scripts": {
     "test": "vitest src",
     "build": "vite build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.check.json",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",

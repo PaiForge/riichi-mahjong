@@ -163,7 +163,9 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
         const tehai14 = createTehai(fullMspz);
 
         // 3. 点数の計算 (統合APIを使用)
-        const score = calculateScoreForTehai(tehai14, config);
+        const scoreResult = calculateScoreForTehai(tehai14, config);
+        if (scoreResult.isErr()) throw scoreResult.error;
+        const score = scoreResult.value;
 
         // アサーション
         // Python出力: `han`, `fu`, `points` (total cost?) または `cost` 辞書。

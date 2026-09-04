@@ -121,9 +121,9 @@ export interface DetectYakuConfig {
   /** 和了牌 */
   readonly agariHai: HaiKindId;
   /** 場風牌 */
-  readonly bakaze?: Kazehai;
+  readonly bakaze: Kazehai;
   /** 自風牌 */
-  readonly jikaze?: Kazehai;
+  readonly jikaze: Kazehai;
   /** ドラ表示牌のリスト */
   readonly doraMarkers?: readonly HaiKindId[];
   /** 裏ドラ表示牌のリスト */
@@ -146,10 +146,18 @@ export interface HouraContext {
   readonly isMenzen: boolean;
   /** 和了牌（平和判定などに必要）。省略時は判定不能な役がある */
   readonly agariHai: HaiKindId;
-  /** 場風牌 */
-  readonly bakaze?: Kazehai | undefined;
-  /** 自風牌 */
-  readonly jikaze?: Kazehai | undefined;
+  /**
+   * 場風牌
+   *
+   * 雀頭が役牌かどうか（平和）や連風牌の雀頭符の判定に必要なため必須。
+   */
+  readonly bakaze: Kazehai;
+  /**
+   * 自風牌
+   *
+   * 雀頭が役牌かどうか（平和）や連風牌の雀頭符の判定に必要なため必須。
+   */
+  readonly jikaze: Kazehai;
   /** ツモ和了かどうか（暗刻系役の判定などに使用） */
   readonly isTsumo?: boolean | undefined;
 

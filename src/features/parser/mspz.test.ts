@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { parseExtendedMspz, isExtendedMspz, isMspz, asMspz } from "./mspz";
 import { HaiKind } from "../../types";
+import { MspzParseError } from "../../errors";
 
 describe("Standard MSPZ", () => {
   describe("isMspz", () => {
@@ -87,6 +88,49 @@ describe("Extended MSPZ", () => {
         expect(mentsu.furo).toBeDefined();
         expect(mentsu.furo?.type).toBe("Chi");
       }
+    });
+
+    it("非連続な3枚はチーとして受理しないこと", () => {
+      const res = parseExtendedMspz("[135m]");
+
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) {
+        expect(res.error).toBeInstanceOf(MspzParseError);
+      }
+    });
+
+    it("色をまたぐ3枚はチーとして受理しないこと", () => {
+      const res = parseExtendedMspz("[12m3p]");
+
+      expect(res.isErr()).toBe(true);
+    });
+
+    it("字牌の3枚はチーとして受理しないこと", () => {
+      // 東南西は数牌のような連続性を持たない
+      const res = parseExtendedMspz("[123z]");
+
+      expect(res.isErr()).toBe(true);
+    });
+
+    it("9と1をまたぐ3枚はチーとして受理しないこと", () => {
+      const res = parseExtendedMspz("[891m]");
+
+      expect(res.isErr()).toBe(true);
+    });
+
+    it("昇順でない並びのチーは昇順に正規化されること", () => {
+      // 表記上の並び順に意味はないため、順子はソート済みで返す
+      const res = parseExtendedMspz("[321m]");
+      if (res.isErr()) throw res.error;
+
+      const mentsu = res.value.exposed[0];
+      if (!mentsu) throw new Error("Should be defined");
+      expect(mentsu.type).toBe("Shuntsu");
+      expect(mentsu.hais).toEqual([
+        HaiKind.ManZu1,
+        HaiKind.ManZu2,
+        HaiKind.ManZu3,
+      ]);
     });
 
     it("parses Koutsu (Pon) in brackets", () => {

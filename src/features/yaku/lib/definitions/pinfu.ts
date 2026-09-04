@@ -3,7 +3,6 @@ import { HaiKind, type HaiKindId } from "../../../../types";
 import type { HouraStructure, HouraContext, YakuDefinition } from "../../types";
 import type { Shuntsu } from "../../../../types";
 import { classifyMachi } from "../../../../core/machi";
-import { MahjongArgumentError } from "../../../../errors";
 import { createYaku } from "../builder";
 
 const checkPinfu: (hand: HouraStructure, context: HouraContext) => boolean = (
@@ -17,12 +16,6 @@ const checkPinfu: (hand: HouraStructure, context: HouraContext) => boolean = (
   // 2. 雀頭が役牌でないこと
   // 三元牌、場風、自風が含まれていないことを確認
   const jantouKind = hand.jantou.hais[0];
-
-  if (context.bakaze === undefined || context.jikaze === undefined) {
-    throw new MahjongArgumentError(
-      "Pinfu check requires bakaze and jikaze in context",
-    );
-  }
 
   const yakuhaiList: HaiKindId[] = [
     HaiKind.Haku,

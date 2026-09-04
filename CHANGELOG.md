@@ -1,3 +1,77 @@
+## 0.7.0 (2026-09-04)
+
+破壊的変更を3件含みます。移行手順は「移行ガイド」を参照してください。
+
+### 移行ガイド (0.6.x → 0.7.0)
+
+#### 1. `calculateScoreForTehai` が `Result` を返す
+
+役なし（形式和了）は例外ではなく `Err` で返るようになりました。
+
+```ts
+// 0.6.x
+try {
+  const score = calculateScoreForTehai(tehai, config);
+  console.log(score.han, score.fu);
+} catch (e) {
+  // NoYakuError
+}
+
+// 0.7.0
+const result = calculateScoreForTehai(tehai, config);
+if (result.isErr()) {
+  // result.error は NoYakuError
+} else {
+  const score = result.value;
+  console.log(score.han, score.fu);
+}
+```
+
+`result.match(...)` / `result.map(...)` など neverthrow の API も使えます。
+エラー型は `NoYakuError` として公開済みです。
+
+#### 2. `detectYaku` の `bakaze` / `jikaze` が必須
+
+```ts
+// 0.6.x（省略できたが、平和判定に到達すると MahjongArgumentError が投げられた）
+detectYaku(tehai, { agariHai });
+
+// 0.7.0
+detectYaku(tehai, { agariHai, bakaze: HaiKind.Ton, jikaze: HaiKind.Nan });
+```
+
+雀頭が役牌かどうか（平和の判定）と連風牌の雀頭符の算出に必要なため、
+型で必須にしました。`calculateScoreForTehai` の `config` は元から必須です。
+
+#### 3. `Fu` 型の上限が 170 に拡張
+
+`Fu` を網羅的に扱っている場合（`switch` や独自の符テーブルなど）は
+120〜170 の分岐を追加してください。么九牌の暗槓を複数含む手で実際に
+110符を超えます。
+
+```ts
+// 0.6.x: 20 | 25 | 30 | ... | 110
+// 0.7.0: 20 | 25 | 30 | ... | 110 | 120 | 130 | 140 | 150 | 160 | 170
+```
+
+### Changed
+
+- **破壊的変更**: `calculateScoreForTehai` が `Result<ScoreResult, NoYakuError>` を返すようになった（[#3](https://github.com/PaiForge/riichi-mahjong/issues/3)）
+  - 役なし（形式和了）は呼び出し側が必ず扱うべきドメイン上の失敗であり、シグネチャに現れない例外ではハンドリング漏れを招くため
+  - 移行: `const result = calculateScoreForTehai(...)` → `if (result.isErr()) { ... } else { result.value }`
+- **破壊的変更**: `detectYaku` の `config` で `bakaze` / `jikaze` が必須になった（[#3](https://github.com/PaiForge/riichi-mahjong/issues/3)）
+  - 雀頭が役牌かどうか（平和）と連風牌の雀頭符の判定に必要。従来は未指定でも型は通り、平和判定に到達した時点で `MahjongArgumentError` が投げられていた
+- **破壊的変更**: `Fu` 型の上限を110符から170符に拡張した（120〜170を追加）
+- 公開されていなかったエラー型 `TehaiError`（`calculateShanten` / `validateTehai*` の Err 型）をエクスポートした
+
+### Fixed
+
+- 拡張MSPZパーサーがチー（順子副露）の連続性を検証していなかった問題を修正（[#4](https://github.com/PaiForge/riichi-mahjong/issues/4)）
+  - `[135m]` `[123z]` `[12m3p]` のような非連続・異色の3枚がチーとして受理されていたが、`MspzParseError` を返すようになった
+  - あわせて、チーの牌の並びを昇順に正規化するようにした（表記上の並び順に意味はなく、順子がソート済みであることを前提とする処理があるため）
+- 110符を超える手で例外が投げられていた問題を修正（么九牌の暗槓を複数含む形。例: `(1111m)(9999m)(1111z)[999p]22z` ツモ = 130符）
+- 公開APIの型シグネチャテストが型チェックされておらず、実装と食い違ったまま通っていた問題を修正（`typecheck` の対象に `tests/` を追加）
+
 ## 0.6.0 (2026-09-04)
 
 ### Added

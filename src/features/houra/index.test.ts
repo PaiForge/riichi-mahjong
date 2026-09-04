@@ -103,16 +103,22 @@ describe("役判定と点数計算の解釈の一致", () => {
 
       const yakuResult = detectYaku(tehai, config);
       const scoreResult = calculateScoreForTehai(tehai, config);
+      if (scoreResult.isErr()) throw scoreResult.error;
 
-      expect(scoreResult.detail?.yakuResult).toEqual(yakuResult);
+      expect(scoreResult.value.detail?.yakuResult).toEqual(yakuResult);
     },
   );
 
-  it("役が成立しない手では detectYaku が空配列を返し、点数計算は NoYakuError となること", () => {
+  it("役が成立しない手では detectYaku が空配列を返し、点数計算は NoYakuError を返すこと", () => {
     const tehai = createTehai("234m234p456s678s55z");
     const config = createConfig("4m", false);
 
     expect(detectYaku(tehai, config)).toEqual([]);
-    expect(() => calculateScoreForTehai(tehai, config)).toThrow(NoYakuError);
+
+    const scoreResult = calculateScoreForTehai(tehai, config);
+    expect(scoreResult.isErr()).toBe(true);
+    if (scoreResult.isErr()) {
+      expect(scoreResult.error).toBeInstanceOf(NoYakuError);
+    }
   });
 });

@@ -10,12 +10,16 @@ describe("二盃口（リャンペーコー）の判定", () => {
   const mockContextMenzen: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 
   const mockContextOpen: HouraContext = {
     isMenzen: false,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 
