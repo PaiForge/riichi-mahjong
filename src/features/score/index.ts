@@ -92,6 +92,7 @@ export function calculateScoreForTehai(
     interpretation.dora,
     context,
     interpretation.yakumanMultiplier,
+    config.ruleConfig,
   );
 
   // 利用側が符の内訳を表示する際にライブラリと同じ構造解釈を参照できるよう、

@@ -1,7 +1,13 @@
-import type { Fu } from "../../../types";
-import type { Hansu, YakuName, YakumanRuleConfig } from "../../yaku/types";
+import type {
+  Fu,
+  RuleConfig,
+  ScoreLevelRuleConfig,
+  YakumanRuleConfig,
+} from "../../../types";
+import type { Hansu, YakuName } from "../../yaku/types";
 import type { FuResult } from "./fu/types";
 import {
+  BASE_SCORE_KIRIAGE_MANGAN,
   BASE_SCORE_LIMIT,
   HAN_BAIMAN,
   HAN_HANEMAN,
@@ -95,9 +101,20 @@ export function getYakumanMultiplier(
  *
  * @param han 翻数
  * @param basePoints 基本点（符 × 2^(2+翻)）
+ * @param ruleConfig 点数区分のルール差分設定（省略時は切り上げ満貫なし）
  * @returns 点数レベル
  */
-export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
+export function getScoreLevel(
+  han: number,
+  basePoints: number,
+  ruleConfig?: Readonly<ScoreLevelRuleConfig>,
+): ScoreLevel {
+  // 切り上げ満貫: 30符4翻・60符3翻（基本点1920）を満貫に切り上げる
+  const manganBaseScore =
+    ruleConfig?.kiriageMangan === true
+      ? BASE_SCORE_KIRIAGE_MANGAN
+      : BASE_SCORE_LIMIT;
+
   if (han >= HAN_YAKUMAN) {
     return ScoreLevel.Yakuman;
   }
@@ -110,7 +127,7 @@ export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
   if (han >= HAN_HANEMAN) {
     return ScoreLevel.Haneman;
   }
-  if (han >= HAN_MANGAN || basePoints >= BASE_SCORE_LIMIT) {
+  if (han >= HAN_MANGAN || basePoints >= manganBaseScore) {
     return ScoreLevel.Mangan;
   }
   return ScoreLevel.Normal;
@@ -153,12 +170,14 @@ function getLimitBasePoints(level: ScoreLevel): number | undefined {
  * @param fu 符
  * @param yakumanMultiplier 役満単位（{@link getYakumanMultiplier} で算出。
  *   1 以上なら翻数・符によらず役満単位分の固定支払いになる）
+ * @param ruleConfig ルール差分設定（省略時は切り上げ満貫なし）
  * @returns 基本点と点数レベル
  */
 export function resolveBasePoints(
   totalHan: number,
   fu: Fu,
   yakumanMultiplier = 0,
+  ruleConfig?: Readonly<ScoreLevelRuleConfig>,
 ): { readonly basePoints: number; readonly scoreLevel: ScoreLevel } {
   // 役満役が成立していれば、支払いは役満単位で決まる（翻数・符は使わない）
   if (yakumanMultiplier >= 1) {
@@ -170,7 +189,7 @@ export function resolveBasePoints(
   }
 
   const rawBasePoints = calculateBasePoints(fu, totalHan);
-  const scoreLevel = getScoreLevel(totalHan, rawBasePoints);
+  const scoreLevel = getScoreLevel(totalHan, rawBasePoints, ruleConfig);
 
   // 満貫以上なら固定の基本点、それ以外は計算値を使用
   return {
@@ -189,6 +208,7 @@ export function resolveBasePoints(
  * @param yakumanMultiplier 役満単位（{@link getYakumanMultiplier} で算出。
  *   1 以上なら翻数・符によらず役満単位分の固定支払いになる。
  *   省略時は 0 = 役満役なしとして翻数・符から計算する）
+ * @param ruleConfig ルール差分設定（省略時は切り上げ満貫なし）
  */
 export function calculateScoreFromHanAndFu(
   yakuHansu: number,
@@ -196,6 +216,7 @@ export function calculateScoreFromHanAndFu(
   dora: number,
   context: Readonly<ScoreContext>,
   yakumanMultiplier = 0,
+  ruleConfig?: Readonly<RuleConfig>,
 ): ScoreResult {
   const totalHan = yakuHansu + dora;
   const fu = fuResult.total;
@@ -204,6 +225,7 @@ export function calculateScoreFromHanAndFu(
     totalHan,
     fu,
     yakumanMultiplier,
+    ruleConfig,
   );
 
   return {
