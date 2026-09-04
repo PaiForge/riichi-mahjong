@@ -1,3 +1,20 @@
+## Unreleased
+
+### Changed
+
+- **破壊的変更**: `calculateScoreForTehai` が `Result<ScoreResult, NoYakuError>` を返すようになった（[#3](https://github.com/PaiForge/riichi-mahjong/issues/3)）
+  - 役なし（形式和了）は呼び出し側が必ず扱うべきドメイン上の失敗であり、シグネチャに現れない例外ではハンドリング漏れを招くため
+  - 移行: `const result = calculateScoreForTehai(...)` → `if (result.isErr()) { ... } else { result.value }`
+- **破壊的変更**: `detectYaku` の `config` で `bakaze` / `jikaze` が必須になった（[#3](https://github.com/PaiForge/riichi-mahjong/issues/3)）
+  - 雀頭が役牌かどうか（平和）と連風牌の雀頭符の判定に必要。従来は未指定でも型は通り、平和判定に到達した時点で `MahjongArgumentError` が投げられていた
+- **破壊的変更**: `Fu` 型の上限を110符から170符に拡張した（120〜170を追加）
+- 公開されていなかったエラー型 `TehaiError`（`calculateShanten` / `validateTehai*` の Err 型）をエクスポートした
+
+### Fixed
+
+- 110符を超える手で例外が投げられていた問題を修正（么九牌の暗槓を複数含む形。例: `(1111m)(9999m)(1111z)[999p]22z` ツモ = 130符）
+- 公開APIの型シグネチャテストが型チェックされておらず、実装と食い違ったまま通っていた問題を修正（`typecheck` の対象に `tests/` を追加）
+
 ## 0.6.0 (2026-09-04)
 
 ### Added
