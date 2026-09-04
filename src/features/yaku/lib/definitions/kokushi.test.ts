@@ -8,6 +8,8 @@ describe("国士無双の判定", () => {
   const baseContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [],
   };
 

@@ -10,6 +10,8 @@ describe("字一色（ツーイーソー）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.Ton,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 

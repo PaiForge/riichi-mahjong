@@ -26,6 +26,8 @@ describe("calculateScoreFromHanAndFu", () => {
     isTsumo,
     isMenzen: true,
     agariHai: HaiKind.ManZu1, // dummy
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [],
   });
 
@@ -288,6 +290,8 @@ describe("切り上げ満貫 (kiriageMangan)", () => {
     isTsumo,
     isMenzen: true,
     agariHai: HaiKind.ManZu1, // dummy
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [],
   });
 

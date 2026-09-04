@@ -10,6 +10,8 @@ describe("三色同刻（サンショクドウコウ）の判定", () => {
   const mockContext: HouraContext = {
     isMenzen: true,
     agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
     doraMarkers: [], // Dummy
   };
 
