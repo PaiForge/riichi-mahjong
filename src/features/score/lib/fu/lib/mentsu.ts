@@ -9,7 +9,6 @@ import type { HouraContext } from "../../../../yaku/types";
 import { isSangenpai, isYaochu } from "../../../../../core/hai";
 import { type Fu } from "../../../../../types";
 import { classifyMachi, type MachiType } from "../../../../../core/machi";
-import { MahjongError } from "../../../../../errors";
 import {
   FU_BASE,
   FU_KOUTSU,
@@ -21,20 +20,26 @@ import {
   FU_OPEN_PINFU_GLAZE,
 } from "../constants";
 
-/** 有効な符の値 */
+/** 面子手で取りうる符の値（10符刻み） */
 const VALID_FU_VALUES: readonly Fu[] = [
-  20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110,
+  20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170,
 ];
 
+/** 符の下限（副底）と上限（么九暗槓4つ + 連風牌雀頭 + 単騎 + 門前ロン） */
+const FU_MIN: Fu = 20;
+const FU_MAX: Fu = 170;
+
 /**
- * 数値を Fu 型に変換する（無効な値の場合はエラー）
+ * 符の合計を10符単位で切り上げて Fu 型に変換する。
+ *
+ * 符の内訳から取りうる合計は副底20符から170符までであり、切り上げ後の値は
+ * 必ず {@link VALID_FU_VALUES} に含まれる。範囲外は理論上到達しないが、
+ * 全域関数とするため下限・上限に丸める。
  */
-function toFu(value: number): Fu {
-  const fu = VALID_FU_VALUES.find((f) => f === value);
-  if (fu === undefined) {
-    throw new MahjongError(`Invalid fu value: ${value}`);
-  }
-  return fu;
+function roundUpToFu(sum: number): Fu {
+  const rounded = Math.ceil(sum / 10) * 10;
+  if (rounded <= FU_MIN) return FU_MIN;
+  return VALID_FU_VALUES.find((fu) => fu === rounded) ?? FU_MAX;
 }
 
 /**
@@ -133,9 +138,9 @@ function roundUpFu(details: FuDetails, context: HouraContext): Fu {
     details.agari;
 
   if (sum === 20 && !context.isTsumo && !context.isMenzen) {
-    return toFu(FU_OPEN_PINFU_GLAZE);
+    return roundUpToFu(FU_OPEN_PINFU_GLAZE);
   }
-  return toFu(Math.ceil(sum / 10) * 10);
+  return roundUpToFu(sum);
 }
 
 /**

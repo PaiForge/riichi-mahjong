@@ -268,3 +268,47 @@ describe("calculateFu", () => {
     });
   });
 });
+
+describe("110符を超える符の計算", () => {
+  it("么九牌の暗槓3つ + 明刻の手が130符になること", () => {
+    // (1111m)(9999m)(1111z)[999p] + 22z ツモ
+    // 副底20 + 暗槓么九32×3 + 明刻么九4 + 雀頭0 + 単騎2 + ツモ2 = 124 -> 130符
+    const tehai = createTehai("(1111m)(9999m)(1111z)[999p]22z");
+    const hand = getHouraStructures(tehai)[0];
+    if (!hand) throw new Error("和了形が得られること");
+
+    const context: HouraContext = {
+      isMenzen: false,
+      agariHai: HaiKind.Nan,
+      bakaze: HaiKind.Ton,
+      jikaze: HaiKind.Nan,
+      isTsumo: true,
+      doraMarkers: [],
+    };
+
+    const result = calculateFu(hand, context);
+
+    expect(result.total).toBe(130);
+  });
+
+  it("么九牌の暗槓4つの手が160符になること", () => {
+    // (1111m)(9999m)(1111z)(9999p) + 22z ツモ
+    // 副底20 + 暗槓么九32×4 + 単騎2 + ツモ2 = 152 -> 160符
+    const tehai = createTehai("(1111m)(9999m)(1111z)(9999p)22z");
+    const hand = getHouraStructures(tehai)[0];
+    if (!hand) throw new Error("和了形が得られること");
+
+    const context: HouraContext = {
+      isMenzen: true,
+      agariHai: HaiKind.Nan,
+      bakaze: HaiKind.Ton,
+      jikaze: HaiKind.Nan,
+      isTsumo: true,
+      doraMarkers: [],
+    };
+
+    const result = calculateFu(hand, context);
+
+    expect(result.total).toBe(160);
+  });
+});
