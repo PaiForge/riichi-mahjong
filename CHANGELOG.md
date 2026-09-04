@@ -1,4 +1,58 @@
-## Unreleased
+## 0.7.0 (2026-09-04)
+
+破壊的変更を3件含みます。移行手順は「移行ガイド」を参照してください。
+
+### 移行ガイド (0.6.x → 0.7.0)
+
+#### 1. `calculateScoreForTehai` が `Result` を返す
+
+役なし（形式和了）は例外ではなく `Err` で返るようになりました。
+
+```ts
+// 0.6.x
+try {
+  const score = calculateScoreForTehai(tehai, config);
+  console.log(score.han, score.fu);
+} catch (e) {
+  // NoYakuError
+}
+
+// 0.7.0
+const result = calculateScoreForTehai(tehai, config);
+if (result.isErr()) {
+  // result.error は NoYakuError
+} else {
+  const score = result.value;
+  console.log(score.han, score.fu);
+}
+```
+
+`result.match(...)` / `result.map(...)` など neverthrow の API も使えます。
+エラー型は `NoYakuError` として公開済みです。
+
+#### 2. `detectYaku` の `bakaze` / `jikaze` が必須
+
+```ts
+// 0.6.x（省略できたが、平和判定に到達すると MahjongArgumentError が投げられた）
+detectYaku(tehai, { agariHai });
+
+// 0.7.0
+detectYaku(tehai, { agariHai, bakaze: HaiKind.Ton, jikaze: HaiKind.Nan });
+```
+
+雀頭が役牌かどうか（平和の判定）と連風牌の雀頭符の算出に必要なため、
+型で必須にしました。`calculateScoreForTehai` の `config` は元から必須です。
+
+#### 3. `Fu` 型の上限が 170 に拡張
+
+`Fu` を網羅的に扱っている場合（`switch` や独自の符テーブルなど）は
+120〜170 の分岐を追加してください。么九牌の暗槓を複数含む手で実際に
+110符を超えます。
+
+```ts
+// 0.6.x: 20 | 25 | 30 | ... | 110
+// 0.7.0: 20 | 25 | 30 | ... | 110 | 120 | 130 | 140 | 150 | 160 | 170
+```
 
 ### Changed
 
