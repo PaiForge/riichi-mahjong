@@ -28,24 +28,25 @@ export type {
   YakuName,
   Hansu,
   DetectYakuConfig,
-  YakumanRuleConfig,
 } from "./features/yaku";
+export type {
+  FuRuleConfig,
+  ScoreLevelRuleConfig,
+  YakumanRuleConfig,
+  RuleConfig,
+} from "./types";
 export type {
   HouraStructure,
   MentsuHouraStructure,
   ChiitoitsuHouraStructure,
   KokushiHouraStructure,
 } from "./types";
-export type {
-  FuResult,
-  FuDetails,
-  FuRuleConfig,
-} from "./features/score/lib/fu/types";
+export type { FuResult, FuDetails } from "./features/score/lib/fu/types";
 export type {
   ScoreResult,
   ScoreDetail,
   ScoreCalculationConfig,
-  RuleConfig,
+  CalculateScoreConfig,
   Payment,
   Ron,
   KoTsumo,
@@ -139,6 +140,7 @@ export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 // =============================================================================
 export {
   calculateScoreForTehai,
+  calculateScore,
   getPaymentTotal,
   getYakumanMultiplier,
 } from "./features/score";

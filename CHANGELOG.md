@@ -1,5 +1,14 @@
 ## Unreleased
 
+### Added
+
+- 切り上げ満貫 `ruleConfig.kiriageMangan` を追加（既定 false・[#5](https://github.com/PaiForge/riichi-mahjong/issues/5)）
+  - 基本点1920（30符4翻・60符3翻）を満貫の支払いに切り上げる（子ロン 7700 → 8000、親ロン 11600 → 12000、子ツモ 2000/3900 → 2000/4000、親ツモ 3900オール → 4000オール）
+  - 翻数・符は変わらず、点数区分（`scoreLevel`）と支払いだけが満貫になる
+- `calculateScore(han, fu, config)` を公開（点数表の生成など、手牌を伴わず翻数と符だけが分かっている場面向け）
+- ルール差分設定の型を整理し、`RuleConfig`（= `FuRuleConfig` + `ScoreLevelRuleConfig` + `YakumanRuleConfig`）を共有の型として公開
+  - 切り上げ満貫は符のルールではないため `ScoreLevelRuleConfig` を新設。`FuRuleConfig` / `YakumanRuleConfig` は従来どおり利用可能（定義位置の移動のみ・後方互換）
+
 ### Fixed
 
 - 高点法の判定をライブラリ内で一意にした（[#6](https://github.com/PaiForge/riichi-mahjong/issues/6)）
@@ -10,8 +19,8 @@
 
 ### Changed
 
-- `DetectYakuConfig.ruleConfig` が符計算のルール差分（`FuRuleConfig`）も受け付けるようになった（型の拡大のみ・後方互換）
-  - 符が高点法の解釈選択に影響するため、点数計算と同じ解釈を得るには両APIに同じルール設定を渡す
+- `DetectYakuConfig.ruleConfig` が `RuleConfig` 全体（符・点数区分のルールを含む）を受け付けるようになった（型の拡大のみ・後方互換）
+  - 符と点数が高点法の解釈選択に影響するため、点数計算と同じ解釈を得るには両APIに同じルール設定を渡す
 
 ## 0.5.0 (2026-09-03)
 

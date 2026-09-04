@@ -23,7 +23,18 @@ export const HAN_BAIMAN = 8;
 export const HAN_SANBAIMAN = 11;
 export const HAN_YAKUMAN = 13;
 
-// 切り上げ満貫の閾値 (30符4翻 = 1920 -> 2000? 60符3翻=1920)
-// 一般的には 2000点(子) / 3000点(親) が満貫の最低点（ベース）
-// 符計算による基本点が 2000 を超えたら満貫
+/**
+ * 満貫扱いとなる基本点の下限
+ *
+ * 4翻以下でも符が高く、計算による基本点がこの値に達していれば満貫とする。
+ */
 export const BASE_SCORE_LIMIT = 2000;
+
+/**
+ * 切り上げ満貫の対象となる基本点
+ *
+ * 30符4翻・60符3翻がいずれもこの基本点になる。切り上げ満貫
+ * （{@link ScoreLevelRuleConfig.kiriageMangan}）が有効な場合、この値に達した
+ * 手は満貫（子ロン8000・親ロン12000）として支払う。
+ */
+export const BASE_SCORE_KIRIAGE_MANGAN = 1920;

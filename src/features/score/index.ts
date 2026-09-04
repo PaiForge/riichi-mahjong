@@ -13,6 +13,7 @@ import {
 
 export type {
   ScoreCalculationConfig,
+  CalculateScoreConfig,
   ScoreResult,
   ScoreDetail,
   Payment,
@@ -29,6 +30,7 @@ export {
   calculateBasePoints,
   getScoreLevel,
   getPaymentTotal,
+  calculateScore,
   calculateScoreFromHanAndFu,
   getYakumanMultiplier,
 } from "./lib/calculation";
@@ -92,6 +94,7 @@ export function calculateScoreForTehai(
     interpretation.dora,
     context,
     interpretation.yakumanMultiplier,
+    config.ruleConfig,
   );
 
   // 利用側が符の内訳を表示する際にライブラリと同じ構造解釈を参照できるよう、

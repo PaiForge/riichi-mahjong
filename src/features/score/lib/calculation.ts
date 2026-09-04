@@ -1,7 +1,13 @@
-import type { Fu } from "../../../types";
-import type { Hansu, YakuName, YakumanRuleConfig } from "../../yaku/types";
+import type {
+  Fu,
+  RuleConfig,
+  ScoreLevelRuleConfig,
+  YakumanRuleConfig,
+} from "../../../types";
+import type { Hansu, YakuName } from "../../yaku/types";
 import type { FuResult } from "./fu/types";
 import {
+  BASE_SCORE_KIRIAGE_MANGAN,
   BASE_SCORE_LIMIT,
   HAN_BAIMAN,
   HAN_HANEMAN,
@@ -16,6 +22,7 @@ import {
 } from "../constants";
 import {
   ScoreLevel,
+  type CalculateScoreConfig,
   type ScoreContext,
   type ScoreResult,
   type Payment,
@@ -95,9 +102,20 @@ export function getYakumanMultiplier(
  *
  * @param han 翻数
  * @param basePoints 基本点（符 × 2^(2+翻)）
+ * @param ruleConfig 点数区分のルール差分設定（省略時は切り上げ満貫なし）
  * @returns 点数レベル
  */
-export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
+export function getScoreLevel(
+  han: number,
+  basePoints: number,
+  ruleConfig?: Readonly<ScoreLevelRuleConfig>,
+): ScoreLevel {
+  // 切り上げ満貫: 30符4翻・60符3翻（基本点1920）を満貫に切り上げる
+  const manganBaseScore =
+    ruleConfig?.kiriageMangan === true
+      ? BASE_SCORE_KIRIAGE_MANGAN
+      : BASE_SCORE_LIMIT;
+
   if (han >= HAN_YAKUMAN) {
     return ScoreLevel.Yakuman;
   }
@@ -110,7 +128,7 @@ export function getScoreLevel(han: number, basePoints: number): ScoreLevel {
   if (han >= HAN_HANEMAN) {
     return ScoreLevel.Haneman;
   }
-  if (han >= HAN_MANGAN || basePoints >= BASE_SCORE_LIMIT) {
+  if (han >= HAN_MANGAN || basePoints >= manganBaseScore) {
     return ScoreLevel.Mangan;
   }
   return ScoreLevel.Normal;
@@ -153,12 +171,14 @@ function getLimitBasePoints(level: ScoreLevel): number | undefined {
  * @param fu 符
  * @param yakumanMultiplier 役満単位（{@link getYakumanMultiplier} で算出。
  *   1 以上なら翻数・符によらず役満単位分の固定支払いになる）
+ * @param ruleConfig ルール差分設定（省略時は切り上げ満貫なし）
  * @returns 基本点と点数レベル
  */
 export function resolveBasePoints(
   totalHan: number,
   fu: Fu,
   yakumanMultiplier = 0,
+  ruleConfig?: Readonly<ScoreLevelRuleConfig>,
 ): { readonly basePoints: number; readonly scoreLevel: ScoreLevel } {
   // 役満役が成立していれば、支払いは役満単位で決まる（翻数・符は使わない）
   if (yakumanMultiplier >= 1) {
@@ -170,12 +190,46 @@ export function resolveBasePoints(
   }
 
   const rawBasePoints = calculateBasePoints(fu, totalHan);
-  const scoreLevel = getScoreLevel(totalHan, rawBasePoints);
+  const scoreLevel = getScoreLevel(totalHan, rawBasePoints, ruleConfig);
 
   // 満貫以上なら固定の基本点、それ以外は計算値を使用
   return {
     basePoints: getLimitBasePoints(scoreLevel) ?? rawBasePoints,
     scoreLevel,
+  };
+}
+
+/**
+ * 翻数と符から点数（支払い情報を含む結果）を計算する (calculateScore)
+ *
+ * 手牌を伴わず、翻数と符だけが分かっている場面（点数表の生成、確定した
+ * 和了結果の再計算など）のための公開API。手牌から計算する場合は
+ * `calculateScoreForTehai` を使うこと。
+ *
+ * @param han 総翻数（役 + ドラ）
+ * @param fu 符
+ * @param config 親か子か・ツモかロンか・ルール差分設定
+ * @returns 点数計算結果（構造解釈の詳細 detail は持たない）
+ */
+export function calculateScore(
+  han: number,
+  fu: Fu,
+  config: Readonly<CalculateScoreConfig>,
+): ScoreResult {
+  const yakumanMultiplier = config.yakumanMultiplier ?? 0;
+  const { basePoints, scoreLevel } = resolveBasePoints(
+    han,
+    fu,
+    yakumanMultiplier,
+    config.ruleConfig,
+  );
+
+  return {
+    han,
+    fu,
+    scoreLevel,
+    payment: calculatePayment(basePoints, config),
+    yakumanMultiplier: yakumanMultiplier >= 1 ? yakumanMultiplier : 0,
   };
 }
 
@@ -189,6 +243,7 @@ export function resolveBasePoints(
  * @param yakumanMultiplier 役満単位（{@link getYakumanMultiplier} で算出。
  *   1 以上なら翻数・符によらず役満単位分の固定支払いになる。
  *   省略時は 0 = 役満役なしとして翻数・符から計算する）
+ * @param ruleConfig ルール差分設定（省略時は切り上げ満貫なし）
  */
 export function calculateScoreFromHanAndFu(
   yakuHansu: number,
@@ -196,23 +251,14 @@ export function calculateScoreFromHanAndFu(
   dora: number,
   context: Readonly<ScoreContext>,
   yakumanMultiplier = 0,
+  ruleConfig?: Readonly<RuleConfig>,
 ): ScoreResult {
-  const totalHan = yakuHansu + dora;
-  const fu = fuResult.total;
-
-  const { basePoints, scoreLevel } = resolveBasePoints(
-    totalHan,
-    fu,
+  return calculateScore(yakuHansu + dora, fuResult.total, {
+    isOya: context.isOya,
+    isTsumo: context.isTsumo ?? false,
+    ...(ruleConfig ? { ruleConfig } : {}),
     yakumanMultiplier,
-  );
-
-  return {
-    han: totalHan,
-    fu: fu,
-    scoreLevel,
-    payment: calculatePayment(basePoints, context),
-    yakumanMultiplier: yakumanMultiplier >= 1 ? yakumanMultiplier : 0,
-  };
+  });
 }
 
 /**
@@ -220,7 +266,7 @@ export function calculateScoreFromHanAndFu(
  */
 function calculatePayment(
   basePoints: number,
-  context: Readonly<ScoreContext>,
+  context: Readonly<Pick<CalculateScoreConfig, "isOya" | "isTsumo">>,
 ): Payment {
   if (context.isTsumo) {
     if (context.isOya) {

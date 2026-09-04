@@ -4,3 +4,4 @@ export * from "./scalar";
 export * from "./mentsu";
 export * from "./tehai";
 export * from "./houra";
+export * from "./rule-config";

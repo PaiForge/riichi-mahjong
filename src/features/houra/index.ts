@@ -1,6 +1,5 @@
-import type { Tehai14 } from "../../types";
+import type { RuleConfig, Tehai14 } from "../../types";
 import type { HouraContext } from "../yaku/types";
-import type { FuRuleConfig } from "../score/lib/fu/types";
 import type { HouraInterpretation } from "./types";
 import type { HouraRankingKey } from "./lib/compare";
 
@@ -33,14 +32,14 @@ export { compareHouraRankingKeys } from "./lib/compare";
  *
  * @param tehai 手牌 (14枚)
  * @param context 和了コンテキスト（和了牌、場風、自風、ドラ表示牌など）
- * @param fuRuleConfig 符計算のルール差分設定（任意）。符は解釈の優劣に影響する
- *   ため、役判定時にも点数計算時と同じ設定を渡す必要がある
+ * @param ruleConfig ルール差分設定（任意）。符や点数区分のルールは解釈の優劣に
+ *   影響するため、役判定時にも点数計算時と同じ設定を渡す必要がある
  * @returns 採用された和了解釈。役のある解釈が一つも無ければ undefined
  */
 export function selectHouraInterpretation(
   tehai: Tehai14,
   context: Readonly<HouraContext>,
-  fuRuleConfig?: Readonly<FuRuleConfig>,
+  ruleConfig?: Readonly<RuleConfig>,
 ): HouraInterpretation | undefined {
   // ドラは面子分解によらず一定のため、解釈ごとに数え直さない
   const dora = countDora(tehai, context.doraMarkers);
@@ -56,7 +55,7 @@ export function selectHouraInterpretation(
     if (yakuHansu === 0) continue;
 
     const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
-    const fuResult = calculateFu(structure, context, isPinfu, fuRuleConfig);
+    const fuResult = calculateFu(structure, context, isPinfu, ruleConfig);
     const yakumanMultiplier = getYakumanMultiplier(
       yakuResult,
       context.yakumanRuleConfig,
@@ -65,6 +64,7 @@ export function selectHouraInterpretation(
       yakuHansu + dora,
       fuResult.total,
       yakumanMultiplier,
+      ruleConfig,
     );
 
     const key: HouraRankingKey = {

@@ -84,6 +84,50 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
+  describe("calculateScore", () => {
+    it("関数としてエクスポートされていること", () => {
+      expect(PublicApi.calculateScore).toBeDefined();
+      expect(typeof PublicApi.calculateScore).toBe("function");
+    });
+
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.calculateScore satisfies (
+        han: number,
+        fu: PublicApi.Fu,
+        config: PublicApi.CalculateScoreConfig,
+      ) => PublicApi.ScoreResult;
+
+      expect(true).toBe(true);
+    });
+
+    it("翻数・符・ルール設定から点数を計算できること", () => {
+      const score = PublicApi.calculateScore(4, 30, {
+        isOya: false,
+        isTsumo: false,
+        ruleConfig: { kiriageMangan: true },
+      });
+
+      expect(PublicApi.getPaymentTotal(score.payment)).toBe(8000);
+    });
+  });
+
+  describe("ルール差分設定の型 (RuleConfig)", () => {
+    it("符・点数区分・役満のルールをまとめて指定できること", () => {
+      const ruleConfig = {
+        doubleWindJantouFu: 4,
+        kiriageMangan: true,
+        suuankouTanki: true,
+      } satisfies PublicApi.RuleConfig;
+
+      // 各層のルール設定型としても受け付けられること
+      ruleConfig satisfies PublicApi.FuRuleConfig;
+      ruleConfig satisfies PublicApi.ScoreLevelRuleConfig;
+      ruleConfig satisfies PublicApi.YakumanRuleConfig;
+
+      expect(ruleConfig.kiriageMangan).toBe(true);
+    });
+  });
+
   describe("Parser (parseMspz / parseExtendedMspz)", () => {
     it("関数としてエクスポートされていること", () => {
       expect(PublicApi.parseMspz).toBeDefined();
