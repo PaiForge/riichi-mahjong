@@ -13,6 +13,7 @@ import {
 
 export type {
   ScoreCalculationConfig,
+  CalculateScoreConfig,
   ScoreResult,
   ScoreDetail,
   Payment,
@@ -29,6 +30,7 @@ export {
   calculateBasePoints,
   getScoreLevel,
   getPaymentTotal,
+  calculateScore,
   calculateScoreFromHanAndFu,
   getYakumanMultiplier,
 } from "./lib/calculation";

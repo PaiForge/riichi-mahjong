@@ -46,6 +46,7 @@ export type {
   ScoreResult,
   ScoreDetail,
   ScoreCalculationConfig,
+  CalculateScoreConfig,
   Payment,
   Ron,
   KoTsumo,
@@ -139,6 +140,7 @@ export { isMspz, isExtendedMspz } from "./features/parser/mspz";
 // =============================================================================
 export {
   calculateScoreForTehai,
+  calculateScore,
   getPaymentTotal,
   getYakumanMultiplier,
 } from "./features/score";

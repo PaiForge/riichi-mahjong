@@ -22,6 +22,7 @@ import {
 } from "../constants";
 import {
   ScoreLevel,
+  type CalculateScoreConfig,
   type ScoreContext,
   type ScoreResult,
   type Payment,
@@ -199,6 +200,40 @@ export function resolveBasePoints(
 }
 
 /**
+ * 翻数と符から点数（支払い情報を含む結果）を計算する (calculateScore)
+ *
+ * 手牌を伴わず、翻数と符だけが分かっている場面（点数表の生成、確定した
+ * 和了結果の再計算など）のための公開API。手牌から計算する場合は
+ * `calculateScoreForTehai` を使うこと。
+ *
+ * @param han 総翻数（役 + ドラ）
+ * @param fu 符
+ * @param config 親か子か・ツモかロンか・ルール差分設定
+ * @returns 点数計算結果（構造解釈の詳細 detail は持たない）
+ */
+export function calculateScore(
+  han: number,
+  fu: Fu,
+  config: Readonly<CalculateScoreConfig>,
+): ScoreResult {
+  const yakumanMultiplier = config.yakumanMultiplier ?? 0;
+  const { basePoints, scoreLevel } = resolveBasePoints(
+    han,
+    fu,
+    yakumanMultiplier,
+    config.ruleConfig,
+  );
+
+  return {
+    han,
+    fu,
+    scoreLevel,
+    payment: calculatePayment(basePoints, config),
+    yakumanMultiplier: yakumanMultiplier >= 1 ? yakumanMultiplier : 0,
+  };
+}
+
+/**
  * 翻数・符・ドラから点数（支払い情報を含む結果）を計算する純粋関数
  *
  * @param yakuHansu 役の翻数合計（ドラを含まない）
@@ -218,23 +253,12 @@ export function calculateScoreFromHanAndFu(
   yakumanMultiplier = 0,
   ruleConfig?: Readonly<RuleConfig>,
 ): ScoreResult {
-  const totalHan = yakuHansu + dora;
-  const fu = fuResult.total;
-
-  const { basePoints, scoreLevel } = resolveBasePoints(
-    totalHan,
-    fu,
+  return calculateScore(yakuHansu + dora, fuResult.total, {
+    isOya: context.isOya,
+    isTsumo: context.isTsumo ?? false,
+    ...(ruleConfig ? { ruleConfig } : {}),
     yakumanMultiplier,
-    ruleConfig,
-  );
-
-  return {
-    han: totalHan,
-    fu: fu,
-    scoreLevel,
-    payment: calculatePayment(basePoints, context),
-    yakumanMultiplier: yakumanMultiplier >= 1 ? yakumanMultiplier : 0,
-  };
+  });
 }
 
 /**
@@ -242,7 +266,7 @@ export function calculateScoreFromHanAndFu(
  */
 function calculatePayment(
   basePoints: number,
-  context: Readonly<ScoreContext>,
+  context: Readonly<Pick<CalculateScoreConfig, "isOya" | "isTsumo">>,
 ): Payment {
   if (context.isTsumo) {
     if (context.isOya) {

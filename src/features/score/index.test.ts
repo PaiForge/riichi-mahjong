@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  calculateScore,
   calculateScoreFromHanAndFu,
   calculateBasePoints,
   getPaymentTotal,
@@ -438,5 +439,71 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 切り上げ満
     expect(result.fu).toBe(30);
     expect(result.scoreLevel).toBe("Mangan");
     expect(getPaymentTotal(result.payment)).toBe(8000);
+  });
+});
+
+describe("翻数と符からの点数計算 (calculateScore)", () => {
+  it("子ロン 30符4翻 -> 7700点", () => {
+    const score = calculateScore(4, 30, { isOya: false, isTsumo: false });
+
+    expect(score.han).toBe(4);
+    expect(score.fu).toBe(30);
+    expect(score.scoreLevel).toBe("Normal");
+    expect(getPaymentTotal(score.payment)).toBe(7700);
+  });
+
+  it("親ロン 40符3翻 -> 7700点", () => {
+    const score = calculateScore(3, 40, { isOya: true, isTsumo: false });
+
+    expect(score.payment).toEqual({ type: "ron", amount: 7700 });
+  });
+
+  it("子ツモ 20符4翻 -> 1300/2600", () => {
+    const score = calculateScore(4, 20, { isOya: false, isTsumo: true });
+
+    expect(score.payment).toEqual({ type: "koTsumo", amount: [1300, 2600] });
+  });
+
+  it("親ツモ 30符3翻 -> 2000オール", () => {
+    const score = calculateScore(3, 30, { isOya: true, isTsumo: true });
+
+    expect(score.payment).toEqual({ type: "oyaTsumo", amount: 2000 });
+  });
+
+  it("5翻は符によらず満貫になること", () => {
+    const score = calculateScore(5, 30, { isOya: false, isTsumo: false });
+
+    expect(score.scoreLevel).toBe("Mangan");
+    expect(getPaymentTotal(score.payment)).toBe(8000);
+  });
+
+  it("13翻は数え役満になること（役満単位は 0 のまま）", () => {
+    const score = calculateScore(13, 30, { isOya: false, isTsumo: false });
+
+    expect(score.scoreLevel).toBe("Yakuman");
+    expect(score.yakumanMultiplier).toBe(0);
+    expect(getPaymentTotal(score.payment)).toBe(32000);
+  });
+
+  it("役満単位を渡すと翻数・符によらず役満単位分の支払いになること", () => {
+    const score = calculateScore(13, 40, {
+      isOya: false,
+      isTsumo: false,
+      yakumanMultiplier: 2,
+    });
+
+    expect(score.scoreLevel).toBe("DoubleYakuman");
+    expect(getPaymentTotal(score.payment)).toBe(64000);
+  });
+
+  it("ルール設定（切り上げ満貫）が反映されること", () => {
+    const score = calculateScore(4, 30, {
+      isOya: false,
+      isTsumo: false,
+      ruleConfig: { kiriageMangan: true },
+    });
+
+    expect(score.scoreLevel).toBe("Mangan");
+    expect(getPaymentTotal(score.payment)).toBe(8000);
   });
 });

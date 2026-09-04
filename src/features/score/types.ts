@@ -47,6 +47,33 @@ export interface ScoreCalculationConfig {
   readonly ruleConfig?: RuleConfig;
 }
 
+/**
+ * 翻数・符からの点数計算コンフィグ (CalculateScoreConfig)
+ *
+ * {@link calculateScore} に渡す設定オブジェクト。手牌を伴わない
+ * （点数表など、翻と符だけが分かっている）場面で使う。
+ */
+export interface CalculateScoreConfig {
+  /** 和了者が親かどうか */
+  readonly isOya: boolean;
+  /** ツモ和了かどうか */
+  readonly isTsumo: boolean;
+  /**
+   * ルール差分設定（任意）。未指定時は標準ルール（切り上げ満貫なし）。
+   *
+   * 翻数・符からの計算で影響するのは点数区分のルール
+   * （{@link ScoreLevelRuleConfig}）のみ。
+   */
+  readonly ruleConfig?: RuleConfig;
+  /**
+   * 役満単位（任意、既定 0 = 役満役なし）
+   *
+   * 1 以上なら翻数・符によらず役満単位分の固定支払いになる。
+   * 13翻以上の数え役満は 0 のままでよい（翻数から役満と判定される）。
+   */
+  readonly yakumanMultiplier?: number;
+}
+
 /** ロン和了時の支払い */
 export interface Ron {
   readonly type: "ron";
