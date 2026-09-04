@@ -1,4 +1,6 @@
 import type {
+  RuleConfig,
+  YakumanRuleConfig,
   HaiKindId,
   Kazehai,
   Shuntsu,
@@ -13,6 +15,9 @@ import type {
 } from "../../types";
 
 export type { Kazehai, Shuntsu, Koutsu, Kantsu, Toitsu, Mentsu };
+
+// ルール差分設定は共有のルール設定として定義されている
+export type { RuleConfig, YakumanRuleConfig };
 
 // 後方互換性のため src/types.ts から再エクスポート
 export type {
@@ -107,42 +112,6 @@ export type YakuName = TehaiYaku;
 export type YakuResult = readonly [YakuName, Hansu][];
 
 /**
- * 役満ルール設定 (YakumanRuleConfig)
- *
- * ダブル役満・複合役満の採否はローカルルールで割れるため、
- * 標準ルールからの差分としてここで指定する。**すべて既定 false**
- * （ダブル役満なし・複合の合算なし）。
- *
- * 判定パターンは2系統ある:
- *
- * - **形によるダブル役満**（`suuankouTanki` 等の4フラグ）:
- *   単一の役の翻数が待ち形などの条件で 13 → 26 に変わる。
- *   各役定義の翻数算出（dynamicHan）が {@link HouraContext} 経由で参照する
- * - **複合役満の合算**（`fukugouYakuman`）:
- *   複数の役満が同時成立したとき（字一色 + 大三元 等）に支払いを
- *   合算するか。個々の役の翻数は変わらないため役定義では扱えず、
- *   点数計算層が役満単位（{@link getYakumanMultiplier}）の集計で扱う
- */
-export interface YakumanRuleConfig {
-  /** 四暗刻の単騎待ちをダブル役満（26翻）とするか */
-  readonly suuankouTanki?: boolean;
-  /** 大四喜をダブル役満（26翻）とするか */
-  readonly daisuushii?: boolean;
-  /** 国士無双の十三面待ちをダブル役満（26翻）とするか */
-  readonly kokushiMusouJuusanmen?: boolean;
-  /** 純正九蓮宝燈（九面待ち）をダブル役満（26翻）とするか */
-  readonly junseiChuurenPoutou?: boolean;
-  /**
-   * 複数役満の複合を合算するか
-   *
-   * - false: 支払いは最高位の役満1つ分（単体でダブル役満が成立して
-   *   いる場合はその2個分。合算しない設定でも単体の成立は減らない）
-   * - true: 各役満の役満単位（役満=1・ダブル役満=2）の合計分を支払う
-   */
-  readonly fukugouYakuman?: boolean;
-}
-
-/**
  * 役判定コンフィグ (DetectYakuConfig)
  *
  * detectYaku に渡す設定オブジェクト。
@@ -161,8 +130,15 @@ export interface DetectYakuConfig {
   readonly uraDoraMarkers?: readonly HaiKindId[];
   /** ツモ和了かどうか */
   readonly isTsumo?: boolean;
-  /** 役満ルール設定（任意）。未指定時はダブル役満・複合の合算なし */
-  readonly ruleConfig?: YakumanRuleConfig;
+  /**
+   * ルール差分設定（任意）。未指定時は標準ルール
+   * （ダブル役満・複合の合算なし・連風牌2符・切り上げ満貫なし）。
+   *
+   * 役満以外（符・点数区分）のルールも受け付けるのは、高点法で採用する解釈の
+   * 決定に符と点数が関わるため。点数計算（`calculateScoreForTehai`）と同じ
+   * 解釈を得るには、両APIに同じルール設定を渡すこと。
+   */
+  readonly ruleConfig?: RuleConfig;
 }
 
 export interface HouraContext {

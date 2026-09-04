@@ -1,3 +1,27 @@
+## 0.6.0 (2026-09-04)
+
+### Added
+
+- 切り上げ満貫 `ruleConfig.kiriageMangan` を追加（既定 false・[#5](https://github.com/PaiForge/riichi-mahjong/issues/5)）
+  - 基本点1920（30符4翻・60符3翻）を満貫の支払いに切り上げる（子ロン 7700 → 8000、親ロン 11600 → 12000、子ツモ 2000/3900 → 2000/4000、親ツモ 3900オール → 4000オール）
+  - 翻数・符は変わらず、点数区分（`scoreLevel`）と支払いだけが満貫になる
+- `calculateScore(han, fu, config)` を公開（点数表の生成など、手牌を伴わず翻数と符だけが分かっている場面向け）
+- ルール差分設定の型を整理し、`RuleConfig`（= `FuRuleConfig` + `ScoreLevelRuleConfig` + `YakumanRuleConfig`）を共有の型として公開
+  - 切り上げ満貫は符のルールではないため `ScoreLevelRuleConfig` を新設。`FuRuleConfig` / `YakumanRuleConfig` は従来どおり利用可能（定義位置の移動のみ・後方互換）
+
+### Fixed
+
+- 高点法の判定をライブラリ内で一意にした（[#6](https://github.com/PaiForge/riichi-mahjong/issues/6)）
+  - `detectYaku` と `calculateScoreForTehai` が別々の評価軸（前者は翻数の合計、後者は支払い点数）で和了構造を選んでいたため、同一の和了手でも役リスト・翻数・符・待ちが食い違っていた問題を修正
+  - 採用する解釈の決定を `selectHouraInterpretation` に集約し、両APIはその結果を参照するだけにした
+  - 解釈の比較を「点数（基本点）→ 翻数 → 符」の辞書式に変更し、同点時のタイブレークを決定的にした（従来は面子分解の列挙順に依存）
+  - この結果、`detectYaku` は「翻数は同じだが点数の低い解釈」を返さなくなった（例: `677778888999m + 55p` ロン `6m` は平和+一盃口(2翻30符)ではなく三暗刻(2翻50符)を採用）
+
+### Changed
+
+- `DetectYakuConfig.ruleConfig` が `RuleConfig` 全体（符・点数区分のルールを含む）を受け付けるようになった（型の拡大のみ・後方互換）
+  - 符と点数が高点法の解釈選択に影響するため、点数計算と同じ解釈を得るには両APIに同じルール設定を渡す
+
 ## 0.5.0 (2026-09-03)
 
 ### Added

@@ -1,19 +1,8 @@
 import { type Tehai14, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
-import { countDora } from "../../core/dora";
-import { classifyMachi } from "../../core/machi";
-import {
-  getHouraStructures,
-  detectYakuForStructure,
-  selectBestInterpretation,
-} from "../yaku";
-import { calculateFu } from "./lib/fu";
+import { selectHouraInterpretation } from "../houra";
 import { isMenzen } from "../yaku/utils";
-import {
-  calculateScoreFromHanAndFu,
-  getPaymentTotal,
-  getYakumanMultiplier,
-} from "./lib/calculation";
+import { calculateScoreFromHanAndFu } from "./lib/calculation";
 import {
   ScoreLevel,
   type ScoreCalculationConfig,
@@ -24,6 +13,7 @@ import {
 
 export type {
   ScoreCalculationConfig,
+  CalculateScoreConfig,
   ScoreResult,
   ScoreDetail,
   Payment,
@@ -40,6 +30,7 @@ export {
   calculateBasePoints,
   getScoreLevel,
   getPaymentTotal,
+  calculateScore,
   calculateScoreFromHanAndFu,
   getYakumanMultiplier,
 } from "./lib/calculation";
@@ -72,71 +63,48 @@ function createScoreContext(
 /**
  * 手牌とコンテキストから点数を計算する（公開API）
  *
- * 手牌の構造解析を行い、最も高点となる解釈を採用して点数を返します。
- *
- * 注: 同一手牌で「翻数が高いが符が低い解釈」と「翻数が低いが符が高い解釈」が
- * 両立するケースは実質的に存在しないため、翻数最大の解釈を採用しています。
+ * 手牌の構造解析を行い、高点法（最も高い点数になる解釈を採用する）で選んだ
+ * 解釈の点数を返します。採用する解釈の決定は役判定（`detectYaku`）と同一の
+ * 処理（{@link selectHouraInterpretation}）で行われるため、両APIの役リスト・
+ * 翻数・符が食い違うことはありません。
  *
  * @param tehai 手牌 (14枚)
  * @param config 点数計算の設定 (場風、自風、ドラなど)
  * @returns 点数計算結果
+ * @throws 役が一つも成立する解釈が無い場合は {@link NoYakuError}
  */
 export function calculateScoreForTehai(
   tehai: Tehai14,
   config: Readonly<ScoreCalculationConfig>,
 ): ScoreResult {
   const context = createScoreContext(tehai, config);
-  const structuralInterpretations = getHouraStructures(tehai);
 
-  // 全ての構造解釈のうち、最も高得点となる解釈を採用する。
-  const bestResult = selectBestInterpretation(
-    structuralInterpretations,
-    (hand) => {
-      // 1. 役の判定
-      const yakuResult = detectYakuForStructure(hand, context);
-      const yakuHansu = yakuResult.reduce((sum, [, han]) => sum + han, 0);
-
-      // 役がない場合はこの構造は不成立（スキップ）
-      if (yakuHansu === 0) return undefined;
-
-      // 2. 符の計算
-      const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
-      const fuResult = calculateFu(hand, context, isPinfu, config.ruleConfig);
-
-      // 3. ドラの計算
-      const dora = countDora(tehai, context.doraMarkers);
-
-      // 4. 点数計算（役満役が成立していれば役満単位の固定支払いになる）
-      const yakumanMultiplier = getYakumanMultiplier(
-        yakuResult,
-        config.ruleConfig,
-      );
-      const result = calculateScoreFromHanAndFu(
-        yakuHansu,
-        fuResult,
-        dora,
-        context,
-        yakumanMultiplier,
-      );
-      const total = getPaymentTotal(result.payment);
-
-      // 利用側が符の内訳を表示する際にライブラリと同じ構造解釈を参照できるよう、
-      // 採用した構造に紐づく詳細情報を value に含める。
-      const machiType = classifyMachi(hand, context.agariHai);
-      const detail: ScoreDetail = {
-        structure: hand,
-        machiType,
-        fuResult,
-        yakuResult,
-      };
-
-      return { score: total, value: { ...result, detail } };
-    },
+  const interpretation = selectHouraInterpretation(
+    tehai,
+    context,
+    config.ruleConfig,
   );
-
-  if (!bestResult) {
+  if (interpretation === undefined) {
     throw new NoYakuError();
   }
 
-  return bestResult;
+  const result = calculateScoreFromHanAndFu(
+    interpretation.yakuHansu,
+    interpretation.fuResult,
+    interpretation.dora,
+    context,
+    interpretation.yakumanMultiplier,
+    config.ruleConfig,
+  );
+
+  // 利用側が符の内訳を表示する際にライブラリと同じ構造解釈を参照できるよう、
+  // 採用した構造に紐づく詳細情報を含めて返す。
+  const detail: ScoreDetail = {
+    structure: interpretation.structure,
+    machiType: interpretation.machiType,
+    fuResult: interpretation.fuResult,
+    yakuResult: interpretation.yakuResult,
+  };
+
+  return { ...result, detail };
 }

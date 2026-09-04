@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  calculateScore,
   calculateScoreFromHanAndFu,
   calculateBasePoints,
   getPaymentTotal,
@@ -8,6 +9,8 @@ import {
 import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
 import { type Fu, HaiKind } from "../../types";
+import { calculateScoreForTehai } from "./index";
+import { createTehai, getHaiKindId } from "../../utils/test-helpers";
 
 describe("calculateScoreFromHanAndFu", () => {
   const mockFuResult = (fu: Fu): FuResult => ({
@@ -268,5 +271,239 @@ describe("calculateBasePoints", () => {
       // 40 * 2^(2+3) = 40 * 32 = 1280
       expect(calculateBasePoints(40, 3)).toBe(1280);
     });
+  });
+});
+
+describe("切り上げ満貫 (kiriageMangan)", () => {
+  const mockFuResult = (fu: Fu): FuResult => ({
+    total: fu,
+    details: { base: 20, mentsu: 0, jantou: 0, machi: 0, agari: 0 },
+  });
+
+  const mockContext = (
+    isOya: boolean,
+    isTsumo: boolean,
+  ): HouraContext & { isOya: boolean } => ({
+    isOya,
+    isTsumo,
+    isMenzen: true,
+    agariHai: HaiKind.ManZu1, // dummy
+    doraMarkers: [],
+  });
+
+  const KIRIAGE = { kiriageMangan: true } as const;
+
+  describe("基本点1920（30符4翻・60符3翻）を満貫に切り上げること", () => {
+    it("子ロン 30符4翻: 7700 -> 8000", () => {
+      const score = calculateScoreFromHanAndFu(
+        4,
+        mockFuResult(30),
+        0,
+        mockContext(false, false),
+        0,
+        KIRIAGE,
+      );
+      expect(getPaymentTotal(score.payment)).toBe(8000);
+      expect(score.scoreLevel).toBe("Mangan");
+    });
+
+    it("親ロン 30符4翻: 11600 -> 12000", () => {
+      const score = calculateScoreFromHanAndFu(
+        4,
+        mockFuResult(30),
+        0,
+        mockContext(true, false),
+        0,
+        KIRIAGE,
+      );
+      expect(getPaymentTotal(score.payment)).toBe(12000);
+    });
+
+    it("子ツモ 30符4翻: 2000/3900 -> 2000/4000", () => {
+      const score = calculateScoreFromHanAndFu(
+        4,
+        mockFuResult(30),
+        0,
+        mockContext(false, true),
+        0,
+        KIRIAGE,
+      );
+      expect(score.payment).toEqual({ type: "koTsumo", amount: [2000, 4000] });
+    });
+
+    it("親ツモ 30符4翻: 3900オール -> 4000オール", () => {
+      const score = calculateScoreFromHanAndFu(
+        4,
+        mockFuResult(30),
+        0,
+        mockContext(true, true),
+        0,
+        KIRIAGE,
+      );
+      expect(score.payment).toEqual({ type: "oyaTsumo", amount: 4000 });
+    });
+
+    it("子ロン 60符3翻: 7700 -> 8000", () => {
+      const score = calculateScoreFromHanAndFu(
+        3,
+        mockFuResult(60),
+        0,
+        mockContext(false, false),
+        0,
+        KIRIAGE,
+      );
+      expect(getPaymentTotal(score.payment)).toBe(8000);
+    });
+
+    it("翻数と符は切り上げても変わらないこと", () => {
+      const score = calculateScoreFromHanAndFu(
+        4,
+        mockFuResult(30),
+        0,
+        mockContext(false, false),
+        0,
+        KIRIAGE,
+      );
+      expect(score.han).toBe(4);
+      expect(score.fu).toBe(30);
+    });
+  });
+
+  describe("基本点1920に満たない手は切り上げないこと", () => {
+    it("子ロン 25符4翻 (基本点1600) は 6400 のまま", () => {
+      const score = calculateScoreFromHanAndFu(
+        4,
+        mockFuResult(25),
+        0,
+        mockContext(false, false),
+        0,
+        KIRIAGE,
+      );
+      expect(getPaymentTotal(score.payment)).toBe(6400);
+      expect(score.scoreLevel).toBe("Normal");
+    });
+
+    it("子ロン 40符3翻 (基本点1280) は 5200 のまま", () => {
+      const score = calculateScoreFromHanAndFu(
+        3,
+        mockFuResult(40),
+        0,
+        mockContext(false, false),
+        0,
+        KIRIAGE,
+      );
+      expect(getPaymentTotal(score.payment)).toBe(5200);
+    });
+  });
+
+  it("既定（ルール未指定）では切り上げないこと", () => {
+    const score = calculateScoreFromHanAndFu(
+      4,
+      mockFuResult(30),
+      0,
+      mockContext(false, false),
+    );
+    expect(getPaymentTotal(score.payment)).toBe(7700);
+    expect(score.scoreLevel).toBe("Normal");
+  });
+});
+
+describe("手牌からの点数計算 (calculateScoreForTehai) - 切り上げ満貫", () => {
+  // 223344m 567p 678s + 55p ロン(4m)、ドラ表示牌 6p（ドラ 7p が1枚）
+  // 断么 + 平和 + 一盃口 + ドラ1 = 4翻30符
+  const tehai = createTehai("223344m567p678s55p");
+  const config = {
+    agariHai: getHaiKindId("4m"),
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
+    isTsumo: false,
+    doraMarkers: [getHaiKindId("6p")],
+  } as const;
+
+  it("既定では 4翻30符 7700点となること", () => {
+    const result = calculateScoreForTehai(tehai, config);
+
+    expect(result.han).toBe(4);
+    expect(result.fu).toBe(30);
+    expect(result.scoreLevel).toBe("Normal");
+    expect(getPaymentTotal(result.payment)).toBe(7700);
+  });
+
+  it("切り上げ満貫が有効なら翻・符はそのままで満貫の支払いになること", () => {
+    const result = calculateScoreForTehai(tehai, {
+      ...config,
+      ruleConfig: { kiriageMangan: true },
+    });
+
+    expect(result.han).toBe(4);
+    expect(result.fu).toBe(30);
+    expect(result.scoreLevel).toBe("Mangan");
+    expect(getPaymentTotal(result.payment)).toBe(8000);
+  });
+});
+
+describe("翻数と符からの点数計算 (calculateScore)", () => {
+  it("子ロン 30符4翻 -> 7700点", () => {
+    const score = calculateScore(4, 30, { isOya: false, isTsumo: false });
+
+    expect(score.han).toBe(4);
+    expect(score.fu).toBe(30);
+    expect(score.scoreLevel).toBe("Normal");
+    expect(getPaymentTotal(score.payment)).toBe(7700);
+  });
+
+  it("親ロン 40符3翻 -> 7700点", () => {
+    const score = calculateScore(3, 40, { isOya: true, isTsumo: false });
+
+    expect(score.payment).toEqual({ type: "ron", amount: 7700 });
+  });
+
+  it("子ツモ 20符4翻 -> 1300/2600", () => {
+    const score = calculateScore(4, 20, { isOya: false, isTsumo: true });
+
+    expect(score.payment).toEqual({ type: "koTsumo", amount: [1300, 2600] });
+  });
+
+  it("親ツモ 30符3翻 -> 2000オール", () => {
+    const score = calculateScore(3, 30, { isOya: true, isTsumo: true });
+
+    expect(score.payment).toEqual({ type: "oyaTsumo", amount: 2000 });
+  });
+
+  it("5翻は符によらず満貫になること", () => {
+    const score = calculateScore(5, 30, { isOya: false, isTsumo: false });
+
+    expect(score.scoreLevel).toBe("Mangan");
+    expect(getPaymentTotal(score.payment)).toBe(8000);
+  });
+
+  it("13翻は数え役満になること（役満単位は 0 のまま）", () => {
+    const score = calculateScore(13, 30, { isOya: false, isTsumo: false });
+
+    expect(score.scoreLevel).toBe("Yakuman");
+    expect(score.yakumanMultiplier).toBe(0);
+    expect(getPaymentTotal(score.payment)).toBe(32000);
+  });
+
+  it("役満単位を渡すと翻数・符によらず役満単位分の支払いになること", () => {
+    const score = calculateScore(13, 40, {
+      isOya: false,
+      isTsumo: false,
+      yakumanMultiplier: 2,
+    });
+
+    expect(score.scoreLevel).toBe("DoubleYakuman");
+    expect(getPaymentTotal(score.payment)).toBe(64000);
+  });
+
+  it("ルール設定（切り上げ満貫）が反映されること", () => {
+    const score = calculateScore(4, 30, {
+      isOya: false,
+      isTsumo: false,
+      ruleConfig: { kiriageMangan: true },
+    });
+
+    expect(score.scoreLevel).toBe("Mangan");
+    expect(getPaymentTotal(score.payment)).toBe(8000);
   });
 });
