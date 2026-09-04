@@ -49,6 +49,10 @@ describe("公開APIのエクスポート", () => {
         config: PublicApi.DetectYakuConfig,
       ) => PublicApi.YakuResult;
 
+      // 役牌は三元牌に加えて場風・自風を含む
+      "Bakaze" satisfies PublicApi.YakuName;
+      "Jikaze" satisfies PublicApi.YakuName;
+
       expect(true).toBe(true);
     });
   });

@@ -76,6 +76,42 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
       isTsumo: false,
       isOya: true,
     },
+    {
+      description: "親 門前 場風・自風（連風牌 東）・ロン 2飜40符",
+      tehai: "111z234m456p789s1p", // 13枚. 1p単騎.
+      // 東場・東家なので 111z は場風1翻 + 自風1翻。
+      // 20(副底) + 10(門前ロン) + 8(么九牌の暗刻) + 2(単騎) -> 40 -> 40符
+      agariHai: HaiKind.PinZu1,
+      agariStr: "1p",
+      doraMarkers: [],
+      doraStr: [],
+      isTsumo: false,
+      isOya: true,
+    },
+    {
+      description: "子 門前 自風（南）・ツモ 2飜40符",
+      tehai: "222z234m456p789s1p", // 13枚. 1p単騎.
+      // 東場・南家なので 222z は自風1翻。門前ツモで門前清自摸和1翻。
+      // 20(副底) + 8(么九牌の暗刻) + 2(単騎) + 2(ツモ) -> 32 -> 40符
+      agariHai: HaiKind.PinZu1,
+      agariStr: "1p",
+      doraMarkers: [],
+      doraStr: [],
+      isTsumo: true,
+      isOya: false,
+    },
+    {
+      description: "子 門前 客風牌（西）は役牌にならず 平和・ロン 1飜30符",
+      tehai: "33z234m456p789s23s", // 13枚. 33z雀頭（西は東場・南家では客風）
+      // 客風牌の雀頭は役牌ではないので平和が成立し、雀頭符も付かない。
+      // 20(副底) + 10(門前ロン) -> 30符
+      agariHai: HaiKind.SouZu1,
+      agariStr: "1s",
+      doraMarkers: [],
+      doraStr: [],
+      isTsumo: false,
+      isOya: false,
+    },
   ];
 
   // 全ケースに対してPythonスクリプトを実行

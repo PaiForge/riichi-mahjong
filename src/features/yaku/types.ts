@@ -28,24 +28,41 @@ export type {
 };
 
 /**
+ * 三元牌の役牌 (Sangenpai)
+ *
+ * 局面によらず、刻子・槓子があれば構造だけで成立する。
+ */
+export type Sangenpai = "Haku" | "Hatsu" | "Chun";
+
+/**
+ * 風牌の役牌 (KazeYakuhai)
+ *
+ * 場風（Bakaze）・自風（Jikaze）それぞれ 1 翻。連風牌（場風＝自風）の
+ * 刻子は両方が成立して合計 2 翻になる。どの風が役牌かは局面
+ * （{@link HouraContext} の `bakaze` / `jikaze`）で決まる。
+ */
+export type KazeYakuhai = "Bakaze" | "Jikaze";
+
+/**
  * 役牌 (Yakuhai)
  *
- * 構造的に成立する三元牌。
- * ※場風・自風は状況役（Bakaze, Jikaze）として別途定義するためここには含めない。
+ * 三元牌と風牌（場風・自風）。
  */
-export type Yakuhai = "Haku" | "Hatsu" | "Chun";
+export type Yakuhai = Sangenpai | KazeYakuhai;
 
 /**
  * 手牌役 (TehaiYaku)
  *
- * 手牌役（手牌の構成のみで成立する役）の識別子。
- * 偶然役（嶺上開花など）や状況役（場風、自風、立直など）は含まない。
+ * 手牌と和了時の局面（{@link HouraContext}）だけで成立が決まる役の識別子。
+ * 場風・自風・門前清自摸和のように局面に依存する役も、判定に必要な情報を
+ * `HouraContext` が必ず持つため、ここに含める。
+ * 偶然役（嶺上開花・海底など）や宣言を要する役（立直）は含まない。
  */
 export type TehaiYaku =
   | "Tanyao" // 断幺九
   | "Pinfu" // 平和
   | "Iipeikou" // 一盃口
-  | Yakuhai // 役牌 (白, 發, 中)
+  | Yakuhai // 役牌 (白, 發, 中, 場風, 自風)
   | "SanshokuDoujun" // 三色同順
   | "Ikkitsuukan" // 一気通貫
   | "Honchan" // 混全帯幺九
