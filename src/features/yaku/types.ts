@@ -1,3 +1,4 @@
+import type { FuRuleConfig } from "../score/lib/fu/types";
 import type {
   HaiKindId,
   Kazehai,
@@ -161,8 +162,15 @@ export interface DetectYakuConfig {
   readonly uraDoraMarkers?: readonly HaiKindId[];
   /** ツモ和了かどうか */
   readonly isTsumo?: boolean;
-  /** 役満ルール設定（任意）。未指定時はダブル役満・複合の合算なし */
-  readonly ruleConfig?: YakumanRuleConfig;
+  /**
+   * ルール差分設定（任意）。未指定時は標準ルール
+   * （ダブル役満・複合の合算なし・連風牌2符）。
+   *
+   * 符計算のルール（{@link FuRuleConfig}）も受け付けるのは、高点法で採用する
+   * 解釈の決定に符が関わるため。点数計算（`calculateScoreForTehai`）と同じ
+   * 解釈を得るには、両APIに同じルール設定を渡すこと。
+   */
+  readonly ruleConfig?: YakumanRuleConfig & FuRuleConfig;
 }
 
 export interface HouraContext {
