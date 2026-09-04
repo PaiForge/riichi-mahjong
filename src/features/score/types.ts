@@ -1,22 +1,17 @@
-import type { Fu, HaiKindId, Kazehai, HouraStructure } from "../../types";
 import type {
-  HouraContext,
-  YakuResult,
-  YakumanRuleConfig,
-} from "../yaku/types";
+  Fu,
+  HaiKindId,
+  Kazehai,
+  HouraStructure,
+  FuRuleConfig,
+  RuleConfig,
+} from "../../types";
+import type { HouraContext, YakuResult } from "../yaku/types";
 import type { MachiType } from "../../core/machi";
-import type { FuResult, FuRuleConfig } from "./lib/fu/types";
+import type { FuResult } from "./lib/fu/types";
 
-export type { FuRuleConfig };
-
-/**
- * 点数計算のルール差分設定 (RuleConfig)
- *
- * 符計算（{@link FuRuleConfig}）と役満（{@link YakumanRuleConfig}）の
- * ルール差分をまとめて指定する。未指定のフィールドはすべて標準ルール
- * （連風牌2符・ダブル役満なし・複合役満の合算なし）として扱う。
- */
-export interface RuleConfig extends FuRuleConfig, YakumanRuleConfig {}
+// ルール差分設定は共有のルール設定として定義されている
+export type { FuRuleConfig, RuleConfig };
 
 /**
  * 点数計算用コンテキスト (ScoreContext)
@@ -47,7 +42,7 @@ export interface ScoreCalculationConfig {
   readonly uraDoraMarkers?: readonly HaiKindId[];
   /**
    * ルール差分設定（任意）。未指定時は標準ルール
-   * （連風牌2符・ダブル役満なし・複合役満の合算なし）。
+   * （連風牌2符・切り上げ満貫なし・ダブル役満なし・複合役満の合算なし）。
    */
   readonly ruleConfig?: RuleConfig;
 }
@@ -85,7 +80,7 @@ export type Payment = Ron | KoTsumo | OyaTsumo;
 export const ScoreLevel = {
   /** 満貫未満（通常計算） */
   Normal: "Normal",
-  /** 満貫（5翻、または基本点2000以上） */
+  /** 満貫（5翻、または基本点2000以上。切り上げ満貫が有効なら基本点1920以上） */
   Mangan: "Mangan",
   /** 跳満（6-7翻） */
   Haneman: "Haneman",
