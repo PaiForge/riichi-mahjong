@@ -25,7 +25,13 @@ import { sanshokuDoukouDefinition } from "./sanshoku-doukou";
 import { ikkitsuukanDefinition } from "./ikkitsuukan";
 import { honitsuDefinition } from "./honitsu";
 import { chinitsuDefinition } from "./chinitsu";
-import { hakuDefinition, hatsuDefinition, chunDefinition } from "./yakuhai";
+import {
+  hakuDefinition,
+  hatsuDefinition,
+  chunDefinition,
+  bakazeDefinition,
+  jikazeDefinition,
+} from "./yakuhai";
 import { menzenTsumoDefinition } from "./menzen-tsumo";
 import type { YakuDefinition } from "../../types";
 
@@ -89,5 +95,7 @@ export const ALL_YAKU_DEFINITIONS: YakuDefinition[] = [
   hakuDefinition,
   hatsuDefinition,
   chunDefinition,
+  bakazeDefinition,
+  jikazeDefinition,
   menzenTsumoDefinition,
 ];

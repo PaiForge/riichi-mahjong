@@ -515,3 +515,61 @@ describe("翻数と符からの点数計算 (calculateScore)", () => {
     expect(getPaymentTotal(score.payment)).toBe(8000);
   });
 });
+
+describe("手牌からの点数計算 (calculateScoreForTehai) - 風牌の役牌", () => {
+  // 東場・南家: 111z（東 = 場風）234m 456p 789s 11p、4m ロン
+  const tehai = createTehai("111z234m456p789s11p");
+  const agariHai = getHaiKindId("4m");
+
+  it("場風の刻子だけの手が役ありとして計算できること", () => {
+    const result = calculateScoreForTehai(tehai, {
+      agariHai,
+      isTsumo: false,
+      bakaze: HaiKind.Ton,
+      jikaze: HaiKind.Nan,
+      doraMarkers: [],
+    });
+    expect(result.isOk()).toBe(true);
+    if (result.isErr()) return;
+
+    // 副底20 + 門前ロン10 + 么九牌の暗刻8 = 38 -> 40符
+    expect(result.value.detail?.yakuResult).toEqual([["Bakaze", 1]]);
+    expect(result.value.han).toBe(1);
+    expect(result.value.fu).toBe(40);
+    expect(getPaymentTotal(result.value.payment)).toBe(1300);
+  });
+
+  it("連風牌の刻子は2翻として点数に反映されること", () => {
+    // 東場・東家（親）
+    const result = calculateScoreForTehai(tehai, {
+      agariHai,
+      isTsumo: false,
+      bakaze: HaiKind.Ton,
+      jikaze: HaiKind.Ton,
+      doraMarkers: [],
+    });
+    expect(result.isOk()).toBe(true);
+    if (result.isErr()) return;
+
+    expect(result.value.detail?.yakuResult).toEqual([
+      ["Bakaze", 1],
+      ["Jikaze", 1],
+    ]);
+    expect(result.value.han).toBe(2);
+    expect(result.value.fu).toBe(40);
+    // 親ロン 40符2翻: 40 * 2^4 * 6 = 3840 -> 3900
+    expect(getPaymentTotal(result.value.payment)).toBe(3900);
+  });
+
+  it("客風牌の刻子だけの手は役なし（NoYakuError）のままであること", () => {
+    // 東場・南家で 333z（西）
+    const result = calculateScoreForTehai(createTehai("333z234m456p789s11p"), {
+      agariHai,
+      isTsumo: false,
+      bakaze: HaiKind.Ton,
+      jikaze: HaiKind.Nan,
+      doraMarkers: [],
+    });
+    expect(result.isErr()).toBe(true);
+  });
+});

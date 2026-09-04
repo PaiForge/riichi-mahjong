@@ -12,6 +12,8 @@ export type {
   TehaiYaku,
   YakuHanConfig,
   Yakuhai,
+  Sangenpai,
+  KazeYakuhai,
   DetectYakuConfig,
   YakumanRuleConfig,
 } from "./types";
