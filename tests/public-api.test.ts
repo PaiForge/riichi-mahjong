@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Result } from "neverthrow";
 import * as PublicApi from "../src/index";
 import type { HaiKindId, Tehai13 } from "../src/index";
+import { unwrapOrThrow } from "../src/utils/test-helpers";
 
 describe("公開APIのエクスポート", () => {
   describe("calculateShanten", () => {
@@ -74,12 +75,10 @@ describe("公開APIのエクスポート", () => {
 
     it("役が成立しない手では NoYakuError を Err として返すこと", () => {
       // 234m 234p 456s 678s + 55z(白) は役なし
-      const tehai = PublicApi.parseMspz("234m234p456s678s55z");
-      if (tehai.isErr()) throw tehai.error;
-      const validated = PublicApi.validateTehai14(tehai.value);
-      if (validated.isErr()) throw validated.error;
+      const tehai = unwrapOrThrow(PublicApi.parseMspz("234m234p456s678s55z"));
+      const validated = unwrapOrThrow(PublicApi.validateTehai14(tehai));
 
-      const result = PublicApi.calculateScoreForTehai(validated.value, {
+      const result = PublicApi.calculateScoreForTehai(validated, {
         agariHai: 3, // 4m
         isTsumo: false,
         jikaze: PublicApi.HaiKind.Nan,

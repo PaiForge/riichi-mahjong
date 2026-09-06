@@ -1,33 +1,21 @@
 import { describe, it, expect } from "vitest";
 import { chinroutouDefinition } from "./chinroutou";
-import { createTehai } from "../../../../utils/test-helpers";
-import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind } from "../../../../types";
-import type { MentsuHouraStructure } from "../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("清老頭（チンロウトウ）の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("条件を満たす場合、役満（13翻）であること", () => {
     // 111m 999m 111p 999p 11s
-    const tehai = createTehai("111m999m111p999p11s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m999m111p999p11s");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       true,
@@ -37,9 +25,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("副露していても成立すること", () => {
     // 111m 999m 111p 11s [999p] (Pon)
-    const tehai = createTehai("111m999m111p11s[999p]");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m999m111p11s[999p]");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextOpen)).toBe(true);
     expect(chinroutouDefinition.getHansu(hand, mockContextOpen)).toBe(13);
@@ -47,9 +33,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("字牌が含まれる場合は不成立（混老頭）", () => {
     // 111m 999m 111p 999p 11z
-    const tehai = createTehai("111m999m111p999p11z");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m999m111p999p11z");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,
@@ -58,9 +42,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("中張牌が含まれる場合は不成立", () => {
     // 111m 999m 111p 234s 99s (234sがNG)
-    const tehai = createTehai("111m999m111p234s99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m999m111p234s99s");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,
@@ -77,9 +59,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
     // 123m 999m... のような形は、牌構成として「2m, 3m」を含むため「老頭牌のみ」のチェックで落ちる。
 
     // 123m 999m 111p 999p 11s
-    const tehai = createTehai("123m999m111p999p11s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("123m999m111p999p11s");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,

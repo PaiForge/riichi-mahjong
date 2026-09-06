@@ -1,27 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { ryanpeikouDefinition } from "./ryanpeikou";
-import { createTehai } from "../../../../utils/test-helpers";
+import {
+  createChiitoitsuStructureFromMspz,
+  createHouraContext,
+  createTehai,
+} from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind } from "../../../../types";
 import type { MentsuHouraStructure, HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("二盃口（リャンペーコー）の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("標準的な二盃口が成立する場合（独立した2組の一盃口）、3翻であること", () => {
     // 112233m 445566p 99s
@@ -116,18 +109,8 @@ describe("二盃口（リャンペーコー）の判定", () => {
   it("七対子の構造として解釈された場合は不成立", () => {
     // 112233m 445566p 99s
     // 二盃口の形だが、七対子として解釈された構造オブジェクトに対してはfalseを返す
-    const hand: HouraStructure = {
-      type: "Chiitoitsu",
-      pairs: [
-        { type: "Toitsu", hais: [HaiKind.ManZu1, HaiKind.ManZu1] },
-        { type: "Toitsu", hais: [HaiKind.ManZu2, HaiKind.ManZu2] },
-        { type: "Toitsu", hais: [HaiKind.ManZu3, HaiKind.ManZu3] },
-        { type: "Toitsu", hais: [HaiKind.PinZu4, HaiKind.PinZu4] },
-        { type: "Toitsu", hais: [HaiKind.PinZu5, HaiKind.PinZu5] },
-        { type: "Toitsu", hais: [HaiKind.PinZu6, HaiKind.PinZu6] },
-        { type: "Toitsu", hais: [HaiKind.SouZu9, HaiKind.SouZu9] },
-      ],
-    };
+    const hand: HouraStructure =
+      createChiitoitsuStructureFromMspz("112233m445566p99s");
 
     expect(ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,

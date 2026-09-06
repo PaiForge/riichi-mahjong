@@ -5,7 +5,7 @@ import {
   asExtendedMspz,
 } from "./mspz";
 import type { Tehai } from "../../types";
-import { Result, ok, err } from "neverthrow";
+import type { Result } from "neverthrow";
 import { MspzParseError } from "../../errors";
 
 export type { MspzString, ExtendedMspzString } from "./mspz";
@@ -19,14 +19,10 @@ export { isExtendedMspz } from "./mspz";
  * @returns 手牌オブジェクト
  */
 export function parseMspz(input: string): Result<Tehai, MspzParseError> {
-  const mspzRes = asMspz(input);
-  if (mspzRes.isErr()) return err(mspzRes.error);
-
-  const ids = parseMspzToHaiKindIds(mspzRes.value);
-  return ok({
-    closed: ids,
+  return asMspz(input).map((mspz) => ({
+    closed: parseMspzToHaiKindIds(mspz),
     exposed: [],
-  });
+  }));
 }
 
 /**
@@ -39,11 +35,5 @@ export function parseMspz(input: string): Result<Tehai, MspzParseError> {
 export function parseExtendedMspz(
   input: string,
 ): Result<Tehai, MspzParseError> {
-  const extMspzRes = asExtendedMspz(input);
-  if (extMspzRes.isErr()) return err(extMspzRes.error);
-
-  const parsedRes = internalParseExtendedMspz(extMspzRes.value);
-  if (parsedRes.isErr()) return err(parsedRes.error);
-
-  return ok(parsedRes.value);
+  return asExtendedMspz(input).andThen(internalParseExtendedMspz);
 }

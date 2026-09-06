@@ -2,14 +2,17 @@ import { describe, it, expect } from "vitest";
 import { detectYaku, detectYakuForStructure } from "./index";
 import { calculateScoreForTehai, getPaymentTotal } from "../score";
 import {
-  createTehai,
-  getHaiKindId,
+  createHouraContext,
   createKoutsu,
-  createToitsu,
+  createMentsuStructure,
   createShuntsu,
+  createTehai,
+  createToitsu,
+  getHaiKindId,
+  unwrapOrThrow,
 } from "../../utils/test-helpers";
 import { HaiKind } from "../../types";
-import type { HouraContext, MentsuHouraStructure } from "./types";
+import type { HouraContext } from "./types";
 import type { ScoreCalculationConfig } from "../score/types";
 
 // ---------------------------------------------------------------------------
@@ -82,24 +85,19 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("大三元 (Daisangen): 小三元・役牌(白發中)が除外される", () => {
     it("大三元成立時に小三元・役牌が含まれないこと", () => {
       // 白白白 發發發 中中中 + 123m + 99p
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("555z"),
           createKoutsu("666z"),
           createKoutsu("777z"),
           createShuntsu("123m"),
         ],
-        jantou: createToitsu("99p"),
-      };
+        createToitsu("99p"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -114,25 +112,20 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("字一色 (Tsuuiisou): 混一色・役牌・混老頭・トイトイ・三暗刻が除外される", () => {
     it("字一色成立時に混一色・役牌が含まれないこと", () => {
       // 東東東 南南南 西西西 白白白 + 北北
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111z"),
           createKoutsu("222z"),
           createKoutsu("333z"),
           createKoutsu("555z"),
         ],
-        jantou: createToitsu("44z"),
-      };
+        createToitsu("44z"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("4z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -148,25 +141,20 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("緑一色 (Ryuuiisou): 混一色・發が除外される", () => {
     it("緑一色成立時に通常役が含まれないこと", () => {
       // 222s 333s 444s 666s + 發發
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("222s"),
           createShuntsu("234s"),
           createShuntsu("234s"),
           createKoutsu("666s"),
         ],
-        jantou: createToitsu("66z"),
-      };
+        createToitsu("66z"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("6s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -179,25 +167,20 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("清老頭 (Chinroutou): トイトイ・混老頭・純全帯・混全帯が除外される", () => {
     it("清老頭成立時にトイトイ・混老頭・純全帯などが含まれないこと", () => {
       // 111m 999m 111p 999p + 11s
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111m"),
           createKoutsu("999m"),
           createKoutsu("111p"),
           createKoutsu("999p"),
         ],
-        jantou: createToitsu("11s"),
-      };
+        createToitsu("11s"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("1s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -235,24 +218,19 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("小四喜 (Shousuushii): 役牌(風牌)・混一色が除外される", () => {
     it("小四喜成立時に通常役（役牌等）が含まれないこと", () => {
       // 東東東 南南南 西西西 + 123m + 北北
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111z"),
           createKoutsu("222z"),
           createKoutsu("333z"),
           createShuntsu("123m"),
         ],
-        jantou: createToitsu("44z"),
-      };
+        createToitsu("44z"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -265,25 +243,20 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("大四喜 (Daisuushii): トイトイ・混一色・三暗刻が除外される", () => {
     it("大四喜成立時に通常役が含まれないこと", () => {
       // 東東東 南南南 西西西 北北北 + 11m
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111z"),
           createKoutsu("222z"),
           createKoutsu("333z"),
           createKoutsu("444z"),
         ],
-        jantou: createToitsu("11m"),
-      };
+        createToitsu("11m"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("1m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -297,25 +270,20 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
   describe("四槓子 (Suukantsu): 三槓子・トイトイが除外される", () => {
     it("四槓子成立時に通常役が含まれないこと", () => {
       // 4つの槓子 + 雀頭
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           { type: "Kantsu", hais: [0, 0, 0, 0] as const },
           { type: "Kantsu", hais: [9, 9, 9, 9] as const },
           { type: "Kantsu", hais: [18, 18, 18, 18] as const },
           { type: "Kantsu", hais: [27, 27, 27, 27] as const },
         ],
-        jantou: createToitsu("55z"),
-      };
+        createToitsu("55z"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("5z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -336,25 +304,20 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
 describe("複数の役満が同時に成立する場合は全ての役満のみが返される", () => {
   it("字一色と大四喜が同時成立し、両方の役満のみが返されること", () => {
     // 東東東 南南南 西西西 北北北 + 白白 (字一色 + 大四喜)
-    const hand: MentsuHouraStructure = {
-      type: "Mentsu",
-      fourMentsu: [
+    const hand = createMentsuStructure(
+      [
         createKoutsu("111z"),
         createKoutsu("222z"),
         createKoutsu("333z"),
         createKoutsu("444z"),
       ],
-      jantou: createToitsu("55z"),
-    };
+      createToitsu("55z"),
+    );
 
-    const context: HouraContext = {
-      isMenzen: true,
+    const context: HouraContext = createHouraContext({
       agariHai: getHaiKindId("5z"),
-      bakaze: HaiKind.Ton,
-      jikaze: HaiKind.Nan,
-      doraMarkers: [],
       isTsumo: true,
-    };
+    });
 
     const result = detectYakuForStructure(hand, context);
 
@@ -372,9 +335,8 @@ describe("複数の役満が同時に成立する場合は全ての役満のみ�
 describe("通常役のみの場合はフィルタリングされないこと", () => {
   it("三暗刻・トイトイが両方返されること（役満なし）", () => {
     // 111m 222p 333s [444s](副露) + 55z (ロン, シャボ待ちで4sではない)
-    const hand: MentsuHouraStructure = {
-      type: "Mentsu",
-      fourMentsu: [
+    const hand = createMentsuStructure(
+      [
         createKoutsu("111m"),
         createKoutsu("222p"),
         createKoutsu("333s"),
@@ -384,17 +346,14 @@ describe("通常役のみの場合はフィルタリングされないこと", (
           furo: { type: "Pon", from: 2 },
         },
       ],
-      jantou: createToitsu("55z"),
-    };
+      createToitsu("55z"),
+    );
 
-    const context: HouraContext = {
+    const context: HouraContext = createHouraContext({
       isMenzen: false,
       agariHai: getHaiKindId("5z"),
-      bakaze: HaiKind.Ton,
-      jikaze: HaiKind.Nan,
-      doraMarkers: [],
       isTsumo: true,
-    };
+    });
 
     const result = detectYakuForStructure(hand, context);
 
@@ -413,9 +372,8 @@ describe("役満フィルタリング: エッジケース", () => {
   describe("副露ありでも役満成立時に通常役が除外されること", () => {
     it("大三元（副露あり）成立時に役牌・小三元が除外されること", () => {
       // 白白白(ポン) 發發發(ポン) 中中中(ポン) + 123m + 99p
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           {
             type: "Koutsu",
             hais: [HaiKind.Haku, HaiKind.Haku, HaiKind.Haku] as const,
@@ -433,16 +391,13 @@ describe("役満フィルタリング: エッジケース", () => {
           },
           createShuntsu("123m"),
         ],
-        jantou: createToitsu("99p"),
-      };
+        createToitsu("99p"),
+      );
 
-      const context: HouraContext = {
+      const context: HouraContext = createHouraContext({
         isMenzen: false,
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -457,9 +412,8 @@ describe("役満フィルタリング: エッジケース", () => {
 
     it("字一色（副露あり）成立時に混一色・役牌・トイトイが除外されること", () => {
       // 東東東(ポン) 南南南(ポン) 西西西(ポン) 白白白 + 北北
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           {
             type: "Koutsu",
             hais: [HaiKind.Ton, HaiKind.Ton, HaiKind.Ton] as const,
@@ -477,16 +431,13 @@ describe("役満フィルタリング: エッジケース", () => {
           },
           createKoutsu("555z"),
         ],
-        jantou: createToitsu("44z"),
-      };
+        createToitsu("44z"),
+      );
 
-      const context: HouraContext = {
+      const context: HouraContext = createHouraContext({
         isMenzen: false,
         agariHai: getHaiKindId("4z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -501,25 +452,20 @@ describe("役満フィルタリング: エッジケース", () => {
   describe("門前ツモと役満の複合: 門前清自摸和(MenzenTsumo)が除外される", () => {
     it("四暗刻ツモ時に門前清自摸和が除外されること", () => {
       // 111m 222p 333s 444s + 55z (ツモ)
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111m"),
           createKoutsu("222p"),
           createKoutsu("333s"),
           createKoutsu("444s"),
         ],
-        jantou: createToitsu("55z"),
-      };
+        createToitsu("55z"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("4s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -530,25 +476,20 @@ describe("役満フィルタリング: エッジケース", () => {
     });
 
     it("大三元門前ツモ時に門前清自摸和が除外されること", () => {
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("555z"),
           createKoutsu("666z"),
           createKoutsu("777z"),
           createShuntsu("123m"),
         ],
-        jantou: createToitsu("99p"),
-      };
+        createToitsu("99p"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -562,26 +503,21 @@ describe("役満フィルタリング: エッジケース", () => {
   describe("ダブル役満の複合パターン: 通常役が除外され役満のみ返される", () => {
     it("四暗刻単騎(26翻) + 字一色(13翻) の同時成立で通常役が除外されること", () => {
       // 東東東 南南南 西西西 白白白 + 北北 (北単騎待ちツモ)
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111z"),
           createKoutsu("222z"),
           createKoutsu("333z"),
           createKoutsu("555z"),
         ],
-        jantou: createToitsu("44z"),
-      };
+        createToitsu("44z"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("4z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
         yakumanRuleConfig: { suuankouTanki: true },
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -600,26 +536,21 @@ describe("役満フィルタリング: エッジケース", () => {
 
     it("四暗刻単騎(26翻) + 清老頭(13翻) の同時成立", () => {
       // 111m 999m 111p 999p + 11s (1s単騎待ちツモ)
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createKoutsu("111m"),
           createKoutsu("999m"),
           createKoutsu("111p"),
           createKoutsu("999p"),
         ],
-        jantou: createToitsu("11s"),
-      };
+        createToitsu("11s"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("1s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
         yakumanRuleConfig: { suuankouTanki: true },
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -636,24 +567,19 @@ describe("役満フィルタリング: エッジケース", () => {
     it("清一色(6翻) + 一気通貫(2翻) など合計13翻未満の手がそのまま返されること", () => {
       // 清一色 門前 (6翻) + 一気通貫 (2翻) = 8翻
       // 123m 456m 789m 123m + 55m
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           createShuntsu("123m"),
           createShuntsu("456m"),
           createShuntsu("789m"),
           createShuntsu("123m"),
         ],
-        jantou: createToitsu("55m"),
-      };
+        createToitsu("55m"),
+      );
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("5m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -665,9 +591,8 @@ describe("役満フィルタリング: エッジケース", () => {
 
     it("混一色(3翻) + 役牌(1翻) + トイトイ(2翻) のような副露手が正常に返されること", () => {
       // 東東東(ポン) 白白白(ポン) 111m 999m + 55m
-      const hand: MentsuHouraStructure = {
-        type: "Mentsu",
-        fourMentsu: [
+      const hand = createMentsuStructure(
+        [
           {
             type: "Koutsu",
             hais: [HaiKind.Ton, HaiKind.Ton, HaiKind.Ton] as const,
@@ -681,17 +606,15 @@ describe("役満フィルタリング: エッジケース", () => {
           createKoutsu("111m"),
           createKoutsu("999m"),
         ],
-        jantou: createToitsu("55m"),
-      };
+        createToitsu("55m"),
+      );
 
-      const context: HouraContext = {
+      const context: HouraContext = createHouraContext({
         isMenzen: false,
         agariHai: getHaiKindId("5m"),
-        bakaze: HaiKind.Ton,
         jikaze: HaiKind.Ton,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -719,9 +642,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 役満は13翻
     expect(result.han).toBe(13);
@@ -743,9 +664,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { suuankouTanki: true },
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     expect(result.han).toBe(26);
     expect(result.scoreLevel).toBe("DoubleYakuman");
@@ -764,9 +683,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     expect(result.han).toBe(13);
     expect(result.scoreLevel).toBe("Yakuman");
@@ -786,9 +703,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     expect(result.han).toBe(13);
     expect(result.scoreLevel).toBe("Yakuman");
@@ -808,9 +723,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 内訳は事実として両方返る（翻数は 13 + 13 = 26）
     expect(result.detail?.yakuResult).toContainEqual(["Daisangen", 13]);
@@ -833,9 +746,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { fukugouYakuman: true },
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     expect(result.scoreLevel).toBe("DoubleYakuman");
     expect(result.yakumanMultiplier).toBe(2);
@@ -854,9 +765,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { suuankouTanki: true, fukugouYakuman: true },
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     expect(result.detail?.yakuResult).toContainEqual(["Suuankou", 26]);
     expect(result.detail?.yakuResult).toContainEqual(["Tsuuiisou", 13]);
@@ -882,9 +791,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ruleConfig: { fukugouYakuman: true },
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 役満役は成立していない
     expect(result.detail?.yakuResult.every(([, han]) => han < 13)).toBe(true);
@@ -910,9 +817,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       ],
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 役満ではドラが加算されても、点数レベルは役満のまま
     // (ドラは翻数に加算されるが、既に13翻以上なので役満)
@@ -932,9 +837,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
       doraMarkers: [],
     };
 
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 平和ツモ: 20符2翻 -> 400/700
     expect(result.han).toBe(2);

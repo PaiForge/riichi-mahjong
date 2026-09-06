@@ -1,4 +1,10 @@
-import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types";
+import {
+  type HaiId,
+  HaiKind,
+  type HaiKindId,
+  HaiType,
+  type Kazehai,
+} from "../types";
 import { asHaiKindId } from "../utils/assertions";
 
 /**
@@ -87,6 +93,15 @@ export const SANGENPAI_KIND_IDS = [
   HaiKind.Chun,
 ] as const;
 
+const KAZEHAI_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(KAZEHAI_KIND_IDS);
+
+/**
+ * 風牌（東・南・西・北）かどうかを判定する
+ */
+export function isKazehai(kind: HaiKindId): kind is Kazehai {
+  return KAZEHAI_KIND_ID_SET.has(kind);
+}
+
 const SANGENPAI_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(
   SANGENPAI_KIND_IDS,
 );
@@ -119,4 +134,13 @@ const YAOCHU_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(YAOCHU_KIND_IDS);
  */
 export function isYaochu(kind: HaiKindId): boolean {
   return YAOCHU_KIND_ID_SET.has(kind);
+}
+
+/**
+ * 老頭牌（1,9の数牌）かどうかを判定する
+ *
+ * 么九牌のうち字牌を除いたもの。純全帯幺九・清老頭の判定に使用する。
+ */
+export function isRoutou(kind: HaiKindId): boolean {
+  return isYaochu(kind) && isSuupai(kind);
 }

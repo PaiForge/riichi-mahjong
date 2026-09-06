@@ -1,25 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { toitoiDefinition } from "./toitoi";
-import { createTehai } from "../../../../utils/test-helpers";
-import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind } from "../../../../types";
-import type { MentsuHouraStructure, HouraStructure } from "../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
+import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("対々和（トイトイ）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("全ての面子が刻子の場合、成立すること", () => {
     // 111m, 222p, 333s, 444z, 55z
-    const tehai = createTehai("111m222p333s444z55z");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222p333s444z55z");
 
     expect(toitoiDefinition.isSatisfied(hand, mockContext)).toBe(true);
     expect(toitoiDefinition.getHansu(hand, mockContext)).toBe(2);
@@ -28,9 +21,7 @@ describe("対々和（トイトイ）の判定", () => {
   it("暗槓・明槓が含まれていても成立すること", () => {
     // [1111m](暗槓), [2222p](明槓), 333s, 444z, 55z
     // 副露が含まれるため、門前ではないコンテキスト
-    const tehai = createTehai("333s444z55z[1111m][2222p]");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("333s444z55z[1111m][2222p]");
     const context: HouraContext = { ...mockContext, isMenzen: false };
 
     expect(toitoiDefinition.isSatisfied(hand, context)).toBe(true);
@@ -39,9 +30,7 @@ describe("対々和（トイトイ）の判定", () => {
 
   it("順子が含まれる場合は不成立", () => {
     // 123m, 222p, 333s, 444z, 55z
-    const tehai = createTehai("123m222p333s444z55z");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("123m222p333s444z55z");
 
     expect(toitoiDefinition.isSatisfied(hand, mockContext)).toBe(false);
   });
