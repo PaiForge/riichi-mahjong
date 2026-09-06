@@ -4,6 +4,7 @@ import {
   haiIdToKindId,
   haiKindToNumber,
   isJihai,
+  isRoutou,
   isSuupai,
   kindIdToHaiType,
   kindIdToSuitIndex,
@@ -131,5 +132,28 @@ describe("kindIdToSuitIndex", () => {
   it("字牌は undefined を返す", () => {
     expect(kindIdToSuitIndex(HaiKind.Ton)).toBeUndefined();
     expect(kindIdToSuitIndex(HaiKind.Chun)).toBeUndefined();
+  });
+});
+
+describe("isRoutou", () => {
+  it("数牌の1と9は true を返す", () => {
+    expect(isRoutou(HaiKind.ManZu1)).toBe(true);
+    expect(isRoutou(HaiKind.ManZu9)).toBe(true);
+    expect(isRoutou(HaiKind.PinZu1)).toBe(true);
+    expect(isRoutou(HaiKind.PinZu9)).toBe(true);
+    expect(isRoutou(HaiKind.SouZu1)).toBe(true);
+    expect(isRoutou(HaiKind.SouZu9)).toBe(true);
+  });
+
+  it("中張牌は false を返す", () => {
+    expect(isRoutou(HaiKind.ManZu2)).toBe(false);
+    expect(isRoutou(HaiKind.PinZu5)).toBe(false);
+    expect(isRoutou(HaiKind.SouZu8)).toBe(false);
+  });
+
+  it("字牌は么九牌だが老頭牌ではないため false を返す", () => {
+    expect(isRoutou(HaiKind.Ton)).toBe(false);
+    expect(isRoutou(HaiKind.Haku)).toBe(false);
+    expect(isRoutou(HaiKind.Chun)).toBe(false);
   });
 });
