@@ -11,30 +11,33 @@ import type { HouraContext } from "../yaku/types";
 import { type Fu, HaiKind } from "../../types";
 import { calculateScoreForTehai } from "./index";
 import {
+  createHouraContext,
   createTehai,
   getHaiKindId,
   unwrapOrThrow,
 } from "../../utils/test-helpers";
 
+/**
+ * 符の内訳に依存しない点数計算のテスト用に、合計符だけを指定した FuResult を作る。
+ */
+const mockFuResult = (fu: Fu): FuResult => ({
+  total: fu,
+  details: { base: 20, mentsu: 0, jantou: 0, machi: 0, agari: 0 },
+});
+
+/**
+ * 点数計算用のコンテキストを作る。支払いの倍率に効く isOya / isTsumo のみを
+ * 指定し、それ以外は役判定用の既定値を用いる。
+ */
+const mockContext = (
+  isOya: boolean,
+  isTsumo: boolean,
+): HouraContext & { isOya: boolean } => ({
+  ...createHouraContext({ isTsumo }),
+  isOya,
+});
+
 describe("calculateScoreFromHanAndFu", () => {
-  const mockFuResult = (fu: Fu): FuResult => ({
-    total: fu,
-    details: { base: 20, mentsu: 0, jantou: 0, machi: 0, agari: 0 },
-  });
-
-  const mockContext = (
-    isOya: boolean,
-    isTsumo: boolean,
-  ): HouraContext & { isOya: boolean } => ({
-    isOya,
-    isTsumo,
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1, // dummy
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [],
-  });
-
   describe("基本ケース (Normal)", () => {
     it("子 30符 1翻 ロン -> 1000点", () => {
       // Base: 30 * 2^(2+1) = 30 * 8 = 240
@@ -281,24 +284,6 @@ describe("calculateBasePoints", () => {
 });
 
 describe("切り上げ満貫 (kiriageMangan)", () => {
-  const mockFuResult = (fu: Fu): FuResult => ({
-    total: fu,
-    details: { base: 20, mentsu: 0, jantou: 0, machi: 0, agari: 0 },
-  });
-
-  const mockContext = (
-    isOya: boolean,
-    isTsumo: boolean,
-  ): HouraContext & { isOya: boolean } => ({
-    isOya,
-    isTsumo,
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1, // dummy
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [],
-  });
-
   const KIRIAGE = { kiriageMangan: true } as const;
 
   describe("基本点1920（30符4翻・60符3翻）を満貫に切り上げること", () => {
