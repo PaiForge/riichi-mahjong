@@ -95,6 +95,27 @@ export function createTehai(mspzString: string): Tehai14 {
 }
 
 /**
+ * テスト用の面子手の和了構造 (MentsuHouraStructure) を作成します。
+ * 牌姿から分解させるのではなく、面子の内訳を指定して構造を直接組み立てたい
+ * 場合（副露の有無を作り分けるテストなど）に使用します。
+ *
+ * @param fourMentsu 4つの面子
+ * @param jantou 雀頭
+ * @returns 面子手の和了構造
+ */
+export function createMentsuStructure(
+  fourMentsu: readonly [
+    CompletedMentsu,
+    CompletedMentsu,
+    CompletedMentsu,
+    CompletedMentsu,
+  ],
+  jantou: Toitsu,
+): MentsuHouraStructure {
+  return { type: "Mentsu", fourMentsu, jantou };
+}
+
+/**
  * テスト用の和了コンテキスト (HouraContext) を作成します。
  *
  * 役判定テストの大半は「門前・東場・南家・ドラなし」を前提に、判定対象の役に
