@@ -141,10 +141,17 @@ export interface DetectYakuConfig {
   readonly bakaze: Kazehai;
   /** 自風牌 */
   readonly jikaze: Kazehai;
-  /** ドラ表示牌のリスト */
+  /**
+   * ドラ表示牌のリスト
+   *
+   * 裏ドラ表示牌は受け付けない。裏ドラは立直の成立が前提だが、立直は
+   * 宣言を要する役であり、このライブラリは手牌と和了時の局面だけから決まる役
+   * （{@link TehaiYaku}）しか扱わないため、立直したかどうかを知る術がない。
+   * 裏ドラを無条件に加算する口を開けると、立直していない手に渡された場合を
+   * 検知できず点数を誤る。裏ドラは利用側で立直の判定とセットで加算すること
+   * （詳細は docs/scope.md）。
+   */
   readonly doraMarkers?: readonly HaiKindId[];
-  /** 裏ドラ表示牌のリスト */
-  readonly uraDoraMarkers?: readonly HaiKindId[];
   /** ツモ和了かどうか */
   readonly isTsumo?: boolean;
   /**
@@ -180,13 +187,15 @@ export interface HouraContext {
 
   /**
    * ドラ表示牌 (表ドラ) のリスト
+   *
+   * 裏ドラ表示牌は受け付けない。裏ドラは立直の成立が前提だが、立直は
+   * 宣言を要する役であり、このライブラリは手牌と和了時の局面だけから決まる役
+   * （{@link TehaiYaku}）しか扱わないため、立直したかどうかを知る術がない。
+   * 裏ドラを無条件に加算する口を開けると、立直していない手に渡された場合を
+   * 検知できず点数を誤る。裏ドラは利用側で立直の判定とセットで加算すること
+   * （詳細は docs/scope.md）。
    */
   readonly doraMarkers: readonly HaiKindId[];
-
-  /**
-   * 裏ドラ表示牌のリスト (リーチ時のみ有効)
-   */
-  readonly uraDoraMarkers?: readonly HaiKindId[];
 
   /**
    * 役満ルール設定

@@ -36,10 +36,17 @@ export interface ScoreCalculationConfig {
   readonly jikaze: Kazehai;
   /** 場風 (必須) */
   readonly bakaze: Kazehai;
-  /** ドラ表示牌 (必須、なければ空配列) */
+  /**
+   * ドラ表示牌 (必須、なければ空配列)
+   *
+   * 裏ドラ表示牌は受け付けない。裏ドラは立直の成立が前提だが、立直は
+   * 宣言を要する役であり、このライブラリは手牌と和了時の局面だけから決まる役
+   * （{@link TehaiYaku}）しか扱わないため、立直したかどうかを知る術がない。
+   * 裏ドラを無条件に加算する口を開けると、立直していない手に渡された場合を
+   * 検知できず点数を誤る。裏ドラは利用側で立直の判定とセットで加算すること
+   * （詳細は docs/scope.md）。
+   */
   readonly doraMarkers: readonly HaiKindId[];
-  /** 裏ドラ表示牌 (任意) */
-  readonly uraDoraMarkers?: readonly HaiKindId[];
   /**
    * ルール差分設定（任意）。未指定時は標準ルール
    * （連風牌2符・切り上げ満貫なし・ダブル役満なし・複合役満の合算なし）。

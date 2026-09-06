@@ -1,3 +1,43 @@
+## Unreleased
+
+### Removed
+
+- `uraDoraMarkers`（裏ドラ表示牌）を公開 API から削除した（`DetectYakuConfig` / `ScoreCalculationConfig` / `HouraContext`）
+  - このフィールドは値がコンテキストに詰め替えられるだけで、点数計算からは一度も参照されていなかった。裏ドラ表示牌を渡しても翻は増えず、エラーも警告も出ないまま黙って無視されていた
+  - 実装を足すのではなく削除を選んだのは、裏ドラが立直の成立を前提とする一方、本ライブラリが立直を判定できないため。立直は宣言を要する役であり、手牌のどこにもその情報が現れない。受け口を残すと「立直していない手に裏ドラ表示牌が渡された場合」を検知できず、点数を誤ったまま返すことになる（設計判断の詳細は [docs/scope.md](docs/scope.md) を参照）
+  - 裏ドラは利用側で立直の判定とセットで加算すること。表示牌からドラを求める `getDoraNext` と手牌中の枚数を数える `countDora` は引き続き公開しているため、そのまま流用できる
+
+### 移行ガイド
+
+`uraDoraMarkers` を渡していた場合はその指定を削除し、裏ドラの加算を呼び出し側に移してください。
+渡していなかった場合、点数計算の結果は変わりません（従来から無視されていたため）。
+
+```ts
+// Before: 渡しても効いていなかった
+const result = calculateScoreForTehai(tehai, {
+  agariHai,
+  isTsumo,
+  bakaze,
+  jikaze,
+  doraMarkers,
+  uraDoraMarkers, // 無視されていた
+});
+
+// After: 表ドラまでをライブラリが計算し、裏ドラは立直の判定とセットで足す
+const result = calculateScoreForTehai(tehai, {
+  agariHai,
+  isTsumo,
+  bakaze,
+  jikaze,
+  doraMarkers,
+});
+
+if (isRiichi) {
+  const uraDoraCount = countDora(tehai, uraDoraMarkers);
+  // uraDoraCount を翻に加算する
+}
+```
+
 ## 0.8.0 (2026-09-04)
 
 場風・自風の役牌を役として判定するようになりました。`YakuName` にキーが増えるため、

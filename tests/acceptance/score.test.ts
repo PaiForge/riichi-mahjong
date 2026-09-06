@@ -185,7 +185,6 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
           jikaze: c.isOya ? HaiKind.Ton : HaiKind.Nan,
           bakaze: HaiKind.Ton,
           doraMarkers: c.doraMarkers,
-          uraDoraMarkers: [],
         };
 
         // 2. 手牌のパース
