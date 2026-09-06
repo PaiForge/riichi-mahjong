@@ -186,4 +186,45 @@ describe("Extended MSPZ", () => {
       expect(pon).toBeDefined();
     });
   });
+
+  describe("囲み構造のエラー", () => {
+    it("囲みが閉じていない場合はエラーになること", () => {
+      const res = parseExtendedMspz("[135m");
+
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) {
+        expect(res.error).toBeInstanceOf(MspzParseError);
+        expect(res.error.message).toBe("Unclosed bracket or parenthesis");
+      }
+    });
+
+    it("対応する開き文字が無い閉じ文字はエラーになること", () => {
+      const res = parseExtendedMspz("123m]");
+
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) {
+        expect(res.error.message).toBe("Unexpected closing character ']'");
+      }
+    });
+
+    it("囲みの入れ子はエラーになること", () => {
+      const res = parseExtendedMspz("[[123m]]");
+
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) {
+        expect(res.error.message).toBe("Nested enclosures are not supported");
+      }
+    });
+
+    it("囲みの構造が壊れている場合は、面子として不正なブロックより先に構造のエラーを返すこと", () => {
+      // "[135m]" は面子として不正（非連続のチー）で、末尾の "[" は閉じていない。
+      // 両方が不正な入力では、囲みの切り分けを先に行う実装のため構造のエラーが返る。
+      const res = parseExtendedMspz("[135m]abc[");
+
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) {
+        expect(res.error.message).toBe("Unclosed bracket or parenthesis");
+      }
+    });
+  });
 });
