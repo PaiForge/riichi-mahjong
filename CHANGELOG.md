@@ -15,14 +15,14 @@
 
 ### Removed
 
-- `uraDoraMarkers`（裏ドラ表示牌）を公開 API から削除した（`DetectYakuConfig` / `ScoreCalculationConfig` / `HouraContext`）
+- `uraDoraMarkers`（裏ドラ表示牌）を公開 API から削除した（`DetectYakuConfig` / `ScoreCalculationConfig`）
   - このフィールドは値がコンテキストに詰め替えられるだけで、点数計算からは一度も参照されていなかった。裏ドラ表示牌を渡しても翻は増えず、エラーも警告も出ないまま黙って無視されていた
-  - 実装を足すのではなく削除を選んだのは、裏ドラが立直の成立を前提とする一方、本ライブラリが立直を判定できないため。立直は宣言を要する役であり、手牌のどこにもその情報が現れない。受け口を残すと「立直していない手に裏ドラ表示牌が渡された場合」を検知できず、点数を誤ったまま返すことになる（設計判断の詳細は [docs/scope.md](docs/scope.md) を参照）
-  - 裏ドラは利用側で立直の判定とセットで加算すること。表示牌からドラを求める `getDoraNext` と手牌中の枚数を数える `countDora` は引き続き公開しているため、そのまま流用できる
+  - 実装を足すのではなく削除を選んだのは、本ライブラリが立直を役として数えないため。立直を扱わないまま裏ドラだけを受け取ると「立直の翻は付かないのに裏ドラの翻は乗る」という、実際の和了には存在しない結果を返すことになる。裏ドラを扱うなら立直・ダブル立直・一発を役として数える設計とセットでなければ整合せず、それは責務範囲を変える別の判断になる（詳細は [docs/scope.md](docs/scope.md) を参照）
+  - 立直の翻と裏ドラの翻は利用側でセットで加算すること。表示牌からドラを求める `getDoraNext`、手牌中の枚数を数える `countDora`、翻数と符から点数を求める `calculateScore` は引き続き公開しているため、そのまま流用できる
 
 ### 移行ガイド
 
-`uraDoraMarkers` を渡していた場合はその指定を削除し、裏ドラの加算を呼び出し側に移してください。
+`uraDoraMarkers` を渡していた場合はその指定を削除し、立直と裏ドラの加算を呼び出し側に移してください。
 渡していなかった場合、点数計算の結果は変わりません（従来から無視されていたため）。
 
 ```ts
@@ -36,20 +36,32 @@ const result = calculateScoreForTehai(tehai, {
   uraDoraMarkers, // 無視されていた
 });
 
-// After: 表ドラまでをライブラリが計算し、裏ドラは立直の判定とセットで足す
-const result = calculateScoreForTehai(tehai, {
+// After: 表ドラまでをライブラリが計算し、立直と裏ドラは利用側で足して点数を再計算する
+const scored = calculateScoreForTehai(tehai, {
   agariHai,
   isTsumo,
   bakaze,
   jikaze,
   doraMarkers,
+  ruleConfig,
 });
 
-if (isRiichi) {
-  const uraDoraCount = countDora(tehai, uraDoraMarkers);
-  // uraDoraCount を翻に加算する
-}
+const result = scored.map((base) => {
+  if (!isRiichi) return base;
+  const riichiHan = isDoubleRiichi ? 2 : 1;
+  const uraDoraHan = countDora(tehai, uraDoraMarkers);
+  // 符と役満単位は翻を足しても変わらないため元の結果から引き継ぐ。
+  // 点数区分（満貫・数え役満・切り上げ満貫）はライブラリが再判定する
+  return calculateScore(base.han + riichiHan + uraDoraHan, base.fu, {
+    isOya: jikaze === HaiKind.Ton,
+    isTsumo,
+    ruleConfig,
+    yakumanMultiplier: base.yakumanMultiplier,
+  });
+});
 ```
+
+`calculateScore` の結果は構造解釈の詳細（`detail`）を持たないため、符の内訳や待ちの形は元の結果（上記の `base`）から参照してください。
 
 ## 0.8.0 (2026-09-04)
 
