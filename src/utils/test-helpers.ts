@@ -212,10 +212,6 @@ export function createHaiKindIds(mspzString: string): HaiKindId[] {
  * テスト用の順子 (Shuntsu) を作成します。
  * isValidShuntsu によるバリデーションを行います。
  */
-/**
- * テスト用の順子 (Shuntsu) を作成します。
- * isValidShuntsu によるバリデーションを行います。
- */
 export function createShuntsu(mspz: string): Shuntsu {
   const ids = parseToKindIds(mspz);
 
