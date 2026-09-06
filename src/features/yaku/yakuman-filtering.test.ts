@@ -35,7 +35,6 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         bakaze: HaiKind.Ton,
         jikaze: HaiKind.Nan,
         doraMarkers: [],
-        uraDoraMarkers: [],
         isTsumo: true,
       });
 
@@ -54,7 +53,6 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         bakaze: HaiKind.Ton,
         jikaze: HaiKind.Nan,
         doraMarkers: [],
-        uraDoraMarkers: [],
         isTsumo: true,
         ruleConfig: { suuankouTanki: true },
       });
@@ -205,7 +203,6 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         bakaze: HaiKind.Ton,
         jikaze: HaiKind.Nan,
         doraMarkers: [],
-        uraDoraMarkers: [],
         isTsumo: true,
       });
 

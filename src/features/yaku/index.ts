@@ -42,7 +42,6 @@ export function detectYaku(
     bakaze: config.bakaze,
     jikaze: config.jikaze,
     doraMarkers: config.doraMarkers ?? [],
-    uraDoraMarkers: config.uraDoraMarkers ?? [],
     isTsumo: config.isTsumo,
     yakumanRuleConfig: config.ruleConfig,
   };

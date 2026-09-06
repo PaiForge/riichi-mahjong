@@ -55,7 +55,6 @@ function createScoreContext(
     isTsumo: config.isTsumo,
     isOya: config.jikaze === HaiKind.Ton,
     doraMarkers: config.doraMarkers,
-    ...(config.uraDoraMarkers ? { uraDoraMarkers: config.uraDoraMarkers } : {}),
     // RuleConfig は YakumanRuleConfig を内包するためそのまま渡せる
     yakumanRuleConfig: config.ruleConfig,
   };
