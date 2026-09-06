@@ -1,25 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { chinroutouDefinition } from "./chinroutou";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("清老頭（チンロウトウ）の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("条件を満たす場合、役満（13翻）であること", () => {
     // 111m 999m 111p 999p 11s

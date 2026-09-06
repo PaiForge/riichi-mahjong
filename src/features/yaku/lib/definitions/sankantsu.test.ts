@@ -1,17 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { sankantsuDefinition } from "./sankantsu";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("三槓子（サンカンツ）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("槓子が3つある場合、成立すること", () => {
     // 1111m(暗槓), 2222p(暗槓), 3333s(暗槓), 123m, 99p

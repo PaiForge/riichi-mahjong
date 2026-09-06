@@ -1,17 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { sanshokuDoukouDefinition } from "./sanshoku-doukou";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("三色同刻（サンショクドウコウ）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("萬子・筒子・索子の同じ数字の刻子がある場合、成立すること", () => {
     // 222m, 222p, 222s, 123s, 99m

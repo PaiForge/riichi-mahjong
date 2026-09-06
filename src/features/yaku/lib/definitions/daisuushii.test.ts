@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { daisuushiiDefinition } from "./daisuushii";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("大四喜（ダイスーシー）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
+  const mockContext: HouraContext = createHouraContext({
     agariHai: HaiKind.Ton,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("東・南・西・北の全ての刻子がある場合、成立すること", () => {
     // 111z(東), 222z(南), 333z(西), 444z(北), 55m

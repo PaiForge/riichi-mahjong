@@ -1,27 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { sanankouDefinition } from "./sanankou";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("三暗刻（サンアンコウ）の判定", () => {
-  const mockContextTsumo: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
+  const mockContextTsumo: HouraContext = createHouraContext({
     isTsumo: true,
-  };
+  });
 
-  const mockContextRon: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
+  const mockContextRon: HouraContext = createHouraContext({
     isTsumo: false,
-  };
+  });
 
   it("ツモ和了の場合、全ての無副露刻子が暗刻としてカウントされ、3つの場合は成立する", () => {
     // 111m 222m 333m 456p 99s (ツモ)

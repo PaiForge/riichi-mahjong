@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { ryuuiisouDefinition } from "./ryuuiisou";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("緑一色（リューイーソー）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
+  const mockContext: HouraContext = createHouraContext({
     agariHai: HaiKind.SouZu2,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("全ての牌が緑色牌（23468s, 發）の場合、成立すること", () => {
     // 234s, 234s, 666s, 888s, 66z(發)

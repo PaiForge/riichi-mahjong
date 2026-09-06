@@ -1,27 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { ryanpeikouDefinition } from "./ryanpeikou";
-import { createTehai } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createTehai,
+} from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import { HaiKind } from "../../../../types";
 import type { MentsuHouraStructure, HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("二盃口（リャンペーコー）の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("標準的な二盃口が成立する場合（独立した2組の一盃口）、3翻であること", () => {
     // 112233m 445566p 99s

@@ -2,11 +2,12 @@ import { describe, it, expect } from "vitest";
 import { detectYaku, detectYakuForStructure } from "./index";
 import { calculateScoreForTehai, getPaymentTotal } from "../score";
 import {
-  createTehai,
-  getHaiKindId,
+  createHouraContext,
   createKoutsu,
-  createToitsu,
   createShuntsu,
+  createTehai,
+  createToitsu,
+  getHaiKindId,
 } from "../../utils/test-helpers";
 import { HaiKind } from "../../types";
 import type { HouraContext, MentsuHouraStructure } from "./types";
@@ -93,13 +94,9 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("99p"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -125,14 +122,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("44z"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("4z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -159,14 +152,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("66z"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("6s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -190,14 +179,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("11s"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("1s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -246,13 +231,9 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("44z"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -276,14 +257,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("11m"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("1m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -308,14 +285,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
         jantou: createToitsu("55z"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("5z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -347,14 +320,10 @@ describe("複数の役満が同時に成立する場合は全ての役満のみ�
       jantou: createToitsu("55z"),
     };
 
-    const context: HouraContext = {
-      isMenzen: true,
+    const context: HouraContext = createHouraContext({
       agariHai: getHaiKindId("5z"),
-      bakaze: HaiKind.Ton,
-      jikaze: HaiKind.Nan,
-      doraMarkers: [],
       isTsumo: true,
-    };
+    });
 
     const result = detectYakuForStructure(hand, context);
 
@@ -387,14 +356,11 @@ describe("通常役のみの場合はフィルタリングされないこと", (
       jantou: createToitsu("55z"),
     };
 
-    const context: HouraContext = {
+    const context: HouraContext = createHouraContext({
       isMenzen: false,
       agariHai: getHaiKindId("5z"),
-      bakaze: HaiKind.Ton,
-      jikaze: HaiKind.Nan,
-      doraMarkers: [],
       isTsumo: true,
-    };
+    });
 
     const result = detectYakuForStructure(hand, context);
 
@@ -436,13 +402,10 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("99p"),
       };
 
-      const context: HouraContext = {
+      const context: HouraContext = createHouraContext({
         isMenzen: false,
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -480,13 +443,10 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("44z"),
       };
 
-      const context: HouraContext = {
+      const context: HouraContext = createHouraContext({
         isMenzen: false,
         agariHai: getHaiKindId("4z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -512,14 +472,10 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("55z"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("4s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -541,14 +497,10 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("99p"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("3m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -573,15 +525,11 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("44z"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("4z"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
         yakumanRuleConfig: { suuankouTanki: true },
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -611,15 +559,11 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("11s"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("1s"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
         isTsumo: true,
         yakumanRuleConfig: { suuankouTanki: true },
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -647,13 +591,9 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("55m"),
       };
 
-      const context: HouraContext = {
-        isMenzen: true,
+      const context: HouraContext = createHouraContext({
         agariHai: getHaiKindId("5m"),
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 
@@ -684,14 +624,12 @@ describe("役満フィルタリング: エッジケース", () => {
         jantou: createToitsu("55m"),
       };
 
-      const context: HouraContext = {
+      const context: HouraContext = createHouraContext({
         isMenzen: false,
         agariHai: getHaiKindId("5m"),
-        bakaze: HaiKind.Ton,
         jikaze: HaiKind.Ton,
-        doraMarkers: [],
         isTsumo: true,
-      };
+      });
 
       const result = detectYakuForStructure(hand, context);
 

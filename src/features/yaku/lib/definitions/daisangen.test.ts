@@ -1,17 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { daisangenDefinition } from "./daisangen";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("大三元（ダイサンゲン）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("白・發・中の刻子が全て揃っている場合、成立すること", () => {
     // 555z (白), 666z (發), 777z (中), 11m, 23p

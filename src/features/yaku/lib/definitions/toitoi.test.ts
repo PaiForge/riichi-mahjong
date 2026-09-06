@@ -1,18 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { toitoiDefinition } from "./toitoi";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("対々和（トイトイ）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("全ての面子が刻子の場合、成立すること", () => {
     // 111m, 222p, 333s, 444z, 55z

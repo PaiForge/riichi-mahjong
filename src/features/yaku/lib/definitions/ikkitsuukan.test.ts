@@ -1,25 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { ikkitsuukanDefinition } from "./ikkitsuukan";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("一気通貫の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("門前で一気通貫が成立する場合、2翻であること", () => {
     // 123m 456m 789m 123p 99p

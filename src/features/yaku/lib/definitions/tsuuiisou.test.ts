@@ -1,18 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { tsuuiisouDefinition } from "./tsuuiisou";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("字一色（ツーイーソー）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
+  const mockContext: HouraContext = createHouraContext({
     agariHai: HaiKind.Ton,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("全ての牌が字牌の場合（面子手）、成立すること", () => {
     // 111z(東), 222z(南), 333z(西), 444z(北), 55z(白)

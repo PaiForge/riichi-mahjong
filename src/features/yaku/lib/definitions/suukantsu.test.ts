@@ -1,17 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { suukantsuDefinition } from "./suukantsu";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("四槓子（スーカンツ）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("槓子が4つある場合、成立すること", () => {
     // [1111m], [2222p], [3333s], [4444z], 99p (単騎待ち)

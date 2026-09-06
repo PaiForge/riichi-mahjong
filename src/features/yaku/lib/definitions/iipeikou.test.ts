@@ -1,29 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { iipeikouDefinition } from "./iipeikou";
 import {
+  createHouraContext,
   createMentsuStructureFromMspz,
   createTehai,
 } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
-import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("一盃口の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("条件を満たす場合、正しく判定されること", () => {
     // 123m 123m 456p 555s 22z

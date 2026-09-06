@@ -1,25 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { chuurenPoutouDefinition } from "./chuuren-poutou";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("九蓮宝燈（チューレンポートー）の判定", () => {
-  const mockContextMenzen: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContextMenzen: HouraContext = createHouraContext();
 
-  const mockContextOpen: HouraContext = {
+  const mockContextOpen: HouraContext = createHouraContext({
     isMenzen: false,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  });
 
   it("1112345678999 + 1枚の形（純正九蓮宝燈含む）で成立すること", () => {
     // 1111m 2345678 999m (1m待ち, 1mで和了)

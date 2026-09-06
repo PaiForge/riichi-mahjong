@@ -16,6 +16,8 @@ import {
 import { isValidShuntsu } from "../core/mentsu";
 import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/mentsu-te";
 import { isTuple2, isTuple3 } from "./assertions";
+import type { HouraContext } from "../features/yaku/types";
+import { HaiKind } from "../types";
 import type {
   Shuntsu,
   Koutsu,
@@ -90,6 +92,29 @@ export function createTehai(mspzString: string): Tehai14 {
   // ファクトリ関数内での as 使用は許容
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return tehai as Tehai14;
+}
+
+/**
+ * テスト用の和了コンテキスト (HouraContext) を作成します。
+ *
+ * 役判定テストの大半は「門前・東場・南家・ドラなし」を前提に、判定対象の役に
+ * 関係するフィールドだけを差し替えるため、それらを既定値として与える。
+ * `agariHai` は待ちの形に依存しない役の判定では使われないダミー値。
+ *
+ * @param overrides 既定値から差し替えるフィールド
+ * @returns 和了コンテキスト
+ */
+export function createHouraContext(
+  overrides: Partial<HouraContext> = {},
+): HouraContext {
+  return {
+    isMenzen: true,
+    agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
+    doraMarkers: [],
+    ...overrides,
+  };
 }
 
 /**

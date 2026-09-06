@@ -1,17 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { shousangenDefinition } from "./shousangen";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
 describe("小三元（ショウサンゲン）の判定", () => {
-  const mockContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
-  };
+  const mockContext: HouraContext = createHouraContext();
 
   it("白・發の刻子と、中の対子がある場合、成立すること", () => {
     // 555z (白), 666z (發), 77z (中), 123m, 456p

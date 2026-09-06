@@ -6,18 +6,17 @@ import {
   bakazeDefinition,
   jikazeDefinition,
 } from "./yakuhai";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("役牌（三元牌）の判定", () => {
-  const baseContext: HouraContext = {
-    isMenzen: true,
+  const baseContext: HouraContext = createHouraContext({
     agariHai: HaiKind.ManZu4,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [],
-  };
+  });
 
   it("白が成立する場合（刻子）", () => {
     // 555z (Haku) + others
@@ -62,13 +61,9 @@ describe("役牌（三元牌）の判定", () => {
 
 describe("役牌（風牌）の判定", () => {
   /** 東場・南家 */
-  const baseContext: HouraContext = {
-    isMenzen: true,
+  const baseContext: HouraContext = createHouraContext({
     agariHai: HaiKind.ManZu4,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [],
-  };
+  });
 
   it("場風の刻子で場風が成立し、自風は不成立", () => {
     // 東場・南家で 111z（東）

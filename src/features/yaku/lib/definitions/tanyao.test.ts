@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { tanyaoDefinition } from "./tanyao";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("タンヤオの判定", () => {
-  const baseContext: HouraContext = {
-    isMenzen: true,
+  const baseContext: HouraContext = createHouraContext({
     agariHai: HaiKind.ManZu4,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [],
-  };
+  });
 
   it("タンヤオが成立する場合（門前）", () => {
     // 234m 234p 234s 678s 88p

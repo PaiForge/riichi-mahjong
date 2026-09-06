@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { pinfuDefinition } from "./pinfu";
-import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
 
 describe("平和の判定", () => {
-  const baseContext: HouraContext = {
-    isMenzen: true,
+  const baseContext: HouraContext = createHouraContext({
     agariHai: HaiKind.ManZu4,
-    doraMarkers: [], // デフォルトのあがり牌
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-  };
+  });
 
   it("条件を満たす場合、正しく判定されること", () => {
     const hand = createMentsuStructureFromMspz("123m456m789p234s99s");
