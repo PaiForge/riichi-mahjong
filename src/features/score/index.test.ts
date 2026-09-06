@@ -10,7 +10,11 @@ import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
 import { type Fu, HaiKind } from "../../types";
 import { calculateScoreForTehai } from "./index";
-import { createTehai, getHaiKindId } from "../../utils/test-helpers";
+import {
+  createTehai,
+  getHaiKindId,
+  unwrapOrThrow,
+} from "../../utils/test-helpers";
 
 describe("calculateScoreFromHanAndFu", () => {
   const mockFuResult = (fu: Fu): FuResult => ({
@@ -425,9 +429,7 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 切り上げ満
   } as const;
 
   it("既定では 4翻30符 7700点となること", () => {
-    const res = calculateScoreForTehai(tehai, config);
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     expect(result.han).toBe(4);
     expect(result.fu).toBe(30);
@@ -436,12 +438,12 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 切り上げ満
   });
 
   it("切り上げ満貫が有効なら翻・符はそのままで満貫の支払いになること", () => {
-    const res = calculateScoreForTehai(tehai, {
-      ...config,
-      ruleConfig: { kiriageMangan: true },
-    });
-    if (res.isErr()) throw res.error;
-    const result = res.value;
+    const result = unwrapOrThrow(
+      calculateScoreForTehai(tehai, {
+        ...config,
+        ruleConfig: { kiriageMangan: true },
+      }),
+    );
 
     expect(result.han).toBe(4);
     expect(result.fu).toBe(30);

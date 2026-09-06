@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parseExtendedMspz, isExtendedMspz, isMspz, asMspz } from "./mspz";
 import { HaiKind } from "../../types";
 import { MspzParseError } from "../../errors";
+import { unwrapOrThrow } from "../../utils/test-helpers";
 
 describe("Standard MSPZ", () => {
   describe("isMspz", () => {
@@ -63,18 +64,14 @@ describe("Extended MSPZ", () => {
 
   describe("parseExtendedMspz", () => {
     it("parses regular MSPZ as closed tiles", () => {
-      const res = parseExtendedMspz("123m");
-      if (res.isErr()) throw res.error;
-      const result = res.value;
+      const result = unwrapOrThrow(parseExtendedMspz("123m"));
       expect(result.closed).toHaveLength(3);
       expect(result.exposed).toHaveLength(0);
       expect(result.closed[0]).toBe(HaiKind.ManZu1);
     });
 
     it("parses Shuntsu (Chi) in brackets", () => {
-      const res = parseExtendedMspz("[123m]");
-      if (res.isErr()) throw res.error;
-      const result = res.value;
+      const result = unwrapOrThrow(parseExtendedMspz("[123m]"));
       expect(result.closed).toHaveLength(0);
       expect(result.exposed).toHaveLength(1);
 
@@ -120,10 +117,9 @@ describe("Extended MSPZ", () => {
 
     it("昇順でない並びのチーは昇順に正規化されること", () => {
       // 表記上の並び順に意味はないため、順子はソート済みで返す
-      const res = parseExtendedMspz("[321m]");
-      if (res.isErr()) throw res.error;
+      const result = unwrapOrThrow(parseExtendedMspz("[321m]"));
 
-      const mentsu = res.value.exposed[0];
+      const mentsu = result.exposed[0];
       if (!mentsu) throw new Error("Should be defined");
       expect(mentsu.type).toBe("Shuntsu");
       expect(mentsu.hais).toEqual([
@@ -134,9 +130,7 @@ describe("Extended MSPZ", () => {
     });
 
     it("parses Koutsu (Pon) in brackets", () => {
-      const res = parseExtendedMspz("[111p]");
-      if (res.isErr()) throw res.error;
-      const result = res.value;
+      const result = unwrapOrThrow(parseExtendedMspz("[111p]"));
       expect(result.exposed).toHaveLength(1);
 
       const mentsu = result.exposed[0];
@@ -150,9 +144,7 @@ describe("Extended MSPZ", () => {
     });
 
     it("parses Daiminkan (Open Quad) in brackets", () => {
-      const res = parseExtendedMspz("[2222s]");
-      if (res.isErr()) throw res.error;
-      const result = res.value;
+      const result = unwrapOrThrow(parseExtendedMspz("[2222s]"));
       expect(result.exposed).toHaveLength(1);
 
       const mentsu = result.exposed[0];
@@ -166,9 +158,7 @@ describe("Extended MSPZ", () => {
     });
 
     it("parses Ankan (Closed Quad) in parentheses", () => {
-      const res = parseExtendedMspz("(1111z)");
-      if (res.isErr()) throw res.error;
-      const result = res.value;
+      const result = unwrapOrThrow(parseExtendedMspz("(1111z)"));
       expect(result.exposed).toHaveLength(1);
 
       const kantsu = result.exposed[0];
@@ -185,9 +175,7 @@ describe("Extended MSPZ", () => {
 
     it("parses mixed content correctly", () => {
       // 123m (chi), 456p (pon), 789s (closed)
-      const res = parseExtendedMspz("789s[123m][444p]");
-      if (res.isErr()) throw res.error;
-      const result = res.value;
+      const result = unwrapOrThrow(parseExtendedMspz("789s[123m][444p]"));
       expect(result.closed).toHaveLength(3); // 7,8,9s
       expect(result.exposed).toHaveLength(2); // chi, pon
 
