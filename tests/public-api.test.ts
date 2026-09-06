@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { Result } from "neverthrow";
 import * as PublicApi from "../src/index";
-import type { HaiKindId, Tehai13 } from "../src/index";
+import type {
+  HaiId,
+  HaiKindId,
+  HouraStructure,
+  Kazehai,
+  MachiType,
+  Tehai,
+  Tehai13,
+  Tehai14,
+} from "../src/index";
 import { unwrapOrThrow } from "../src/utils/test-helpers";
 
 describe("公開APIのエクスポート", () => {
@@ -175,6 +184,132 @@ describe("公開APIのエクスポート", () => {
       PublicApi.parseExtendedMspz satisfies (
         input: string,
       ) => Result<PublicApi.Tehai, PublicApi.MspzParseError>;
+
+      expect(true).toBe(true);
+    });
+  });
+
+  // ==========================================================================
+  // エクスポートの網羅チェック
+  // ==========================================================================
+  // 公開している関数の一覧をここに定義します。src/index.ts からエクスポートを
+  // 落とすと（意図せぬ破壊的変更）このテストが落ちます。
+  // 新しく公開する関数を追加した場合はこの一覧にも追記してください。
+  const EXPORTED_FUNCTIONS: readonly string[] = [
+    // エラークラス
+    "ChomboError",
+    "DuplicatedHaiIdError",
+    "InvalidHaiQuantityError",
+    "MahjongArgumentError",
+    "MahjongError",
+    "MspzParseError",
+    "NoYakuError",
+    "ShoushaiError",
+    "TahaiError",
+    // 牌
+    "haiIdToKindId",
+    "haiKindToNumber",
+    "isKazehai",
+    "isSuupai",
+    "isYaochu",
+    "kindIdToHaiType",
+    // ドラ
+    "countDora",
+    "getDoraNext",
+    // 面子
+    "isValidKantsu",
+    "isValidKoutsu",
+    "isValidShuntsu",
+    "isValidTatsu",
+    "isValidToitsu",
+    // 手牌
+    "isTehai13",
+    "isTehai14",
+    "validateTehai",
+    "validateTehai13",
+    "validateTehai14",
+    // 待ち・シャンテン
+    "classifyMachi",
+    "calculateShanten",
+    "getUkeire",
+    // 役・点数
+    "detectYaku",
+    "isMenzen",
+    "calculateScore",
+    "calculateScoreForTehai",
+    "getPaymentTotal",
+    "getYakumanMultiplier",
+    // パーサ
+    "isExtendedMspz",
+    "isMspz",
+    "parseExtendedMspz",
+    "parseMspz",
+  ];
+
+  describe("エクスポートの網羅", () => {
+    it.each(EXPORTED_FUNCTIONS)(
+      "%s が関数としてエクスポートされていること",
+      (name) => {
+        const api: Record<string, unknown> = PublicApi;
+        expect(api[name]).toBeDefined();
+        expect(typeof api[name]).toBe("function");
+      },
+    );
+  });
+
+  // ==========================================================================
+  // 型シグネチャ（コンパイル時チェック）
+  // ==========================================================================
+  describe("牌に関する関数の型シグネチャ", () => {
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.haiIdToKindId satisfies (id: HaiId) => HaiKindId;
+      PublicApi.haiKindToNumber satisfies (
+        kind: HaiKindId,
+      ) => number | undefined;
+      PublicApi.kindIdToHaiType satisfies (
+        kind: HaiKindId,
+      ) => PublicApi.HaiType;
+      PublicApi.isSuupai satisfies (kind: HaiKindId) => boolean;
+      PublicApi.isYaochu satisfies (kind: HaiKindId) => boolean;
+      PublicApi.isKazehai satisfies (kind: HaiKindId) => kind is Kazehai;
+
+      expect(true).toBe(true);
+    });
+  });
+
+  describe("ドラに関する関数の型シグネチャ", () => {
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.getDoraNext satisfies (indicator: HaiKindId) => HaiKindId;
+      PublicApi.countDora satisfies (
+        tehai: Tehai,
+        indicators: readonly HaiKindId[],
+      ) => number;
+
+      expect(true).toBe(true);
+    });
+  });
+
+  describe("面子の検証関数の型シグネチャ", () => {
+    it("期待される型シグネチャを満たすこと", () => {
+      type MentsuPredicate = (kindIds: readonly HaiKindId[]) => boolean;
+
+      PublicApi.isValidShuntsu satisfies MentsuPredicate;
+      PublicApi.isValidKoutsu satisfies MentsuPredicate;
+      PublicApi.isValidKantsu satisfies MentsuPredicate;
+      PublicApi.isValidToitsu satisfies MentsuPredicate;
+      PublicApi.isValidTatsu satisfies MentsuPredicate;
+
+      expect(true).toBe(true);
+    });
+  });
+
+  describe("待ち・門前判定の型シグネチャ", () => {
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.classifyMachi satisfies (
+        hand: HouraStructure,
+        agariHai: HaiKindId,
+      ) => MachiType | undefined;
+      PublicApi.isMenzen satisfies (tehai: Tehai14) => boolean;
 
       expect(true).toBe(true);
     });

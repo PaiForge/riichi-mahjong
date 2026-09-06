@@ -6,6 +6,7 @@ import {
   isJihai,
   isKazehai,
   isRoutou,
+  isYaochu,
   isSuupai,
   kindIdToHaiType,
   kindIdToSuitIndex,
@@ -176,5 +177,29 @@ describe("isKazehai", () => {
   it("数牌は false を返す", () => {
     expect(isKazehai(HaiKind.ManZu1)).toBe(false);
     expect(isKazehai(HaiKind.SouZu9)).toBe(false);
+  });
+});
+
+describe("isYaochu", () => {
+  it("数牌の1と9は true を返す", () => {
+    expect(isYaochu(HaiKind.ManZu1)).toBe(true);
+    expect(isYaochu(HaiKind.ManZu9)).toBe(true);
+    expect(isYaochu(HaiKind.PinZu1)).toBe(true);
+    expect(isYaochu(HaiKind.PinZu9)).toBe(true);
+    expect(isYaochu(HaiKind.SouZu1)).toBe(true);
+    expect(isYaochu(HaiKind.SouZu9)).toBe(true);
+  });
+
+  it("字牌は全て true を返す（風牌・三元牌とも么九牌）", () => {
+    expect(isYaochu(HaiKind.Ton)).toBe(true);
+    expect(isYaochu(HaiKind.Pei)).toBe(true);
+    expect(isYaochu(HaiKind.Haku)).toBe(true);
+    expect(isYaochu(HaiKind.Chun)).toBe(true);
+  });
+
+  it("中張牌（2〜8の数牌）は false を返す", () => {
+    expect(isYaochu(HaiKind.ManZu2)).toBe(false);
+    expect(isYaochu(HaiKind.PinZu5)).toBe(false);
+    expect(isYaochu(HaiKind.SouZu8)).toBe(false);
   });
 });
