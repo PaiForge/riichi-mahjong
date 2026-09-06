@@ -141,10 +141,13 @@ export interface DetectYakuConfig {
   readonly bakaze: Kazehai;
   /** 自風牌 */
   readonly jikaze: Kazehai;
-  /** ドラ表示牌のリスト */
+  /**
+   * ドラ表示牌のリスト
+   *
+   * 裏ドラ表示牌は受け付けない（立直を役として数えないため。理由と利用側で
+   * 立直・裏ドラを足す手順は docs/scope.md を参照）。
+   */
   readonly doraMarkers?: readonly HaiKindId[];
-  /** 裏ドラ表示牌のリスト */
-  readonly uraDoraMarkers?: readonly HaiKindId[];
   /** ツモ和了かどうか */
   readonly isTsumo?: boolean;
   /**
@@ -180,13 +183,11 @@ export interface HouraContext {
 
   /**
    * ドラ表示牌 (表ドラ) のリスト
+   *
+   * 裏ドラ表示牌は受け付けない（立直を役として数えないため。理由と利用側で
+   * 立直・裏ドラを足す手順は docs/scope.md を参照）。
    */
   readonly doraMarkers: readonly HaiKindId[];
-
-  /**
-   * 裏ドラ表示牌のリスト (リーチ時のみ有効)
-   */
-  readonly uraDoraMarkers?: readonly HaiKindId[];
 
   /**
    * 役満ルール設定

@@ -36,10 +36,13 @@ export interface ScoreCalculationConfig {
   readonly jikaze: Kazehai;
   /** 場風 (必須) */
   readonly bakaze: Kazehai;
-  /** ドラ表示牌 (必須、なければ空配列) */
+  /**
+   * ドラ表示牌 (必須、なければ空配列)
+   *
+   * 裏ドラ表示牌は受け付けない（立直を役として数えないため。理由と利用側で
+   * 立直・裏ドラを足す手順は docs/scope.md を参照）。
+   */
   readonly doraMarkers: readonly HaiKindId[];
-  /** 裏ドラ表示牌 (任意) */
-  readonly uraDoraMarkers?: readonly HaiKindId[];
   /**
    * ルール差分設定（任意）。未指定時は標準ルール
    * （連風牌2符・切り上げ満貫なし・ダブル役満なし・複合役満の合算なし）。

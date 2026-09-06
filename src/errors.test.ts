@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  ChomboError,
+  MahjongArgumentError,
   MahjongError,
   ShoushaiError,
   TahaiError,
@@ -45,5 +47,30 @@ describe("MspzParseError", () => {
   it("デフォルトメッセージが設定されること", () => {
     const error = new MspzParseError();
     expect(error.message).toBe("MSPZ文字列の解析に失敗しました。");
+  });
+});
+
+describe("MahjongArgumentError", () => {
+  it("MahjongErrorのインスタンスであること", () => {
+    const error = new MahjongArgumentError("引数が不正です");
+    expect(error).toBeInstanceOf(MahjongError);
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe("引数が不正です");
+    expect(error.name).toBe("MahjongArgumentError");
+  });
+});
+
+describe("ChomboError", () => {
+  it("MahjongErrorのインスタンスであること", () => {
+    const error = new ChomboError("和了れない手です");
+    expect(error).toBeInstanceOf(MahjongError);
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe("和了れない手です");
+    expect(error.name).toBe("ChomboError");
+  });
+
+  it("デフォルトメッセージが設定されること", () => {
+    const error = new ChomboError();
+    expect(error.message).toBe("不正な和了です。");
   });
 });

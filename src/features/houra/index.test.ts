@@ -3,7 +3,11 @@ import { selectHouraInterpretation } from "./index";
 import { detectYaku } from "../yaku";
 import { calculateScoreForTehai } from "../score";
 import { NoYakuError } from "../../errors";
-import { createTehai, getHaiKindId } from "../../utils/test-helpers";
+import {
+  createTehai,
+  getHaiKindId,
+  unwrapOrThrow,
+} from "../../utils/test-helpers";
 import { HaiKind } from "../../types";
 import type { HouraContext } from "../yaku/types";
 
@@ -102,10 +106,9 @@ describe("役判定と点数計算の解釈の一致", () => {
       const config = createConfig(agari, isTsumo);
 
       const yakuResult = detectYaku(tehai, config);
-      const scoreResult = calculateScoreForTehai(tehai, config);
-      if (scoreResult.isErr()) throw scoreResult.error;
+      const scoreResult = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
-      expect(scoreResult.value.detail?.yakuResult).toEqual(yakuResult);
+      expect(scoreResult.detail?.yakuResult).toEqual(yakuResult);
     },
   );
 

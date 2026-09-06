@@ -1,4 +1,4 @@
-import { isSuupai, isYaochu } from "../../../../core/hai";
+import { isRoutou } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
 import { getMentsuBlocks } from "../helpers";
@@ -9,10 +9,8 @@ const checkChinroutou = (hand: HouraStructure): boolean => {
 
   const allBlocks = getMentsuBlocks(hand);
 
-  // 全てが老頭牌（字牌以外の么九牌）で構成されていること
-  const allRoutou = allBlocks.every((block) =>
-    block.hais.every((k) => isYaochu(k) && isSuupai(k)),
-  );
+  // 全てが老頭牌で構成されていること
+  const allRoutou = allBlocks.every((block) => block.hais.every(isRoutou));
   if (!allRoutou) return false;
 
   return true;

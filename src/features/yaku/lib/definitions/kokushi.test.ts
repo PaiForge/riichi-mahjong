@@ -3,15 +3,10 @@ import { kokushiDefinition } from "./kokushi";
 import type { HouraContext } from "../../types";
 import { HaiKind } from "../../../../types";
 import type { KokushiHouraStructure } from "../../types";
+import { createHouraContext } from "../../../../utils/test-helpers";
 
 describe("国士無双の判定", () => {
-  const baseContext: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [],
-  };
+  const baseContext: HouraContext = createHouraContext();
 
   it("国士無双形の構造に対して成立すること", () => {
     const hand: KokushiHouraStructure = {

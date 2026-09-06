@@ -6,7 +6,7 @@ import {
   getPaymentTotal,
   type ScoreCalculationConfig,
 } from "../../src/features/score";
-import { createTehai } from "../../src/utils/test-helpers";
+import { createTehai, unwrapOrThrow } from "../../src/utils/test-helpers";
 import { HaiKind } from "../../src/types";
 
 // 現状は門前手のみテストするため、mspz文字列 (例: "123m456p...") で十分です。
@@ -185,7 +185,6 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
           jikaze: c.isOya ? HaiKind.Ton : HaiKind.Nan,
           bakaze: HaiKind.Ton,
           doraMarkers: c.doraMarkers,
-          uraDoraMarkers: [],
         };
 
         // 2. 手牌のパース
@@ -199,9 +198,7 @@ describe("受け入れテスト: 点数計算 (vs Python mahjong)", () => {
         const tehai14 = createTehai(fullMspz);
 
         // 3. 点数の計算 (統合APIを使用)
-        const scoreResult = calculateScoreForTehai(tehai14, config);
-        if (scoreResult.isErr()) throw scoreResult.error;
-        const score = scoreResult.value;
+        const score = unwrapOrThrow(calculateScoreForTehai(tehai14, config));
 
         // アサーション
         // Python出力: `han`, `fu`, `points` (total cost?) または `cost` 辞書。

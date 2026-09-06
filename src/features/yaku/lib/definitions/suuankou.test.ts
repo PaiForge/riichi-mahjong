@@ -1,35 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { suuankouDefinition } from "./suuankou";
-import { createTehai } from "../../../../utils/test-helpers";
-import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
+import {
+  createHouraContext,
+  createMentsuStructureFromMspz,
+} from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
-import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("四暗刻（スーアンコウ）の判定", () => {
-  const mockContextTsumo: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
+  const mockContextTsumo: HouraContext = createHouraContext({
     isTsumo: true,
-  };
+  });
 
-  const mockContextRon: HouraContext = {
-    isMenzen: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    doraMarkers: [], // Dummy
+  const mockContextRon: HouraContext = createHouraContext({
     isTsumo: false,
-  };
+  });
 
   it("ツモ和了の場合、4つの暗刻があれば成立し、13翻（役満）であること", () => {
     // 111m 222m 333m 444m 99s (ツモ)
-    const tehai = createTehai("111m222m333m444m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, mockContextTsumo)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, mockContextTsumo)).toBe(13);
@@ -42,9 +31,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu9,
       doraMarkers: [],
     };
-    const tehai = createTehai("111m222m333m444m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(13);
@@ -58,9 +45,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const tehai = createTehai("111m222m333m444m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(26);
@@ -74,9 +59,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const tehai = createTehai("111m222m333m444m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     // 一般的なルールでは単騎待ちツモもダブル役満扱いとすることが多いが、
@@ -93,9 +76,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const tehai = createTehai("111m222m333m444m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(13);
@@ -109,9 +90,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const tehai = createTehai("111m222m333m444m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(false);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(0);

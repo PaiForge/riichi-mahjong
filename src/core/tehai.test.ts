@@ -10,6 +10,7 @@ import { HaiKind, MentsuType } from "../types";
 import {
   isTehai13,
   isTehai14,
+  validateTehai,
   validateTehai13,
   validateTehai14,
 } from "./tehai";
@@ -107,6 +108,57 @@ describe("Tehai Validation (手牌の検証)", () => {
       expect(isTehai14(tehai)).toBe(false);
     });
   });
+  describe("Tehai (13〜14枚の汎用検証)", () => {
+    it("13枚の手牌で検証が通過すること（ツモ前）", () => {
+      const res = validateTehai(createTehai(13));
+      expect(res.isOk()).toBe(true);
+    });
+
+    it("14枚の手牌で検証が通過すること（ツモ後）", () => {
+      const res = validateTehai(createTehai(14));
+      expect(res.isOk()).toBe(true);
+    });
+
+    it("12枚では少牌となること", () => {
+      const res = validateTehai(createTehai(12));
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(ShoushaiError);
+    });
+
+    it("15枚では多牌となること", () => {
+      const res = validateTehai(createTehai(15));
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) expect(res.error).toBeInstanceOf(TahaiError);
+    });
+
+    it("枚数が範囲内でも牌の整合性が崩れていれば失敗すること", () => {
+      // 1m を 5 枚含む 13 枚（各牌種は最大4枚）
+      const tehai = {
+        closed: [
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.ManZu1,
+          HaiKind.PinZu1,
+          HaiKind.PinZu2,
+          HaiKind.PinZu3,
+          HaiKind.PinZu4,
+          HaiKind.PinZu5,
+          HaiKind.PinZu6,
+          HaiKind.PinZu7,
+          HaiKind.PinZu8,
+        ],
+        exposed: [],
+      };
+      const res = validateTehai(tehai);
+      expect(res.isErr()).toBe(true);
+      if (res.isErr()) {
+        expect(res.error).toBeInstanceOf(InvalidHaiQuantityError);
+      }
+    });
+  });
+
   describe("Consistency (整合性チェック)", () => {
     it("同一の牌種が5枚以上ある場合に InvalidHaiQuantityError がスローされること", () => {
       // 1m が5枚

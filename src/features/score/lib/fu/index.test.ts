@@ -1,20 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { calculateFu } from "./index";
-import { createTehai } from "../../../../utils/test-helpers";
+import {
+  createHouraContext,
+  createTehai,
+} from "../../../../utils/test-helpers";
 import { getHouraStructures } from "../../../yaku/lib/structures";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../../yaku/types";
 import type { HouraStructure } from "../../../yaku/types";
 
 describe("calculateFu", () => {
-  const baseContext: HouraContext = {
-    isMenzen: true,
+  const baseContext: HouraContext = createHouraContext({
     isTsumo: true,
-    agariHai: HaiKind.ManZu1,
-    bakaze: HaiKind.Ton,
     jikaze: HaiKind.Ton,
     doraMarkers: [HaiKind.ManZu1], // Default dora marker
-  };
+  });
 
   const getStruct = (
     mspz: string,
@@ -277,14 +277,11 @@ describe("110符を超える符の計算", () => {
     const hand = getHouraStructures(tehai)[0];
     if (!hand) throw new Error("和了形が得られること");
 
-    const context: HouraContext = {
+    const context: HouraContext = createHouraContext({
       isMenzen: false,
       agariHai: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      jikaze: HaiKind.Nan,
       isTsumo: true,
-      doraMarkers: [],
-    };
+    });
 
     const result = calculateFu(hand, context);
 
@@ -298,14 +295,10 @@ describe("110符を超える符の計算", () => {
     const hand = getHouraStructures(tehai)[0];
     if (!hand) throw new Error("和了形が得られること");
 
-    const context: HouraContext = {
-      isMenzen: true,
+    const context: HouraContext = createHouraContext({
       agariHai: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      jikaze: HaiKind.Nan,
       isTsumo: true,
-      doraMarkers: [],
-    };
+    });
 
     const result = calculateFu(hand, context);
 
