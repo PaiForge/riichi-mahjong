@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { honroutouDefinition } from "./honroutou";
 import {
+  createChiitoitsuStructureFromMspz,
   createHouraContext,
   createMentsuStructureFromMspz,
 } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
@@ -33,18 +33,8 @@ describe("混老頭（ホンロウトウ）の判定", () => {
 
   it("七対子形で条件を満たす場合、成立すること", () => {
     // 11m 99m 11p 99p 11s 99s 77z
-    const hand: HouraStructure = {
-      type: "Chiitoitsu",
-      pairs: [
-        { type: "Toitsu", hais: [HaiKind.ManZu1, HaiKind.ManZu1] },
-        { type: "Toitsu", hais: [HaiKind.ManZu9, HaiKind.ManZu9] },
-        { type: "Toitsu", hais: [HaiKind.PinZu1, HaiKind.PinZu1] },
-        { type: "Toitsu", hais: [HaiKind.PinZu9, HaiKind.PinZu9] },
-        { type: "Toitsu", hais: [HaiKind.SouZu1, HaiKind.SouZu1] },
-        { type: "Toitsu", hais: [HaiKind.SouZu9, HaiKind.SouZu9] },
-        { type: "Toitsu", hais: [HaiKind.Chun, HaiKind.Chun] },
-      ],
-    };
+    const hand: HouraStructure =
+      createChiitoitsuStructureFromMspz("1199m1199p1199s77z");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
   });

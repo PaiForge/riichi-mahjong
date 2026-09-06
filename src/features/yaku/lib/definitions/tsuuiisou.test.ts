@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { tsuuiisouDefinition } from "./tsuuiisou";
 import {
+  createChiitoitsuStructureFromMspz,
   createHouraContext,
   createMentsuStructureFromMspz,
 } from "../../../../utils/test-helpers";
@@ -33,18 +34,8 @@ describe("字一色（ツーイーソー）の判定", () => {
   it("七対子形（大七星）でも成立すること", () => {
     // 11z, 22z, 33z, 44z, 55z, 66z, 77z
     // 七対子構造を手動作成
-    const hand: HouraStructure = {
-      type: "Chiitoitsu",
-      pairs: [
-        { type: "Toitsu", hais: [HaiKind.Ton, HaiKind.Ton] },
-        { type: "Toitsu", hais: [HaiKind.Nan, HaiKind.Nan] },
-        { type: "Toitsu", hais: [HaiKind.Sha, HaiKind.Sha] },
-        { type: "Toitsu", hais: [HaiKind.Pei, HaiKind.Pei] },
-        { type: "Toitsu", hais: [HaiKind.Haku, HaiKind.Haku] },
-        { type: "Toitsu", hais: [HaiKind.Hatsu, HaiKind.Hatsu] },
-        { type: "Toitsu", hais: [HaiKind.Chun, HaiKind.Chun] },
-      ],
-    };
+    const hand: HouraStructure =
+      createChiitoitsuStructureFromMspz("11223344556677z");
 
     expect(tsuuiisouDefinition.isSatisfied(hand, mockContext)).toBe(true);
     expect(tsuuiisouDefinition.getHansu(hand, mockContext)).toBe(13);

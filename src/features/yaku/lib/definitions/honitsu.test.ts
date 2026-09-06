@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { honitsuDefinition } from "./honitsu";
 import {
+  createChiitoitsuStructureFromMspz,
   createHouraContext,
   createMentsuStructureFromMspz,
 } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
@@ -40,18 +40,8 @@ describe("混一色（ホンイツ）の判定", () => {
 
   it("七対子形でも成立すること", () => {
     // 11m 22m 33m 44m 11z 22z 33z
-    const hand: HouraStructure = {
-      type: "Chiitoitsu",
-      pairs: [
-        { type: "Toitsu", hais: [HaiKind.ManZu1, HaiKind.ManZu1] },
-        { type: "Toitsu", hais: [HaiKind.ManZu2, HaiKind.ManZu2] },
-        { type: "Toitsu", hais: [HaiKind.ManZu3, HaiKind.ManZu3] },
-        { type: "Toitsu", hais: [HaiKind.ManZu4, HaiKind.ManZu4] },
-        { type: "Toitsu", hais: [HaiKind.Ton, HaiKind.Ton] },
-        { type: "Toitsu", hais: [HaiKind.Nan, HaiKind.Nan] },
-        { type: "Toitsu", hais: [HaiKind.Sha, HaiKind.Sha] },
-      ],
-    };
+    const hand: HouraStructure =
+      createChiitoitsuStructureFromMspz("11223344m112233z");
 
     expect(honitsuDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
   });

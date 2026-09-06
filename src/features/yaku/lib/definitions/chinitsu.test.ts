@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { chinitsuDefinition } from "./chinitsu";
 import {
+  createChiitoitsuStructureFromMspz,
   createHouraContext,
   createMentsuStructureFromMspz,
 } from "../../../../utils/test-helpers";
-import { HaiKind } from "../../../../types";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
@@ -40,18 +40,8 @@ describe("清一色（チンイツ）の判定", () => {
 
   it("七対子形でも成立すること", () => {
     // 11m 22m 33m 44m 55m 66m 77m
-    const hand: HouraStructure = {
-      type: "Chiitoitsu",
-      pairs: [
-        { type: "Toitsu", hais: [HaiKind.ManZu1, HaiKind.ManZu1] },
-        { type: "Toitsu", hais: [HaiKind.ManZu2, HaiKind.ManZu2] },
-        { type: "Toitsu", hais: [HaiKind.ManZu3, HaiKind.ManZu3] },
-        { type: "Toitsu", hais: [HaiKind.ManZu4, HaiKind.ManZu4] },
-        { type: "Toitsu", hais: [HaiKind.ManZu5, HaiKind.ManZu5] },
-        { type: "Toitsu", hais: [HaiKind.ManZu6, HaiKind.ManZu6] },
-        { type: "Toitsu", hais: [HaiKind.ManZu7, HaiKind.ManZu7] },
-      ],
-    };
+    const hand: HouraStructure =
+      createChiitoitsuStructureFromMspz("11223344556677m");
 
     expect(chinitsuDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
   });

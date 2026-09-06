@@ -15,6 +15,7 @@ import {
 } from "../features/parser";
 import { isValidShuntsu } from "../core/mentsu";
 import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/mentsu-te";
+import { getHouraStructuresForChiitoitsu } from "../features/yaku/lib/structures/chiitoitsu";
 import { isTuple2, isTuple3 } from "./assertions";
 import type { HouraContext } from "../features/yaku/types";
 import { HaiKind } from "../types";
@@ -25,6 +26,7 @@ import type {
   CompletedMentsu,
   HouraStructure,
   MentsuHouraStructure,
+  ChiitoitsuHouraStructure,
 } from "../types";
 
 /**
@@ -92,6 +94,24 @@ export function createTehai(mspzString: string): Tehai14 {
   // ファクトリ関数内での as 使用は許容
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return tehai as Tehai14;
+}
+
+/**
+ * MSPZ形式の文字列から七対子の和了構造を作成します。
+ * 七対子として成立しない牌姿を渡した場合はエラーをスローします。
+ *
+ * @param mspzString MSPZ形式の文字列 (例: "11223344556677m")
+ * @returns 七対子の和了構造
+ */
+export function createChiitoitsuStructureFromMspz(
+  mspzString: string,
+): ChiitoitsuHouraStructure {
+  const hands = getHouraStructuresForChiitoitsu(createTehai(mspzString));
+  const hand = hands[0];
+  if (hand === undefined) {
+    throw new Error(`七対子として構造化できません: ${mspzString}`);
+  }
+  return hand;
 }
 
 /**
