@@ -136,6 +136,9 @@ export { isKazehai } from "./core/hai";
 // =============================================================================
 export { parseMspz, parseExtendedMspz } from "./features/parser";
 export { isMspz, isExtendedMspz } from "./features/parser/mspz";
+// 型ガード isMspz / isExtendedMspz が絞り込む先の型。利用側が絞り込んだ値を
+// 変数や引数として保持するために必要なため公開する。
+export type { MspzString, ExtendedMspzString } from "./features/parser";
 
 // =============================================================================
 // Features - Score

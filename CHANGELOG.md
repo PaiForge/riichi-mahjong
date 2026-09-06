@@ -1,5 +1,11 @@
 ## Unreleased
 
+### Added
+
+- `MspzString` / `ExtendedMspzString` 型をエクスポートするようにした
+  - 型ガード `isMspz` / `isExtendedMspz` は公開されていた一方、絞り込み先の型が公開されていなかった。そのため利用側は絞り込みはできても、その値を変数や関数の引数として型付けできなかった（型に名前を付けられない状態だった）
+  - 追加のみで既存の型・関数に変更はない
+
 ### Removed
 
 - `uraDoraMarkers`（裏ドラ表示牌）を公開 API から削除した（`DetectYakuConfig` / `ScoreCalculationConfig` / `HouraContext`）
