@@ -4,6 +4,7 @@ import {
   haiIdToKindId,
   haiKindToNumber,
   isJihai,
+  isKazehai,
   isRoutou,
   isSuupai,
   kindIdToHaiType,
@@ -155,5 +156,25 @@ describe("isRoutou", () => {
     expect(isRoutou(HaiKind.Ton)).toBe(false);
     expect(isRoutou(HaiKind.Haku)).toBe(false);
     expect(isRoutou(HaiKind.Chun)).toBe(false);
+  });
+});
+
+describe("isKazehai", () => {
+  it("東・南・西・北は true を返す", () => {
+    expect(isKazehai(HaiKind.Ton)).toBe(true);
+    expect(isKazehai(HaiKind.Nan)).toBe(true);
+    expect(isKazehai(HaiKind.Sha)).toBe(true);
+    expect(isKazehai(HaiKind.Pei)).toBe(true);
+  });
+
+  it("三元牌は字牌だが風牌ではないため false を返す", () => {
+    expect(isKazehai(HaiKind.Haku)).toBe(false);
+    expect(isKazehai(HaiKind.Hatsu)).toBe(false);
+    expect(isKazehai(HaiKind.Chun)).toBe(false);
+  });
+
+  it("数牌は false を返す", () => {
+    expect(isKazehai(HaiKind.ManZu1)).toBe(false);
+    expect(isKazehai(HaiKind.SouZu9)).toBe(false);
   });
 });

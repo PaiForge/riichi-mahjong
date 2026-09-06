@@ -1,4 +1,10 @@
-import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types";
+import {
+  type HaiId,
+  HaiKind,
+  type HaiKindId,
+  HaiType,
+  type Kazehai,
+} from "../types";
 import { asHaiKindId } from "../utils/assertions";
 
 /**
@@ -86,6 +92,15 @@ export const SANGENPAI_KIND_IDS = [
   HaiKind.Hatsu,
   HaiKind.Chun,
 ] as const;
+
+const KAZEHAI_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(KAZEHAI_KIND_IDS);
+
+/**
+ * 風牌（東・南・西・北）かどうかを判定する
+ */
+export function isKazehai(kind: HaiKindId): kind is Kazehai {
+  return KAZEHAI_KIND_ID_SET.has(kind);
+}
 
 const SANGENPAI_KIND_ID_SET: ReadonlySet<HaiKindId> = new Set(
   SANGENPAI_KIND_IDS,

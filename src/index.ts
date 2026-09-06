@@ -128,7 +128,8 @@ export { getUkeire } from "./features/machi";
 // Features - Yaku
 // =============================================================================
 export { detectYaku } from "./features/yaku";
-export { isMenzen, isKazehai } from "./features/yaku/utils";
+export { isMenzen } from "./features/yaku/utils";
+export { isKazehai } from "./core/hai";
 
 // =============================================================================
 // Features - Parser
