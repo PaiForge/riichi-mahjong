@@ -14,6 +14,7 @@ import {
   parseMspz,
 } from "../features/parser";
 import { isValidShuntsu } from "../core/mentsu";
+import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/mentsu-te";
 import { isTuple2, isTuple3 } from "./assertions";
 import type {
   Shuntsu,
@@ -21,6 +22,7 @@ import type {
   Toitsu,
   CompletedMentsu,
   HouraStructure,
+  MentsuHouraStructure,
 } from "../types";
 
 /**
@@ -88,6 +90,25 @@ export function createTehai(mspzString: string): Tehai14 {
   // ファクトリ関数内での as 使用は許容
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return tehai as Tehai14;
+}
+
+/**
+ * Extended MSPZ形式の文字列から面子手（4面子1雀頭）の和了構造を作成します。
+ * 面子分解が複数ありうる場合は最初の解釈を返します。
+ * 構造化できない牌姿を渡した場合はエラーをスローします。
+ *
+ * @param mspzString Extended MSPZ形式、または通常のMSPZ形式の文字列
+ * @returns 面子手の和了構造
+ */
+export function createMentsuStructureFromMspz(
+  mspzString: string,
+): MentsuHouraStructure {
+  const hands = getHouraStructuresForMentsuTe(createTehai(mspzString));
+  const hand = hands[0];
+  if (hand === undefined) {
+    throw new Error(`面子手として構造化できません: ${mspzString}`);
+  }
+  return hand;
 }
 
 /**

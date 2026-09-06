@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sanankouDefinition } from "./sanankou";
-import { createTehai } from "../../../../utils/test-helpers";
-import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
+import { createMentsuStructureFromMspz } from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
-import type { MentsuHouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
 
 describe("三暗刻（サンアンコウ）の判定", () => {
@@ -27,9 +25,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
 
   it("ツモ和了の場合、全ての無副露刻子が暗刻としてカウントされ、3つの場合は成立する", () => {
     // 111m 222m 333m 456p 99s (ツモ)
-    const tehai = createTehai("111m222m333m456p99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m456p99s");
 
     expect(sanankouDefinition.isSatisfied(hand, mockContextTsumo)).toBe(true);
     expect(sanankouDefinition.getHansu(hand, mockContextTsumo)).toBe(2);
@@ -43,9 +39,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const tehai = createTehai("111m222m333p456s99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333p456s99s");
 
     // 111m は明刻扱い。222m, 333p は暗刻。合計2つなので三暗刻は不成立。
     expect(sanankouDefinition.isSatisfied(hand, context)).toBe(false);
@@ -60,9 +54,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const tehai = createTehai("111m222m333m444p99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m444p99s");
 
     expect(sanankouDefinition.isSatisfied(hand, context)).toBe(true);
   });
@@ -75,9 +67,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu1,
       doraMarkers: [],
     };
-    const tehai = createTehai("111m222m333m456p11s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m456p11s");
 
     // 111m, 222m, 333m は暗刻。1sは雀頭なので刻子ではない。
     // あれ、これは単純な三暗刻のケース。単騎で刻子が完成するケースをテストしたい。
@@ -87,9 +77,7 @@ describe("三暗刻（サンアンコウ）の判定", () => {
 
   it("副露していても、暗刻が3つあれば成立する", () => {
     // 111m 222m 333m [456p] 99s
-    const tehai = createTehai("111m222m333m99s[456p]");
-    const hands = getHouraStructuresForMentsuTe(tehai);
-    const hand = hands[0] as unknown as MentsuHouraStructure;
+    const hand = createMentsuStructureFromMspz("111m222m333m99s[456p]");
     const context: HouraContext = { ...mockContextTsumo, isMenzen: false };
 
     expect(sanankouDefinition.isSatisfied(hand, context)).toBe(true);
