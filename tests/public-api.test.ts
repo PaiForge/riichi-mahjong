@@ -303,6 +303,19 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
+  describe("MSPZ型ガードの型シグネチャ", () => {
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.isMspz satisfies (
+        input: string,
+      ) => input is PublicApi.MspzString;
+      PublicApi.isExtendedMspz satisfies (
+        input: string,
+      ) => input is PublicApi.ExtendedMspzString;
+
+      expect(true).toBe(true);
+    });
+  });
+
   describe("待ち・門前判定の型シグネチャ", () => {
     it("期待される型シグネチャを満たすこと", () => {
       PublicApi.classifyMachi satisfies (
