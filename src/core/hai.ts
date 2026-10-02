@@ -8,7 +8,6 @@ import {
   HaiType,
   type Kazehai,
 } from "../types";
-import { asHaiKindId } from "../utils/assertions";
 
 /**
  * 物理牌ID (HaiId) の総数 (136)
@@ -83,10 +82,11 @@ export function kindIdToHaiType(kind: HaiKindId): HaiType {
  * 108-135: 字牌 (28枚 = 7種 * 4枚) -> 27-33
  */
 export function haiIdToKindId(id: HaiId): HaiKindId {
-  if (id < 36) return asHaiKindId(Math.floor(id / 4));
-  if (id < 72) return asHaiKindId(Math.floor((id - 36) / 4) + 9);
-  if (id < 108) return asHaiKindId(Math.floor((id - 72) / 4) + 18);
-  return asHaiKindId(Math.floor((id - 108) / 4) + 27);
+  // 各スートは 4 枚 × 9 種（字牌は 7 種）で隙間なく並ぶため、
+  // 範囲ごとの場合分けは floor(id / 4) に一致する。
+  // HaiId は validateHaiId で 0〜135 に検証済みのため、結果は常に 0〜33 に収まる。
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return Math.floor(id / 4) as HaiKindId;
 }
 
 /**
