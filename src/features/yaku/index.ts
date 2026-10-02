@@ -1,8 +1,8 @@
 import type { Tehai14 } from "../../types";
-import type { YakuResult, DetectYakuConfig, HouraContext } from "./types";
+import type { YakuResult, DetectYakuConfig } from "./types";
 
 import { selectHouraInterpretation } from "../houra";
-import { isMenzen } from "./utils";
+import { toHouraContext } from "./utils";
 
 export type {
   HouraStructure,
@@ -36,15 +36,7 @@ export function detectYaku(
   tehai: Tehai14,
   config: DetectYakuConfig,
 ): YakuResult {
-  const context: HouraContext = {
-    isMenzen: isMenzen(tehai),
-    agariHai: config.agariHai,
-    bakaze: config.bakaze,
-    jikaze: config.jikaze,
-    doraMarkers: config.doraMarkers ?? [],
-    isTsumo: config.isTsumo,
-    yakumanRuleConfig: config.ruleConfig,
-  };
+  const context = toHouraContext(tehai, config);
 
   const interpretation = selectHouraInterpretation(
     tehai,

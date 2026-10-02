@@ -2,7 +2,7 @@ import { type Result, ok, err } from "neverthrow";
 import { type Tehai14, HaiKind } from "../../types";
 import { NoYakuError } from "../../errors";
 import { selectHouraInterpretation } from "../houra";
-import { isMenzen } from "../yaku/utils";
+import { toHouraContext } from "../yaku/utils";
 import { calculateScoreFromHanAndFu } from "./lib/calculation";
 import {
   ScoreLevel,
@@ -48,15 +48,8 @@ function createScoreContext(
   config: Readonly<ScoreCalculationConfig>,
 ): ScoreContext {
   return {
-    isMenzen: isMenzen(tehai),
-    agariHai: config.agariHai,
-    bakaze: config.bakaze,
-    jikaze: config.jikaze,
-    isTsumo: config.isTsumo,
+    ...toHouraContext(tehai, config),
     isOya: config.jikaze === HaiKind.Ton,
-    doraMarkers: config.doraMarkers,
-    // RuleConfig は YakumanRuleConfig を内包するためそのまま渡せる
-    yakumanRuleConfig: config.ruleConfig,
   };
 }
 
