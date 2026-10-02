@@ -23,6 +23,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "vitest src",
+    "test:acceptance": "vitest run tests/acceptance",
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.check.json",
     "lint": "eslint src --max-warnings=0",
