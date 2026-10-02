@@ -1,12 +1,11 @@
 import type {
   Fu,
   HaiKindId,
-  Kazehai,
   HouraStructure,
   FuRuleConfig,
   RuleConfig,
 } from "../../types";
-import type { HouraContext, YakuResult } from "../yaku/types";
+import type { DetectYakuConfig, HouraContext, YakuResult } from "../yaku/types";
 import type { MachiType } from "../../core/machi";
 import type { FuResult } from "./lib/fu/types";
 
@@ -27,15 +26,17 @@ export interface ScoreContext extends HouraContext {
   readonly isOya: boolean;
 }
 
-export interface ScoreCalculationConfig {
-  /** 和了牌 */
-  readonly agariHai: HaiKindId;
+/**
+ * 点数計算コンフィグ (ScoreCalculationConfig)
+ *
+ * {@link calculateScoreForTehai} に渡す設定オブジェクト。役判定コンフィグ
+ * （{@link DetectYakuConfig}）と同じ項目を受け取るが、点数は支払いの倍率
+ * （ツモ/ロン）とドラの翻数に直接効くため、役判定では任意の `isTsumo` と
+ * `doraMarkers` を必須にしている。
+ */
+export interface ScoreCalculationConfig extends DetectYakuConfig {
   /** ツモ和了かどうか (必須) */
   readonly isTsumo: boolean;
-  /** 自風 (必須) */
-  readonly jikaze: Kazehai;
-  /** 場風 (必須) */
-  readonly bakaze: Kazehai;
   /**
    * ドラ表示牌 (必須、なければ空配列)
    *
@@ -43,11 +44,6 @@ export interface ScoreCalculationConfig {
    * 立直・裏ドラを足す手順は docs/scope.md を参照）。
    */
   readonly doraMarkers: readonly HaiKindId[];
-  /**
-   * ルール差分設定（任意）。未指定時は標準ルール
-   * （連風牌2符・切り上げ満貫なし・ダブル役満なし・複合役満の合算なし）。
-   */
-  readonly ruleConfig?: RuleConfig;
 }
 
 /**
