@@ -18,7 +18,8 @@ import { isValidShuntsu } from "../core/mentsu";
 import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/mentsu-te";
 import { getHouraStructuresForChiitoitsu } from "../features/yaku/lib/structures/chiitoitsu";
 import { isTuple2, isTuple3 } from "./assertions";
-import type { HouraContext } from "../features/yaku/types";
+import type { DetectYakuConfig, HouraContext } from "../features/yaku/types";
+import type { ScoreCalculationConfig } from "../features/score/types";
 import { HaiKind } from "../types";
 import type {
   Shuntsu,
@@ -173,6 +174,47 @@ export function createHouraContext(
     agariHai: HaiKind.ManZu1,
     bakaze: HaiKind.Ton,
     jikaze: HaiKind.Nan,
+    doraMarkers: [],
+    ...overrides,
+  };
+}
+
+/**
+ * テスト用の役判定コンフィグ (DetectYakuConfig) を作成します。
+ *
+ * 既定値は {@link createHouraContext} と同じ「東場・南家・ドラなし」。
+ * 和了牌は判定対象の役に応じて差し替える前提のダミー値。
+ *
+ * @param overrides 既定値から差し替えるフィールド
+ * @returns 役判定コンフィグ
+ */
+export function createDetectYakuConfig(
+  overrides: Partial<DetectYakuConfig> = {},
+): DetectYakuConfig {
+  return {
+    agariHai: HaiKind.ManZu1,
+    bakaze: HaiKind.Ton,
+    jikaze: HaiKind.Nan,
+    ...overrides,
+  };
+}
+
+/**
+ * テスト用の点数計算コンフィグ (ScoreCalculationConfig) を作成します。
+ *
+ * 既定値は {@link createDetectYakuConfig} に「子・ロン・ドラなし」を加えたもの。
+ * 点数計算で必須になる `isTsumo` / `doraMarkers` を埋めるため、
+ * `detectYaku` と `calculateScoreForTehai` の両方にそのまま渡せる。
+ *
+ * @param overrides 既定値から差し替えるフィールド
+ * @returns 点数計算コンフィグ
+ */
+export function createScoreCalculationConfig(
+  overrides: Partial<ScoreCalculationConfig> = {},
+): ScoreCalculationConfig {
+  return {
+    ...createDetectYakuConfig(),
+    isTsumo: false,
     doraMarkers: [],
     ...overrides,
   };

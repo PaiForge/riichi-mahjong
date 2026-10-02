@@ -4,34 +4,26 @@ import { detectYaku } from "../yaku";
 import { calculateScoreForTehai } from "../score";
 import { NoYakuError } from "../../errors";
 import {
+  createHouraContext,
+  createScoreCalculationConfig,
   createTehai,
   getHaiKindId,
   unwrapOrThrow,
 } from "../../utils/test-helpers";
-import { HaiKind } from "../../types";
 import type { HouraContext } from "../yaku/types";
+import type { ScoreCalculationConfig } from "../score/types";
 
 /** テスト用の和了コンテキスト（門前・場風東・自風南・ドラなし）を作る */
 function createContext(agari: string, isTsumo: boolean): HouraContext {
-  return {
-    isMenzen: true,
-    agariHai: getHaiKindId(agari),
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
-    isTsumo,
-    doraMarkers: [],
-  };
+  return createHouraContext({ agariHai: getHaiKindId(agari), isTsumo });
 }
 
 /** テスト用の点数計算コンフィグ（子・場風東・自風南・ドラなし）を作る */
-function createConfig(agari: string, isTsumo: boolean) {
-  return {
+function createConfig(agari: string, isTsumo: boolean): ScoreCalculationConfig {
+  return createScoreCalculationConfig({
     agariHai: getHaiKindId(agari),
-    bakaze: HaiKind.Ton,
-    jikaze: HaiKind.Nan,
     isTsumo,
-    doraMarkers: [],
-  } as const;
+  });
 }
 
 describe("和了解釈の選択 (selectHouraInterpretation)", () => {
