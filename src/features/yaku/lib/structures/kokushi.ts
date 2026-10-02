@@ -1,8 +1,8 @@
-import type { Tehai14, HaiKindId } from "../../../../types";
+import type { Tehai14 } from "../../../../types";
 import type { KokushiHouraStructure } from "../../types";
+import { HAI_KIND_IDS } from "../../../../types";
 import { countHaiKind } from "../../../../core/hai-count";
 import { isYaochu } from "../../../../core/hai";
-import { asHaiKindId } from "../../../../utils/assertions";
 
 /**
  * 手牌を国士無双（13種の么九牌＋雀頭）として構造化する。
@@ -14,36 +14,20 @@ export function getHouraStructuresForKokushi(
   if (tehai.exposed.length > 0) return [];
 
   const counts = countHaiKind(tehai.closed);
-  const yaochuList: HaiKindId[] = [];
-  let jantou: HaiKindId | undefined;
+  const presentKinds = HAI_KIND_IDS.filter((kind) => counts[kind] > 0);
 
-  for (let i = 0; i < 34; i++) {
-    const kind = asHaiKindId(i);
+  // 么九牌以外が含まれていれば不成立
+  if (!presentKinds.every((kind) => isYaochu(kind))) return [];
+  // 3枚以上ある牌種があれば不成立
+  if (presentKinds.some((kind) => counts[kind] >= 3)) return [];
 
-    const count = counts[kind];
+  // 雀頭（2枚ある牌種）はちょうど1種でなければならない
+  const pairKinds = presentKinds.filter((kind) => counts[kind] === 2);
+  const jantou = pairKinds[0];
+  if (pairKinds.length !== 1 || jantou === undefined) return [];
 
-    if (count > 0) {
-      if (!isYaochu(kind)) return []; // 么九牌以外が含まれていれば不成立
+  // 13種の么九牌が揃っていなければ不成立
+  if (presentKinds.length !== 13) return [];
 
-      if (count === 1) {
-        yaochuList.push(kind);
-      } else if (count === 2) {
-        if (jantou !== undefined) return []; // 雀頭が既に存在すれば不成立（複数棋の雀頭候補）
-        jantou = kind;
-        yaochuList.push(kind);
-      } else {
-        return []; // 3枚以上あれば不成立
-      }
-    }
-  }
-
-  if (yaochuList.length !== 13 || jantou === undefined) return [];
-
-  return [
-    {
-      type: "Kokushi",
-      yaochu: yaochuList,
-      jantou,
-    },
-  ];
+  return [{ type: "Kokushi", yaochu: presentKinds, jantou }];
 }
