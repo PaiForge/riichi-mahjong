@@ -1,8 +1,23 @@
-import type { CompletedMentsu } from "../../../../types";
+import type { CompletedMentsu, HaiKindId } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
 import { canStartShuntsuAt, countHaiKind } from "../../../../core/hai-count";
 import { asHaiKindId, isTuple4 } from "../../../../utils/assertions";
+import { HAI_KIND_IDS } from "../../../../types";
 import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
+
+/**
+ * 枚数分布から指定した牌を抜き取った新しい分布を返す。
+ *
+ * 面子分解はバックトラック探索だが、分布を破壊的に更新して復元するのではなく
+ * 分岐ごとに新しい分布を生成することで、呼び出し元の配列を変更しない。
+ * 分布は34要素固定なので複製のコストは無視できる。
+ */
+function takeHais(
+  counts: readonly number[],
+  hais: readonly HaiKindId[],
+): readonly number[] {
+  return counts.map((count, i) => count - hais.filter((h) => h === i).length);
+}
 
 /**
  * 手牌を標準形（4面子1雀頭）に構造化する。
@@ -28,59 +43,39 @@ import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
 export function getHouraStructuresForMentsuTe(
   tehai: Tehai14,
 ): MentsuHouraStructure[] {
-  // HaiKindDistributionはreadonlyなので、可変配列に複製する
-  const counts: number[] = [...countHaiKind(tehai.closed)];
-  const get = (i: number): number => counts[i] ?? 0;
-  const add = (i: number, delta: number): void => {
-    counts[i] = get(i) + delta;
-  };
-
-  const results: MentsuHouraStructure[] = [];
+  const counts = countHaiKind(tehai.closed);
   const requiredMentsuCount = 4 - tehai.exposed.length;
 
   // 雀頭候補ごとに、残りの牌が面子に分解できるか試す
-  for (let i = 0; i < 34; i++) {
-    const kind = asHaiKindId(i);
-    if (get(kind) < 2) continue;
-
-    add(kind, -2); // 雀頭を抜き出す
-
-    for (const closedMentsu of decomposeClosedMentsu(
-      counts,
+  return HAI_KIND_IDS.filter((kind) => counts[kind] >= 2).flatMap((kind) =>
+    decomposeClosedMentsu(
+      takeHais(counts, [kind, kind]),
       requiredMentsuCount,
-    )) {
+    ).flatMap((closedMentsu): MentsuHouraStructure[] => {
       // 副露面子と結合して完全な構成を作成する
       const fullMentsuList = [...closedMentsu, ...tehai.exposed];
 
       // 4面子であることを確認（ロジック上は保証されているはずだが、念のため）
-      if (isTuple4(fullMentsuList)) {
-        results.push({
+      if (!isTuple4(fullMentsuList)) return [];
+      return [
+        {
           type: "Mentsu",
           fourMentsu: fullMentsuList,
           jantou: { type: "Toitsu", hais: [kind, kind] },
-        });
-      }
-    }
-
-    add(kind, 2); // バックトラック
-  }
-
-  return results;
+        },
+      ];
+    }),
+  );
 }
 
 /**
- * 閉じた手牌の残りを面子に分解する再帰関数
+ * 閉じた手牌の残りを面子に分解する再帰関数。
+ * 引数の分布は変更せず、面子を抜いた新しい分布で再帰する。
  */
 function decomposeClosedMentsu(
-  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-  counts: number[],
+  counts: readonly number[],
   requiredCount: number,
 ): CompletedMentsu[][] {
-  const get = (i: number): number => counts[i] ?? 0;
-  const add = (i: number, delta: number): void => {
-    counts[i] = get(i) + delta;
-  };
-
   if (requiredCount === 0) {
     // 全ての牌が使用されたか確認
     const remaining = counts.reduce((acc, c) => acc + c, 0);
@@ -94,41 +89,48 @@ function decomposeClosedMentsu(
     return [];
   }
 
-  const results: CompletedMentsu[][] = [];
   const kind = asHaiKindId(firstIndex);
+  return [
+    ...decomposeWithKoutsu(counts, kind, requiredCount),
+    ...decomposeWithShuntsu(counts, kind, requiredCount),
+  ];
+}
 
-  // 刻子を試す
-  if (get(kind) >= 3) {
-    add(kind, -3);
-    const koutsu: Koutsu = { type: "Koutsu", hais: [kind, kind, kind] };
-    for (const tail of decomposeClosedMentsu(counts, requiredCount - 1)) {
-      results.push([koutsu, ...tail]);
-    }
-    add(kind, 3); // バックトラック
-  }
+/**
+ * 先頭の牌種で刻子を作れる場合、刻子を抜いた残りを分解した結果を返す。
+ */
+function decomposeWithKoutsu(
+  counts: readonly number[],
+  kind: HaiKindId,
+  requiredCount: number,
+): CompletedMentsu[][] {
+  if ((counts[kind] ?? 0) < 3) return [];
 
-  // 順子を試す
-  // 数牌（0-26）かつ7を超えない（n, n+1, n+2を作れる）場合のみ有効
-  if (canStartShuntsuAt(kind)) {
-    const k1 = kind;
-    const k2 = asHaiKindId(kind + 1);
-    const k3 = asHaiKindId(kind + 2);
+  const koutsu: Koutsu = { type: "Koutsu", hais: [kind, kind, kind] };
+  return decomposeClosedMentsu(
+    takeHais(counts, [kind, kind, kind]),
+    requiredCount - 1,
+  ).map((tail) => [koutsu, ...tail]);
+}
 
-    if (get(k2) > 0 && get(k3) > 0) {
-      add(k1, -1);
-      add(k2, -1);
-      add(k3, -1);
+/**
+ * 先頭の牌種から順子を作れる場合、順子を抜いた残りを分解した結果を返す。
+ * 数牌（0-26）かつ7を超えない（n, n+1, n+2を作れる）場合のみ有効。
+ */
+function decomposeWithShuntsu(
+  counts: readonly number[],
+  kind: HaiKindId,
+  requiredCount: number,
+): CompletedMentsu[][] {
+  if (!canStartShuntsuAt(kind)) return [];
 
-      const shuntsu: Shuntsu = { type: "Shuntsu", hais: [k1, k2, k3] };
-      for (const tail of decomposeClosedMentsu(counts, requiredCount - 1)) {
-        results.push([shuntsu, ...tail]);
-      }
+  const k2 = asHaiKindId(kind + 1);
+  const k3 = asHaiKindId(kind + 2);
+  if ((counts[k2] ?? 0) === 0 || (counts[k3] ?? 0) === 0) return [];
 
-      add(k1, 1);
-      add(k2, 1);
-      add(k3, 1); // バックトラック
-    }
-  }
-
-  return results;
+  const shuntsu: Shuntsu = { type: "Shuntsu", hais: [kind, k2, k3] };
+  return decomposeClosedMentsu(
+    takeHais(counts, [kind, k2, k3]),
+    requiredCount - 1,
+  ).map((tail) => [shuntsu, ...tail]);
 }
