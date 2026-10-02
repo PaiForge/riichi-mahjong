@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { type HaiId, HaiKind, HaiType } from "../types";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import { MahjongArgumentError } from "../errors";
+import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types";
 import {
   haiIdToKindId,
   haiKindToNumber,
@@ -10,7 +11,53 @@ import {
   isSuupai,
   kindIdToHaiType,
   kindIdToSuitIndex,
+  validateHaiId,
+  validateHaiKindId,
 } from "./hai";
+
+describe("validateHaiKindId (牌種IDの検証)", () => {
+  it("0〜33 の整数は Ok として牌種IDを返す", () => {
+    const first = validateHaiKindId(0);
+    const last = validateHaiKindId(33);
+    expect(first.isOk() && first.value).toBe(HaiKind.ManZu1);
+    expect(last.isOk() && last.value).toBe(HaiKind.Chun);
+    if (first.isOk()) {
+      expectTypeOf(first.value).toEqualTypeOf<HaiKindId>();
+    }
+  });
+
+  it("範囲外・非整数は MahjongArgumentError を Err として返す", () => {
+    for (const value of [-1, 34, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      const result = validateHaiKindId(value);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(MahjongArgumentError);
+      }
+    }
+  });
+});
+
+describe("validateHaiId (牌IDの検証)", () => {
+  it("0〜135 の整数は Ok として牌IDを返す", () => {
+    const first = validateHaiId(0);
+    const last = validateHaiId(135);
+    expect(first.isOk() && first.value).toBe(0);
+    expect(last.isOk() && last.value).toBe(135);
+    if (first.isOk()) {
+      expectTypeOf(first.value).toEqualTypeOf<HaiId>();
+    }
+  });
+
+  it("範囲外・非整数は MahjongArgumentError を Err として返す", () => {
+    for (const value of [-1, 136, 0.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      const result = validateHaiId(value);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(MahjongArgumentError);
+      }
+    }
+  });
+});
 
 describe("kindIdToHaiType", () => {
   it("萬子のIDを正しく判定できる", () => {

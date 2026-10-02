@@ -1,11 +1,62 @@
+import { type Result, err, ok } from "neverthrow";
+import { MahjongArgumentError } from "../errors";
 import {
+  HAI_KIND_IDS,
   type HaiId,
   HaiKind,
   type HaiKindId,
   HaiType,
   type Kazehai,
 } from "../types";
-import { asHaiKindId } from "../utils/assertions";
+
+/**
+ * 物理牌ID (HaiId) の総数 (136)
+ */
+const HAI_ID_COUNT = 136;
+
+/**
+ * 数値を牌種ID (HaiKindId) として検証するスマートコンストラクタ。
+ * 0〜33 の整数であれば Ok、それ以外は MahjongArgumentError を Err として返す。
+ *
+ * @param value 検証対象の数値
+ * @returns 検証済みの牌種ID
+ */
+export function validateHaiKindId(
+  value: number,
+): Result<HaiKindId, MahjongArgumentError> {
+  const kind = HAI_KIND_IDS.find((k) => k === value);
+  return kind === undefined
+    ? err(
+        new MahjongArgumentError(
+          `牌種IDは 0〜33 の整数である必要があります: ${value}`,
+        ),
+      )
+    : ok(kind);
+}
+
+/**
+ * 数値を物理牌ID (HaiId) として検証するスマートコンストラクタ。
+ * 0〜135 の整数であれば Ok、それ以外は MahjongArgumentError を Err として返す。
+ *
+ * HaiId は Branded Type のため、ライブラリ利用者はこの関数を経由して生成する。
+ *
+ * @param value 検証対象の数値
+ * @returns 検証済みの物理牌ID
+ */
+export function validateHaiId(
+  value: number,
+): Result<HaiId, MahjongArgumentError> {
+  if (!Number.isInteger(value) || value < 0 || value >= HAI_ID_COUNT) {
+    return err(
+      new MahjongArgumentError(
+        `牌IDは 0〜135 の整数である必要があります: ${value}`,
+      ),
+    );
+  }
+  // 範囲検証済みのため Branded Type への付与は安全
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return ok(value as HaiId);
+}
 
 /**
  * 牌種IDから牌種タイプを取得する
@@ -31,10 +82,11 @@ export function kindIdToHaiType(kind: HaiKindId): HaiType {
  * 108-135: 字牌 (28枚 = 7種 * 4枚) -> 27-33
  */
 export function haiIdToKindId(id: HaiId): HaiKindId {
-  if (id < 36) return asHaiKindId(Math.floor(id / 4));
-  if (id < 72) return asHaiKindId(Math.floor((id - 36) / 4) + 9);
-  if (id < 108) return asHaiKindId(Math.floor((id - 72) / 4) + 18);
-  return asHaiKindId(Math.floor((id - 108) / 4) + 27);
+  // 各スートは 4 枚 × 9 種（字牌は 7 種）で隙間なく並ぶため、
+  // 範囲ごとの場合分けは floor(id / 4) に一致する。
+  // HaiId は validateHaiId で 0〜135 に検証済みのため、結果は常に 0〜33 に収まる。
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return Math.floor(id / 4) as HaiKindId;
 }
 
 /**
