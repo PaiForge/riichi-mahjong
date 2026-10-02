@@ -16,11 +16,14 @@ import {
 } from "./tehai";
 
 describe("Tehai Validation (手牌の検証)", () => {
-  // Helper to create a dummy Tehai with N closed tiles
-  // Helper to create a dummy Tehai with N closed tiles
-  // using sequential tiles to avoid "InvalidHaiQuantityError"
-  // Start from offset 18 (SouZu1) to avoid overlap with dummyMentsu/dummyKantsu (ManZu)
-  const createTehai = (closedCount: number, furos: CompletedMentsu[] = []) => ({
+  // 指定枚数の連番牌（HaiKindId）と副露リストからダミーの Tehai を組み立てるヘルパー。
+  // 連番にすることで InvalidHaiQuantityError を避け、
+  // 開始オフセット 18 (SouZu1) で dummyMentsu/dummyKantsu (ManZu) との重複を避ける。
+  // ※ src/utils/test-helpers.ts の createTehai (Extended MSPZ 文字列から Tehai14 を作る) とは別物。
+  const createSequentialTehai = (
+    closedCount: number,
+    furos: CompletedMentsu[] = [],
+  ) => ({
     closed: Array.from(
       { length: closedCount },
       (_, i) => ((i + 18) % 34) as HaiKindId,
@@ -40,28 +43,28 @@ describe("Tehai Validation (手牌の検証)", () => {
 
   describe("Tehai13 (13枚の手牌)", () => {
     it("13枚ちょうどの手牌で検証が通過すること", () => {
-      const tehai = createTehai(13);
+      const tehai = createSequentialTehai(13);
       const res = validateTehai13(tehai);
       expect(res.isOk()).toBe(true);
       expect(isTehai13(tehai)).toBe(true);
     });
 
     it("純手牌10枚 + 面子1つで検証が通過すること", () => {
-      const tehai = createTehai(10, [dummyMentsu]);
+      const tehai = createSequentialTehai(10, [dummyMentsu]);
       const res = validateTehai13(tehai);
       expect(res.isOk()).toBe(true);
       expect(isTehai13(tehai)).toBe(true);
     });
 
     it("純手牌10枚 + 槓子1つで検証が通過すること", () => {
-      const tehai = createTehai(10, [dummyKantsu]);
+      const tehai = createSequentialTehai(10, [dummyKantsu]);
       const res = validateTehai13(tehai);
       expect(res.isOk()).toBe(true);
       expect(isTehai13(tehai)).toBe(true);
     });
 
     it("槓子を含まない13枚未満の場合に ShoushaiError がスローされること", () => {
-      const tehai = createTehai(12);
+      const tehai = createSequentialTehai(12);
       const res = validateTehai13(tehai);
       expect(res.isErr()).toBe(true);
       if (res.isErr()) expect(res.error).toBeInstanceOf(ShoushaiError);
@@ -69,7 +72,7 @@ describe("Tehai Validation (手牌の検証)", () => {
     });
 
     it("槓子を含まない13枚を超える場合に TahaiError がスローされること", () => {
-      const tehai = createTehai(14);
+      const tehai = createSequentialTehai(14);
       const res = validateTehai13(tehai);
       expect(res.isErr()).toBe(true);
       if (res.isErr()) expect(res.error).toBeInstanceOf(TahaiError);
@@ -79,21 +82,21 @@ describe("Tehai Validation (手牌の検証)", () => {
 
   describe("Tehai14 (14枚の手牌)", () => {
     it("14枚ちょうどの手牌で検証が通過すること", () => {
-      const tehai = createTehai(14);
+      const tehai = createSequentialTehai(14);
       const res = validateTehai14(tehai);
       expect(res.isOk()).toBe(true);
       expect(isTehai14(tehai)).toBe(true);
     });
 
     it("純手牌11枚 + 槓子1つで検証が通過すること", () => {
-      const tehai = createTehai(11, [dummyKantsu]);
+      const tehai = createSequentialTehai(11, [dummyKantsu]);
       const res = validateTehai14(tehai);
       expect(res.isOk()).toBe(true);
       expect(isTehai14(tehai)).toBe(true);
     });
 
     it("槓子を含まない14枚未満の場合に ShoushaiError がスローされること", () => {
-      const tehai = createTehai(13);
+      const tehai = createSequentialTehai(13);
       const res = validateTehai14(tehai);
       expect(res.isErr()).toBe(true);
       if (res.isErr()) expect(res.error).toBeInstanceOf(ShoushaiError);
@@ -101,7 +104,7 @@ describe("Tehai Validation (手牌の検証)", () => {
     });
 
     it("槓子を含まない14枚を超える場合に TahaiError がスローされること", () => {
-      const tehai = createTehai(15);
+      const tehai = createSequentialTehai(15);
       const res = validateTehai14(tehai);
       expect(res.isErr()).toBe(true);
       if (res.isErr()) expect(res.error).toBeInstanceOf(TahaiError);
@@ -110,23 +113,23 @@ describe("Tehai Validation (手牌の検証)", () => {
   });
   describe("Tehai (13〜14枚の汎用検証)", () => {
     it("13枚の手牌で検証が通過すること（ツモ前）", () => {
-      const res = validateTehai(createTehai(13));
+      const res = validateTehai(createSequentialTehai(13));
       expect(res.isOk()).toBe(true);
     });
 
     it("14枚の手牌で検証が通過すること（ツモ後）", () => {
-      const res = validateTehai(createTehai(14));
+      const res = validateTehai(createSequentialTehai(14));
       expect(res.isOk()).toBe(true);
     });
 
     it("12枚では少牌となること", () => {
-      const res = validateTehai(createTehai(12));
+      const res = validateTehai(createSequentialTehai(12));
       expect(res.isErr()).toBe(true);
       if (res.isErr()) expect(res.error).toBeInstanceOf(ShoushaiError);
     });
 
     it("15枚では多牌となること", () => {
-      const res = validateTehai(createTehai(15));
+      const res = validateTehai(createSequentialTehai(15));
       expect(res.isErr()).toBe(true);
       if (res.isErr()) expect(res.error).toBeInstanceOf(TahaiError);
     });
