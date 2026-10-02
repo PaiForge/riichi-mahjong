@@ -72,6 +72,8 @@ export {
 // Core - Hai (Tile) Utilities
 // =============================================================================
 export {
+  validateHaiKindId,
+  validateHaiId,
   haiIdToKindId,
   kindIdToHaiType,
   haiKindToNumber,

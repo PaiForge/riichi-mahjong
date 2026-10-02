@@ -1,18 +1,11 @@
 import { isJihai, isYaochu } from "../../../../core/hai";
 import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
-import { getMentsuBlocks } from "../helpers";
+import { getHaiBlocks } from "../helpers";
 
 const checkHonroutou = (hand: HouraStructure): boolean => {
-  let blocks;
-
-  if (hand.type === "Mentsu") {
-    blocks = getMentsuBlocks(hand);
-  } else if (hand.type === "Chiitoitsu") {
-    blocks = hand.pairs;
-  } else {
-    return false;
-  }
+  const blocks = getHaiBlocks(hand);
+  if (blocks === undefined) return false;
 
   // 1. 全ての牌が么九牌（1・9・字牌）であること
   // これにより順子（123など）が含まれる可能性も排除される（2,3は么九牌ではないため）

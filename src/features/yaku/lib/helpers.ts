@@ -61,37 +61,19 @@ export const countAnkou = (
     return 0;
   }
 
-  const triplets = extractTriplets(hand);
+  // 単騎待ちかどうかの判定: 雀頭の牌が和了牌と同じかどうか
+  const isTanki = hand.jantou.hais[0] === context.agariHai;
 
-  let ankouCount = 0;
-
-  for (const triplet of triplets) {
-    if (triplet.furo) continue;
-
-    const isAgariHaiInTriplet = triplet.hais.includes(context.agariHai);
-
-    // 単騎待ちかどうかの判定: 雀頭の牌が和了牌と同じかどうか
-    const isTanki = hand.jantou.hais[0] === context.agariHai;
-
-    if (context.isTsumo) {
-      // ツモなら、副露していなければ全て暗刻
-      ankouCount++;
-    } else {
-      // ロン和了の場合
-      if (isAgariHaiInTriplet) {
-        // 和了牌を含む刻子の場合
-        if (isTanki) {
-          // 単騎待ちなら暗刻
-          ankouCount++;
-        }
-      } else {
-        // 和了牌を含まない刻子は暗刻
-        ankouCount++;
-      }
-    }
-  }
-
-  return ankouCount;
+  // 副露していない刻子・槓子のうち、暗刻とみなせるもの:
+  // - ツモなら全て暗刻
+  // - ロンなら、和了牌を含まない刻子、または単騎待ち（刻子は完成済み）の場合
+  return extractTriplets(hand).filter(
+    (triplet) =>
+      !triplet.furo &&
+      (context.isTsumo === true ||
+        !triplet.hais.includes(context.agariHai) ||
+        isTanki),
+  ).length;
 };
 
 /**
@@ -110,18 +92,10 @@ export const isJantouOf = (
 export const countSpecificKoutsu = (
   hand: HouraStructure,
   targetKinds: readonly HaiKindId[],
-): number => {
-  let count = 0;
-  const triplets = extractTriplets(hand);
-
-  for (const triplet of triplets) {
-    if (targetKinds.includes(triplet.hais[0])) {
-      count++;
-    }
-  }
-
-  return count;
-};
+): number =>
+  extractTriplets(hand).filter((triplet) =>
+    targetKinds.includes(triplet.hais[0]),
+  ).length;
 
 /**
  * 指定した条件を満たす牌種のみで手牌が構成されているか判定する
@@ -150,22 +124,14 @@ export const isAllHaisMatch = (
  * リストから3要素の組み合わせを全て抽出する。
  * 三色同順・三色同刻・一気通貫など「3面子の組み合わせ」を総当りする判定に使用。
  */
-export const combinations3 = <T>(list: readonly T[]): [T, T, T][] => {
-  const combos: [T, T, T][] = [];
-  for (let i = 0; i < list.length; i++) {
-    for (let j = i + 1; j < list.length; j++) {
-      for (let k = j + 1; k < list.length; k++) {
-        const a = list[i];
-        const b = list[j];
-        const c = list[k];
-        if (a !== undefined && b !== undefined && c !== undefined) {
-          combos.push([a, b, c]);
-        }
-      }
-    }
-  }
-  return combos;
-};
+export const combinations3 = <T>(list: readonly T[]): [T, T, T][] =>
+  list.flatMap((a, i) =>
+    list
+      .slice(i + 1)
+      .flatMap((b, j) =>
+        list.slice(i + j + 2).map((c): [T, T, T] => [a, b, c]),
+      ),
+  );
 
 /**
  * 順子のリストから3つの組み合わせを全て抽出する
@@ -203,18 +169,41 @@ export const isSanshoku = (
  * @returns 同一順子のペア数。面子手以外の場合は 0。
  */
 export const countShuntsuPairs = (hand: HouraStructure): number => {
-  const shuntsuCounts = new Map<number, number>();
-  for (const shuntsu of extractShuntsu(hand)) {
-    const key = shuntsu.hais[0];
-    shuntsuCounts.set(key, (shuntsuCounts.get(key) ?? 0) + 1);
-  }
+  const shuntsuCounts = extractShuntsu(hand).reduce(
+    (counts, shuntsu) =>
+      counts.set(shuntsu.hais[0], (counts.get(shuntsu.hais[0]) ?? 0) + 1),
+    new Map<HaiKindId, number>(),
+  );
 
-  let pairCount = 0;
-  for (const count of shuntsuCounts.values()) {
-    pairCount += Math.floor(count / 2);
-  }
+  return [...shuntsuCounts.values()].reduce(
+    (pairCount, count) => pairCount + Math.floor(count / 2),
+    0,
+  );
+};
 
-  return pairCount;
+/**
+ * 牌の集合として扱えるブロック（面子・対子）。
+ * 面子手の面子・雀頭と七対子の対子を区別せずに走査する判定に使用。
+ */
+export interface HaiBlock {
+  readonly hais: readonly HaiKindId[];
+}
+
+/**
+ * 和了構造を構成する全ブロック（面子手: 雀頭 + 4面子、七対子: 7対子）を取得する。
+ * 国士無双はブロック構造を持たないため undefined を返す。
+ */
+export const getHaiBlocks = (
+  hand: HouraStructure,
+): readonly HaiBlock[] | undefined => {
+  switch (hand.type) {
+    case "Mentsu":
+      return getMentsuBlocks(hand);
+    case "Chiitoitsu":
+      return hand.pairs;
+    case "Kokushi":
+      return undefined;
+  }
 };
 
 /**
@@ -231,14 +220,8 @@ export const countShuntsuPairs = (hand: HouraStructure): number => {
 export const analyzeIshokuPattern = (
   hand: HouraStructure,
 ): { hasJihai: boolean; suupaiSuit: HaiType | undefined } | undefined => {
-  let blocks;
-  if (hand.type === "Mentsu") {
-    blocks = getMentsuBlocks(hand);
-  } else if (hand.type === "Chiitoitsu") {
-    blocks = hand.pairs;
-  } else {
-    return undefined;
-  }
+  const blocks = getHaiBlocks(hand);
+  if (blocks === undefined) return undefined;
 
   const allHais = blocks.flatMap((b) => b.hais);
 

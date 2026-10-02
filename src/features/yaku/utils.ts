@@ -1,4 +1,5 @@
 import type { Tehai14 } from "../../types";
+import type { DetectYakuConfig, HouraContext } from "./types";
 
 /**
  * 手牌が門前（メンゼン）かどうかを判定する。
@@ -21,4 +22,31 @@ export function isMenzen(tehai: Tehai14): boolean {
   return tehai.exposed.every((m) => {
     return m.type === "Kantsu" && !m.furo;
   });
+}
+
+/**
+ * 役判定コンフィグから和了コンテキスト (HouraContext) を組み立てる。
+ *
+ * 門前かどうかは手牌から導出し、ルール設定は役満ルール設定としてそのまま渡す
+ * （`RuleConfig` は `YakumanRuleConfig` を内包する）。役判定（`detectYaku`）と
+ * 点数計算（`calculateScoreForTehai`）で同じ写像を使うことで、両APIが異なる
+ * コンテキストで解釈を選ぶことを防ぐ。
+ *
+ * @param tehai 判定対象の手牌
+ * @param config 役判定コンフィグ（点数計算コンフィグはその拡張）
+ * @returns 和了コンテキスト
+ */
+export function toHouraContext(
+  tehai: Tehai14,
+  config: DetectYakuConfig,
+): HouraContext {
+  return {
+    isMenzen: isMenzen(tehai),
+    agariHai: config.agariHai,
+    bakaze: config.bakaze,
+    jikaze: config.jikaze,
+    doraMarkers: config.doraMarkers ?? [],
+    isTsumo: config.isTsumo,
+    yakumanRuleConfig: config.ruleConfig,
+  };
 }

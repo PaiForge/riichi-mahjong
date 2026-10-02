@@ -35,10 +35,18 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # acceptance テスト（外部 mahjong ライブラリとの相互検証）は
-      # 既存の test スクリプトと同様 src のみを対象にする
       - name: Test
         run: pnpm vitest run src
+
+      # 受け入れテスト（Python mahjong ライブラリとの相互検証）。
+      # 参照実装は Docker イメージ riichi-mahjong-verifier 上で動かす。
+      # 初回実行時にテスト側が docker/Dockerfile.verification から自動ビルドするが、
+      # ログを分かりやすくするため事前に明示的にビルドしておく。
+      - name: Build verifier image
+        run: docker build -t riichi-mahjong-verifier -f docker/Dockerfile.verification .
+
+      - name: Acceptance test
+        run: pnpm test:acceptance
 
       - name: Build
         run: pnpm build

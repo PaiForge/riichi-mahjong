@@ -1,4 +1,8 @@
-import type { HaiKindId, HaiKindDistribution } from "../types";
+import {
+  HAI_KIND_IDS,
+  type HaiKindId,
+  type HaiKindDistribution,
+} from "../types";
 
 /**
  * 牌種ごとの枚数をカウントします。
@@ -26,4 +30,24 @@ export function countHaiKind(hais: readonly HaiKindId[]): HaiKindDistribution {
  */
 export function canStartShuntsuAt(index: number): boolean {
   return index < 27 && index % 9 <= 6;
+}
+
+/**
+ * 牌種IDを起点とする順子 3 牌（kind, kind+1, kind+2）の牌種IDを返す。
+ * 順子の開始位置になり得ない牌種（字牌、数牌の 8・9）の場合は undefined を返す。
+ *
+ * canStartShuntsuAt で境界を確認したうえで HAI_KIND_IDS から引くため、
+ * 呼び出し側で数値演算の結果を牌種IDへキャストする必要がない。
+ */
+export function shuntsuKindsAt(
+  kind: HaiKindId,
+): readonly [HaiKindId, HaiKindId, HaiKindId] | undefined {
+  if (!canStartShuntsuAt(kind)) return undefined;
+
+  const k2 = HAI_KIND_IDS[kind + 1];
+  const k3 = HAI_KIND_IDS[kind + 2];
+  // canStartShuntsuAt が真なら kind + 2 <= 26 のため到達しない
+  if (k2 === undefined || k3 === undefined) return undefined;
+
+  return [kind, k2, k3];
 }

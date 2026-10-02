@@ -1,7 +1,8 @@
 import type { Tehai14, Toitsu } from "../../../../types";
 import type { ChiitoitsuHouraStructure } from "../../types";
+import { HAI_KIND_IDS } from "../../../../types";
 import { countHaiKind } from "../../../../core/hai-count";
-import { asHaiKindId } from "../../../../utils/assertions";
+import { isTuple7 } from "../../../../utils/assertions";
 
 /**
  * 手牌を七対子（7つの対子）として構造化する。
@@ -13,40 +14,17 @@ export function getHouraStructuresForChiitoitsu(
   if (tehai.exposed.length > 0) return [];
 
   const counts = countHaiKind(tehai.closed);
-  const pairs: Toitsu[] = [];
 
-  for (let i = 0; i < 34; i++) {
-    const kind = asHaiKindId(i);
-    const count = counts[kind];
+  // 全ての牌種が 0 枚か 2 枚でなければ七対子不成立。
+  // 4枚使いの七対子を認めるか（ローカルルール次第だが、通常は認めない）は
+  // 標準的なルールに従い、4枚あっても2対子とはみなさない実装とする。
+  // ※4枚使い七対子を実装する場合は 4 枚の牌種から対子を 2 つ生成する
+  if (!counts.every((count) => count === 0 || count === 2)) return [];
 
-    if (count === 2) {
-      pairs.push({ type: "Toitsu", hais: [kind, kind] });
-    } else if (count === 4) {
-      // 4枚使いの七対子を認めるか（ローカルルール次第だが、通常は認めない）
-      // ここでは標準的なルールに従い、4枚あっても2対子とはみなさない実装とする
-      // ※4枚使い七対子を実装する場合は pairs.push(...) を2回行う
-      return [];
-    } else if (count > 0) {
-      // 2枚でない牌がある場合は七対子不成立
-      return [];
-    }
-  }
+  const pairs = HAI_KIND_IDS.filter((kind) => counts[kind] === 2).map(
+    (kind): Toitsu => ({ type: "Toitsu", hais: [kind, kind] }),
+  );
+  if (!isTuple7(pairs)) return [];
 
-  if (pairs.length !== 7) return [];
-
-  return [
-    {
-      type: "Chiitoitsu",
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      pairs: pairs as unknown as [
-        Toitsu,
-        Toitsu,
-        Toitsu,
-        Toitsu,
-        Toitsu,
-        Toitsu,
-        Toitsu,
-      ],
-    },
-  ];
+  return [{ type: "Chiitoitsu", pairs }];
 }

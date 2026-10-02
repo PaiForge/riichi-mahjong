@@ -64,7 +64,7 @@ export * from "./honitsu";
 export * from "./chinitsu";
 export * from "./yakuhai";
 
-export const ALL_YAKU_DEFINITIONS: YakuDefinition[] = [
+export const ALL_YAKU_DEFINITIONS: readonly YakuDefinition[] = [
   tanyaoDefinition,
   pinfuDefinition,
   iipeikouDefinition,

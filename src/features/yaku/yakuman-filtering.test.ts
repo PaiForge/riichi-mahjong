@@ -2,9 +2,11 @@ import { describe, it, expect } from "vitest";
 import { detectYaku, detectYakuForStructure } from "./index";
 import { calculateScoreForTehai, getPaymentTotal } from "../score";
 import {
+  createDetectYakuConfig,
   createHouraContext,
   createKoutsu,
   createMentsuStructure,
+  createScoreCalculationConfig,
   createShuntsu,
   createTehai,
   createToitsu,
@@ -13,7 +15,6 @@ import {
 } from "../../utils/test-helpers";
 import { HaiKind } from "../../types";
 import type { HouraContext } from "./types";
-import type { ScoreCalculationConfig } from "../score/types";
 
 // ---------------------------------------------------------------------------
 // 役満成立時に通常役が複合しないこと（一般ルール）
@@ -30,13 +31,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("111m222p333s444s55z");
       const agari = getHaiKindId("4s");
 
-      const result = detectYaku(hand, {
-        agariHai: agari,
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-        isTsumo: true,
-      });
+      const result = detectYaku(
+        hand,
+        createDetectYakuConfig({ agariHai: agari, isTsumo: true }),
+      );
 
       expect(result).toContainEqual(["Suuankou", 13]);
       expect(result).not.toContainEqual(expect.arrayContaining(["Sanankou"]));
@@ -48,14 +46,14 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("111m222p333s444s55z");
       const agari = getHaiKindId("5z");
 
-      const result = detectYaku(hand, {
-        agariHai: agari,
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-        isTsumo: true,
-        ruleConfig: { suuankouTanki: true },
-      });
+      const result = detectYaku(
+        hand,
+        createDetectYakuConfig({
+          agariHai: agari,
+          isTsumo: true,
+          ruleConfig: { suuankouTanki: true },
+        }),
+      );
 
       expect(result).toContainEqual(["Suuankou", 26]);
       expect(result).not.toContainEqual(expect.arrayContaining(["Sanankou"]));
@@ -69,11 +67,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("19m19p19s1234567z1m");
       const agari = getHaiKindId("1m");
 
-      const result = detectYaku(hand, {
-        agariHai: agari,
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-      });
+      const result = detectYaku(
+        hand,
+        createDetectYakuConfig({ agariHai: agari }),
+      );
 
       expect(result).toContainEqual(["KokushiMusou", 13]);
       expect(result.length).toBe(1);
@@ -198,13 +195,10 @@ describe("役満成立時に通常役が複合しないこと（一般ルール�
       const hand = createTehai("1112345678999m5m");
       const agari = getHaiKindId("5m");
 
-      const result = detectYaku(hand, {
-        agariHai: agari,
-        bakaze: HaiKind.Ton,
-        jikaze: HaiKind.Nan,
-        doraMarkers: [],
-        isTsumo: true,
-      });
+      const result = detectYaku(
+        hand,
+        createDetectYakuConfig({ agariHai: agari, isTsumo: true }),
+      );
 
       expect(result).toContainEqual(["ChuurenPoutou", 13]);
       expect(result).not.toContainEqual(expect.arrayContaining(["Chinitsu"]));
@@ -631,13 +625,10 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
   it("四暗刻ツモ: 子で32000点(役満)になること", () => {
     // 111m222p333s444s55z + 4sツモ
     const tehai = createTehai("111m222p333s444s55z");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("4s"),
       isTsumo: true,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -652,14 +643,11 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
   it("四暗刻単騎ツモ（単騎ダブルルール有効）: 子で64000点(ダブル役満)になること", () => {
     // 111m222p333s444s55z + 5zツモ(単騎)
     const tehai = createTehai("111m222p333s444s55z");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("5z"),
       isTsumo: true,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
       ruleConfig: { suuankouTanki: true },
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -672,13 +660,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
 
   it("国士無双ロン: 子で32000点(役満)になること", () => {
     const tehai = createTehai("19m19p19s1234567z1m");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("1m"),
-      isTsumo: false,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -692,13 +676,11 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
   it("九蓮宝燈ツモ: 親で48000点(役満)になること", () => {
     // 1112345678999m + 5mツモ
     const tehai = createTehai("1112345678999m5m");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("5m"),
       isTsumo: true,
       jikaze: HaiKind.Ton, // 親
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -712,13 +694,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
   it("複合役満（大三元+字一色）: 合算なし（既定）では役満1つ分の32000点", () => {
     // 白白白 發發發 中中中 東東東 北北 + 東ロン（明刻になるため四暗刻は不成立）
     const tehai = createTehai("555z666z777z111z44z");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("1z"),
-      isTsumo: false,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -734,14 +712,10 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
 
   it("複合役満（大三元+字一色）: 合算ルール有効ならダブル役満の64000点", () => {
     const tehai = createTehai("555z666z777z111z44z");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("1z"),
-      isTsumo: false,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
       ruleConfig: { fukugouYakuman: true },
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -753,14 +727,11 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
   it("形のダブル役満と複合の合算の掛け合わせ: 四暗刻単騎(2) + 字一色(1) + 小四喜(1) = 役満4つ分", () => {
     // 東東東 南南南 西西西 白白白 北北 + 北単騎ツモ
     const tehai = createTehai("111z222z333z555z44z");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("4z"),
       isTsumo: true,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
       ruleConfig: { suuankouTanki: true, fukugouYakuman: true },
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -779,14 +750,12 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
     // 123m123m 456m456m 99m + 9mツモ = 清一色(6)+二盃口(3)+ツモ(1) = 10翻
     // ドラ表示牌 8m×2 → 9m(2枚)がドラ×2 = +4翻 で計14翻（数え役満相当）
     const tehai = createTehai("112233445566m99m");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("9m"),
       isTsumo: true,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
       doraMarkers: [getHaiKindId("8m"), getHaiKindId("8m")],
       ruleConfig: { fukugouYakuman: true },
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -802,17 +771,15 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
   it("役満成立時にドラの翻数が加算されていないこと", () => {
     // 四暗刻 + ドラ3 の場合でも13翻(役満)であること
     const tehai = createTehai("111m222p333s444s55z");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("4s"),
       isTsumo: true,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
       doraMarkers: [
         getHaiKindId("9p"), // ドラ表示牌: 9p -> ドラは1p
         getHaiKindId("2s"), // ドラ表示牌: 2s -> ドラは3s
         getHaiKindId("3s"), // ドラ表示牌: 3s -> ドラは4s
       ],
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
@@ -826,13 +793,10 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
     // 平和・ツモ 20符2翻
     // 123m 456p 789s 23s 55m + 1sツモ -> 14枚
     const tehai = createTehai("123m456p789s123s55m");
-    const config: ScoreCalculationConfig = {
+    const config = createScoreCalculationConfig({
       agariHai: getHaiKindId("1s"),
       isTsumo: true,
-      jikaze: HaiKind.Nan,
-      bakaze: HaiKind.Ton,
-      doraMarkers: [],
-    };
+    });
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 

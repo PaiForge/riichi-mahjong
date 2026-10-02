@@ -1,3 +1,22 @@
+## 0.10.0 (2026-10-03)
+
+数値を範囲検証したうえで牌種ID・牌IDに変換する `validateHaiKindId` / `validateHaiId` を追加しました。
+既存の公開 API に変更はなく、そのほかは挙動を変えない内部リファクタリングです。
+
+### Added
+
+- `validateHaiKindId` / `validateHaiId` を公開 API に追加した
+  - 任意の `number` を検証し、`Result<HaiKindId, MahjongArgumentError>` / `Result<HaiId, MahjongArgumentError>` を返す。牌種IDは 0〜33、牌IDは 0〜135 の整数のみを `Ok` とし、範囲外・非整数・`NaN`・`Infinity` は `Err` になる
+  - 従来は外部入力の数値を `HaiKindId`（0〜33 のリテラル型）や `HaiId`（ブランド型）に変換する検証付きの手段が公開されておらず、利用側で型アサーションを書くか独自に検証する必要があった
+  - 追加のみで既存の型・関数に変更はない
+
+### Changed
+
+- 内部実装のリファクタリング（公開 API・計算結果に変更なし）
+  - 牌種IDの導出から範囲検証のない型アサーションを除去し、`HAI_KIND_IDS` の参照に置き換えた
+  - 面子分解・役判定ヘルパー・向聴数計算・MSPZ トークナイザを、引数を破壊的に更新しない宣言的な実装に整理した
+  - `detectYaku` と `calculateScoreForTehai` で重複していたコンテキスト構築処理を共通化した
+
 ## 0.9.0 (2026-09-07)
 
 `uraDoraMarkers`（裏ドラ表示牌）を公開 API から削除しました。渡していた場合は

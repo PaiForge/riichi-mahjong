@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { calculateMentsuTeShanten } from "./mentsu-te";
 import { HaiKind, MentsuType, type CompletedMentsu } from "../../../types";
-import { createTehai13, createMentsu } from "../../../utils/test-helpers";
+import {
+  createTehai13,
+  createTehai13FromMspz,
+  createMentsu,
+} from "../../../utils/test-helpers";
 
 describe("calculateMentsuTeShanten", () => {
   it("聴牌を判定できること", () => {
@@ -92,21 +96,7 @@ describe("calculateMentsuTeShanten", () => {
   it("七対子聴牌だが面子手としてはシャンテン数が悪い場合", () => {
     // 11 44 77m 22 55 88p 9s (13枚)
     // 順子が一切できない形
-    const tehai = createTehai13([
-      HaiKind.ManZu1,
-      HaiKind.ManZu1,
-      HaiKind.ManZu4,
-      HaiKind.ManZu4,
-      HaiKind.ManZu7,
-      HaiKind.ManZu7,
-      HaiKind.PinZu2,
-      HaiKind.PinZu2,
-      HaiKind.PinZu5,
-      HaiKind.PinZu5,
-      HaiKind.PinZu8,
-      HaiKind.PinZu8,
-      HaiKind.SouZu9,
-    ]);
+    const tehai = createTehai13FromMspz("114477m225588p9s");
     // M=0
     // H=1 (どれか)
     // T=5 (残り5対子) -> 有効3 (M=0, H=1 -> 残り4ブロック中3つまで)
@@ -118,21 +108,7 @@ describe("calculateMentsuTeShanten", () => {
   it("国士無双聴牌だが面子手としてはシャンテン数が悪い場合", () => {
     // 19m 19p 19s 1234567z (13枚)
     // 国士無双13面待ち聴牌
-    const tehai = createTehai13([
-      HaiKind.ManZu1,
-      HaiKind.ManZu9,
-      HaiKind.PinZu1,
-      HaiKind.PinZu9,
-      HaiKind.SouZu1,
-      HaiKind.SouZu9,
-      HaiKind.Ton,
-      HaiKind.Nan,
-      HaiKind.Sha,
-      HaiKind.Pei,
-      HaiKind.Haku,
-      HaiKind.Hatsu,
-      HaiKind.Chun,
-    ]);
+    const tehai = createTehai13FromMspz("19m19p19s1234567z");
     // M=0
     // H=0 (対子なし)
     // T=0 (塔子なし)

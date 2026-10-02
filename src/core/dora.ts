@@ -1,12 +1,12 @@
-import { HaiKind, type HaiKindId, type Tehai } from "../types";
+import { HAI_KIND_IDS, HaiKind, type HaiKindId, type Tehai } from "../types";
 import { KAZEHAI_KIND_IDS, SANGENPAI_KIND_IDS } from "./hai";
-import { asHaiKindId } from "../utils/assertions";
 
 /**
  * 数牌スートの循環列（1→2→...→9→1）を生成する
+ * @param start そのスートの 1 の牌種ID
  */
 function suupaiCycle(start: HaiKindId): readonly HaiKindId[] {
-  return Array.from({ length: 9 }, (_, i) => asHaiKindId(start + i));
+  return HAI_KIND_IDS.slice(start, start + 9);
 }
 
 /**

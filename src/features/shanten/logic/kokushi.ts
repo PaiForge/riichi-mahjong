@@ -26,18 +26,10 @@ export function calculateKokushiShanten(tehai: Tehai13): number {
 
   const dist = countHaiKind(tehai.closed);
 
-  let uniqueYaochuCount = 0;
-  let hasYaochuPair = false;
-
-  for (const kind of YAOCHU_KIND_IDS) {
-    const count = dist[kind];
-    if (count > 0) {
-      uniqueYaochuCount++;
-      if (count >= 2) {
-        hasYaochuPair = true;
-      }
-    }
-  }
+  const uniqueYaochuCount = YAOCHU_KIND_IDS.filter(
+    (kind) => dist[kind] > 0,
+  ).length;
+  const hasYaochuPair = YAOCHU_KIND_IDS.some((kind) => dist[kind] >= 2);
 
   const pairBonus = hasYaochuPair ? 1 : 0;
   return 13 - uniqueYaochuCount - pairBonus;

@@ -207,6 +207,8 @@ describe("公開APIのエクスポート", () => {
     "ShoushaiError",
     "TahaiError",
     // 牌
+    "validateHaiKindId",
+    "validateHaiId",
     "haiIdToKindId",
     "haiKindToNumber",
     "isKazehai",
@@ -262,6 +264,12 @@ describe("公開APIのエクスポート", () => {
   // ==========================================================================
   describe("牌に関する関数の型シグネチャ", () => {
     it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.validateHaiKindId satisfies (
+        value: number,
+      ) => Result<HaiKindId, PublicApi.MahjongArgumentError>;
+      PublicApi.validateHaiId satisfies (
+        value: number,
+      ) => Result<HaiId, PublicApi.MahjongArgumentError>;
       PublicApi.haiIdToKindId satisfies (id: HaiId) => HaiKindId;
       PublicApi.haiKindToNumber satisfies (
         kind: HaiKindId,
@@ -274,6 +282,26 @@ describe("公開APIのエクスポート", () => {
       PublicApi.isKazehai satisfies (kind: HaiKindId) => kind is Kazehai;
 
       expect(true).toBe(true);
+    });
+  });
+
+  describe("牌IDのスマートコンストラクタ", () => {
+    it("検証済みの牌IDを haiIdToKindId へそのまま渡せること", () => {
+      const haiId = unwrapOrThrow(PublicApi.validateHaiId(111)); // 東の4枚目
+      expect(PublicApi.haiIdToKindId(haiId)).toBe(PublicApi.HaiKind.Ton);
+    });
+
+    it("範囲外の数値は MahjongArgumentError を Err として返すこと", () => {
+      const kindResult = PublicApi.validateHaiKindId(34);
+      const haiResult = PublicApi.validateHaiId(136);
+      expect(kindResult.isErr()).toBe(true);
+      expect(haiResult.isErr()).toBe(true);
+      if (kindResult.isErr()) {
+        expect(kindResult.error).toBeInstanceOf(PublicApi.MahjongArgumentError);
+      }
+      if (haiResult.isErr()) {
+        expect(haiResult.error).toBeInstanceOf(PublicApi.MahjongArgumentError);
+      }
     });
   });
 
