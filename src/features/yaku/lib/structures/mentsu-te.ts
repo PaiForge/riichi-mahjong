@@ -1,7 +1,7 @@
 import type { CompletedMentsu, HaiKindId } from "../../../../types";
 import type { MentsuHouraStructure } from "../../types";
-import { canStartShuntsuAt, countHaiKind } from "../../../../core/hai-count";
-import { asHaiKindId, isTuple4 } from "../../../../utils/assertions";
+import { countHaiKind, shuntsuKindsAt } from "../../../../core/hai-count";
+import { isTuple4 } from "../../../../utils/assertions";
 import { HAI_KIND_IDS } from "../../../../types";
 import type { Tehai14, Shuntsu, Koutsu } from "../../../../types";
 
@@ -83,13 +83,12 @@ function decomposeClosedMentsu(
   }
 
   // 面子の重複順列を防ぎ決定論的な順序を強制するため、カウントが0より大きい最初の牌を見つける
-  const firstIndex = counts.findIndex((c) => c > 0);
-  if (firstIndex === -1) {
+  const kind = HAI_KIND_IDS.find((k) => (counts[k] ?? 0) > 0);
+  if (kind === undefined) {
     // requiredCount > 0 で牌が残っていない＝不正な手牌
     return [];
   }
 
-  const kind = asHaiKindId(firstIndex);
   return [
     ...decomposeWithKoutsu(counts, kind, requiredCount),
     ...decomposeWithShuntsu(counts, kind, requiredCount),
@@ -122,15 +121,14 @@ function decomposeWithShuntsu(
   kind: HaiKindId,
   requiredCount: number,
 ): CompletedMentsu[][] {
-  if (!canStartShuntsuAt(kind)) return [];
+  const kinds = shuntsuKindsAt(kind);
+  if (kinds === undefined) return [];
 
-  const k2 = asHaiKindId(kind + 1);
-  const k3 = asHaiKindId(kind + 2);
+  const [, k2, k3] = kinds;
   if ((counts[k2] ?? 0) === 0 || (counts[k3] ?? 0) === 0) return [];
 
-  const shuntsu: Shuntsu = { type: "Shuntsu", hais: [kind, k2, k3] };
-  return decomposeClosedMentsu(
-    takeHais(counts, [kind, k2, k3]),
-    requiredCount - 1,
-  ).map((tail) => [shuntsu, ...tail]);
+  const shuntsu: Shuntsu = { type: "Shuntsu", hais: kinds };
+  return decomposeClosedMentsu(takeHais(counts, kinds), requiredCount - 1).map(
+    (tail) => [shuntsu, ...tail],
+  );
 }
