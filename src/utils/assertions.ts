@@ -22,6 +22,15 @@ export function isTuple4<T>(arr: readonly T[]): arr is readonly [T, T, T, T] {
 }
 
 /**
+ * Checks if the array has exactly 7 elements and narrows the type to a tuple.
+ */
+export function isTuple7<T>(
+  arr: readonly T[],
+): arr is readonly [T, T, T, T, T, T, T] {
+  return arr.length === 7;
+}
+
+/**
  * Casts a number to HaiKindId safely (conceptually).
  * Use this only when you are sure the number is a valid HaiKindId.
  */

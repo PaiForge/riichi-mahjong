@@ -17,17 +17,8 @@ export function calculateChiitoitsuShanten(tehai: Tehai13): number {
 
   const haiCounts = countHaiKind(tehai.closed);
 
-  let pairs = 0;
-  let kinds = 0;
-
-  for (const count of haiCounts) {
-    if (count > 0) {
-      kinds++;
-    }
-    if (count >= 2) {
-      pairs++;
-    }
-  }
+  const kinds = haiCounts.filter((count) => count > 0).length;
+  const pairs = haiCounts.filter((count) => count >= 2).length;
 
   // 基本式: 6 - 対子数。同種3枚以上は1対子としか数えられないため、
   // 牌の種類が7未満の場合は不足分をペナルティとして加算する。
