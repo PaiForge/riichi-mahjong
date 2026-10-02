@@ -17,8 +17,16 @@
 
 **検証戦略 (Verification Strategy):**
 1.  **外部ライブラリとのクロスチェック:**
-    -   本ライブラリの計算結果が正しいことを保証するため、Dockerコンテナ上で動作する信頼性の高い外部ライブラリ（Python製 `mahjong` など）の結果と突き合わせる「Differential Testing」を行います。
+    -   本ライブラリの計算結果が正しいことを保証するため、Dockerコンテナ上で動作する信頼性の高い外部ライブラリ（Python製 `mahjong`）の結果と突き合わせる「Differential Testing」を行います。
     -   これにより、ライブラリの移植ミスやロジックの欠陥を確実に検出します。
+    -   各ケースは「コード内に定義した期待値との一致 (Primary)」と「参照実装の結果との一致 (Secondary)」の両方を検証します。参照実装の結果が期待値と食い違う場合もテスト失敗とし、テストデータの誤りを検出します。
+    -   **参照実装の呼び出し方:** 参照実装はホストの Python ではなく、必ず Docker イメージ `riichi-mahjong-verifier` 上で実行します（ホストに Python 環境を要求せず、CI と手元で同じ結果になるため）。呼び出しは `tests/acceptance/reference-verifier.ts` の共通ヘルパー（`ensureVerifierImage` / `runReferenceVerifier`）に集約し、各テストファイルで `docker` や `python` を直接起動しないでください。入力は JSON 配列を stdin で渡し、`tests/acceptance/scripts/*.py` が stdout に JSON 配列を返します。
+    -   **Docker イメージ:** Dockerfile は `docker/Dockerfile.verification` です。イメージが存在しない場合はテスト実行時に自動ビルドされますが、手動でビルドする場合は次を実行します。
+        ```bash
+        docker build -t riichi-mahjong-verifier -f docker/Dockerfile.verification .
+        ```
+    -   **実行コマンド:** `npm run test:acceptance`（`vitest run tests/acceptance`）。`npm test` には含まれません。CI（`.github/workflows/ci.yml`）では単体テストに続けて実行されます。
+    -   **参照実装が動かない場合:** Docker が利用できない・イメージのビルドに失敗した・スクリプトが異常終了した場合は、検証をスキップせず `ReferenceVerifierError` でテストを失敗させます。参照実装を呼び出せないまま緑になる状態を作らないでください。
 
 2.  **データ駆動テスト:**
     -   テストケースはファイル上部に `[MSPZ文字列, 期待値]` のタプル形式で定義してください。

@@ -42,17 +42,27 @@ npx vitest src
 ### 受け入れテスト (Acceptance Tests)
 
 Pythonの [`mahjong`](https://github.com/MahjongRepository/mahjong) ライブラリをリファレンス実装として使用し、計算結果の相互検証を行います。
-実行時に自動的に検証用のDockerイメージ (`riichi-mahjong-verifier`) がビルドされます。
+リファレンス実装は Docker イメージ `riichi-mahjong-verifier` 上で実行するため、ホストに Python は不要です。
+イメージが無い場合は初回実行時に `docker/Dockerfile.verification` から自動的にビルドされます。
+Docker が利用できない場合、受け入れテストはスキップされずに失敗します。
 
 ```bash
-npx vitest tests/acceptance
+npm run test:acceptance
+```
+
+イメージを手動でビルドする場合:
+
+```bash
+docker build -t riichi-mahjong-verifier -f docker/Dockerfile.verification .
 ```
 
 特定のテストファイルのみを実行する場合:
 
 ```bash
-npx vitest tests/acceptance/shanten.test.ts
+npx vitest run tests/acceptance/shanten.test.ts
 ```
+
+詳細は [docs/testing-policy.md](docs/testing-policy.md) を参照してください。
 
 ## その他のコマンド (Other Commands)
 
