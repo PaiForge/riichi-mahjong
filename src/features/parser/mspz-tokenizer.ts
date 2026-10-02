@@ -1,5 +1,4 @@
-import { asHaiKindId } from "../../utils/assertions";
-import { HaiKind, type HaiKindId } from "../../types";
+import { HAI_KIND_IDS, HaiKind, type HaiKindId } from "../../types";
 import type { MspzString } from "./mspz-string";
 
 /** MSPZ のブロック（1つ以上の数字 + サフィックス）。例: "123m" */
@@ -39,10 +38,14 @@ function parseBlock(digits: string, suffix: string): HaiKindId[] {
   const base = suitBaseOf(suffix);
   if (base === undefined) return [];
 
-  // digits は正規表現で \d+ に限定されているため 1 文字 = 1 桁
+  // digits は正規表現で \d+ に限定されているため 1 文字 = 1 桁。
+  // 有効な牌番号なら base + num - 1 は 0〜33 に収まるため HAI_KIND_IDS の添字で引ける。
   return Array.from(digits, (char) => parseInt(char, 10))
     .filter((num) => isValidHaiNumber(suffix, num))
-    .map((num) => asHaiKindId(base + num - 1));
+    .flatMap((num) => {
+      const kind = HAI_KIND_IDS[base + num - 1];
+      return kind === undefined ? [] : [kind];
+    });
 }
 
 /**
