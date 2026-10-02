@@ -1,4 +1,4 @@
-import type { RuleConfig, Tehai14 } from "../../types";
+import type { HouraStructure, RuleConfig, Tehai14 } from "../../types";
 import type { HouraContext } from "../yaku/types";
 import type { HouraInterpretation } from "./types";
 import type { HouraRankingKey } from "./lib/compare";
@@ -17,6 +17,66 @@ import { compareHouraRankingKeys } from "./lib/compare";
 export type { HouraInterpretation } from "./types";
 export type { HouraRankingKey } from "./lib/compare";
 export { compareHouraRankingKeys } from "./lib/compare";
+
+/**
+ * 評価済みの和了解釈。高点法の比較キーを添えたもの。
+ */
+interface RankedInterpretation {
+  readonly interpretation: HouraInterpretation;
+  readonly key: HouraRankingKey;
+}
+
+/**
+ * 1つの和了構造を評価し、解釈と高点法の比較キーを組み立てる (evaluateHouraStructure)
+ *
+ * 役が一つも成立しない構造は和了として成立しないため undefined を返す。
+ * 構造ごとの評価（役・符・基本点）をここに閉じ込め、どの解釈を採用するかの
+ * 判断（{@link selectHouraInterpretation}）から切り離す。
+ *
+ * @param structure 評価する和了構造
+ * @param context 和了コンテキスト
+ * @param dora ドラの数（構造によらず一定なので呼び出し側で数える）
+ * @param ruleConfig ルール差分設定（任意）
+ * @returns 評価済みの解釈。役が無ければ undefined
+ */
+function evaluateHouraStructure(
+  structure: HouraStructure,
+  context: Readonly<HouraContext>,
+  dora: number,
+  ruleConfig?: Readonly<RuleConfig>,
+): RankedInterpretation | undefined {
+  const yakuResult = detectYakuForStructure(structure, context);
+  const yakuHansu = getYakuHansu(yakuResult);
+
+  // 役なしの解釈は和了として成立しないため候補にしない
+  if (yakuHansu === 0) return undefined;
+
+  const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
+  const fuResult = calculateFu(structure, context, isPinfu, ruleConfig);
+  const yakumanMultiplier = getYakumanMultiplier(
+    yakuResult,
+    context.yakumanRuleConfig,
+  );
+  const { basePoints } = resolveBasePoints(
+    yakuHansu + dora,
+    fuResult.total,
+    yakumanMultiplier,
+    ruleConfig,
+  );
+
+  return {
+    interpretation: {
+      structure,
+      yakuResult,
+      yakuHansu,
+      dora,
+      fuResult,
+      machiType: classifyMachi(structure, context.agariHai),
+      yakumanMultiplier,
+    },
+    key: { basePoints, han: yakuHansu + dora, fu: fuResult.total },
+  };
+}
 
 /**
  * 手牌から採用する和了解釈を決定する (selectHouraInterpretation)
@@ -44,49 +104,20 @@ export function selectHouraInterpretation(
   // ドラは面子分解によらず一定のため、解釈ごとに数え直さない
   const dora = countDora(tehai, context.doraMarkers);
 
-  let best: HouraInterpretation | undefined;
-  let bestKey: HouraRankingKey | undefined;
+  const candidates = getHouraStructures(tehai).flatMap((structure) => {
+    const ranked = evaluateHouraStructure(structure, context, dora, ruleConfig);
+    return ranked === undefined ? [] : [ranked];
+  });
 
-  for (const structure of getHouraStructures(tehai)) {
-    const yakuResult = detectYakuForStructure(structure, context);
-    const yakuHansu = getYakuHansu(yakuResult);
+  // 優劣がつかない場合は先に列挙された解釈を維持する
+  const best = candidates.reduce<RankedInterpretation | undefined>(
+    (current, candidate) =>
+      current === undefined ||
+      compareHouraRankingKeys(candidate.key, current.key) > 0
+        ? candidate
+        : current,
+    undefined,
+  );
 
-    // 役なしの解釈は和了として成立しないため候補にしない
-    if (yakuHansu === 0) continue;
-
-    const isPinfu = yakuResult.some(([name]) => name === "Pinfu");
-    const fuResult = calculateFu(structure, context, isPinfu, ruleConfig);
-    const yakumanMultiplier = getYakumanMultiplier(
-      yakuResult,
-      context.yakumanRuleConfig,
-    );
-    const { basePoints } = resolveBasePoints(
-      yakuHansu + dora,
-      fuResult.total,
-      yakumanMultiplier,
-      ruleConfig,
-    );
-
-    const key: HouraRankingKey = {
-      basePoints,
-      han: yakuHansu + dora,
-      fu: fuResult.total,
-    };
-    if (bestKey !== undefined && compareHouraRankingKeys(key, bestKey) <= 0) {
-      continue;
-    }
-
-    best = {
-      structure,
-      yakuResult,
-      yakuHansu,
-      dora,
-      fuResult,
-      machiType: classifyMachi(structure, context.agariHai),
-      yakumanMultiplier,
-    };
-    bestKey = key;
-  }
-
-  return best;
+  return best?.interpretation;
 }
