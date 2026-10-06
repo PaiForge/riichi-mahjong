@@ -40,10 +40,13 @@ export type {
   MentsuHouraStructure,
   ChiitoitsuHouraStructure,
   KokushiHouraStructure,
+  AgariPlacement,
+  MentsuIndex,
 } from "./types";
 export type { FuResult, FuDetails } from "./features/score/lib/fu/types";
 export type {
   ScoreResult,
+  RankedScoreResult,
   ScoreDetail,
   ScoreCalculationConfig,
   CalculateScoreConfig,
@@ -147,6 +150,7 @@ export type { MspzString, ExtendedMspzString } from "./features/parser";
 // =============================================================================
 export {
   calculateScoreForTehai,
+  rankScoresForTehai,
   calculateScore,
   getPaymentTotal,
   getYakumanMultiplier,

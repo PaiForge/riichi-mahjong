@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { selectHouraInterpretation } from "./index";
+import { rankHouraInterpretations, selectHouraInterpretation } from "./index";
 import { detectYaku } from "../yaku";
 import { calculateScoreForTehai } from "../score";
 import { NoYakuError } from "../../errors";
@@ -181,6 +181,33 @@ describe("和了解釈の選択 (selectHouraInterpretation)", () => {
   });
 });
 
+describe("和了解釈の順位付け (rankHouraInterpretations)", () => {
+  it("役のある解釈だけを高点法の降順で返し、先頭が採用される解釈であること", () => {
+    // 677778888999m 55p ロン(6m)
+    //   [678m 777m 888m 999m 55p] 三暗刻 2翻50符 (基本点 800)
+    //   [678m 789m 789m 77m? ...] 平和 + 一盃口 2翻30符 (基本点 480)
+    const tehai = createTehai("677778888999m55p");
+    const context = createContext("6m", false);
+    const ranked = rankHouraInterpretations(tehai, context);
+
+    expect(ranked.length).toBeGreaterThanOrEqual(2);
+    expect(ranked[0]).toEqual(selectHouraInterpretation(tehai, context));
+    expect(ranked[0]?.yakuResult).toEqual([["Sanankou", 2]]);
+    expect(ranked.every((i) => i.yakuHansu > 0)).toBe(true);
+
+    // 降順になっている（基本点 → 翻数 → 符）
+    const keys = ranked.map((i) => [i.fuResult.total, i.yakuHansu + i.dora]);
+    expect(keys[0]).toEqual([50, 2]);
+  });
+
+  it("成立する和了が無ければ空配列を返すこと", () => {
+    const tehai = createTehai("234m234p456s678s55z");
+    expect(rankHouraInterpretations(tehai, createContext("4m", false))).toEqual(
+      [],
+    );
+  });
+});
+
 describe("役判定と点数計算の解釈の一致", () => {
   // [手牌, 和了牌, ツモかどうか] の多義な和了形
   const CASES: [string, string, boolean][] = [
@@ -205,7 +232,7 @@ describe("役判定と点数計算の解釈の一致", () => {
       const yakuResult = detectYaku(tehai, config);
       const scoreResult = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
-      expect(scoreResult.detail?.yakuResult).toEqual(yakuResult);
+      expect(scoreResult.detail.yakuResult).toEqual(yakuResult);
     },
   );
 

@@ -67,6 +67,42 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
+  describe("rankScoresForTehai", () => {
+    it("関数としてエクスポートされていること", () => {
+      expect(PublicApi.rankScoresForTehai).toBeDefined();
+      expect(typeof PublicApi.rankScoresForTehai).toBe("function");
+    });
+
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.rankScoresForTehai satisfies (
+        tehai: PublicApi.Tehai14,
+        config: PublicApi.ScoreCalculationConfig,
+      ) => readonly PublicApi.RankedScoreResult[];
+
+      // 一覧の要素は構造解釈の詳細を必ず持つ
+      const detailOf = (
+        r: PublicApi.RankedScoreResult,
+      ): PublicApi.ScoreDetail => r.detail;
+      expect(typeof detailOf).toBe("function");
+    });
+
+    it("成立する和了が無ければ空配列を返すこと", () => {
+      // 234m 234p 456s 678s 55z は役なし
+      const tehai = unwrapOrThrow(PublicApi.parseMspz("234m234p456s678s55z"));
+      const validated = unwrapOrThrow(PublicApi.validateTehai14(tehai));
+
+      const results = PublicApi.rankScoresForTehai(validated, {
+        agariHai: 3, // 4m
+        isTsumo: false,
+        jikaze: PublicApi.HaiKind.Nan,
+        bakaze: PublicApi.HaiKind.Ton,
+        doraMarkers: [],
+      });
+
+      expect(results).toEqual([]);
+    });
+  });
+
   describe("calculateScoreForTehai", () => {
     it("関数としてエクスポートされていること", () => {
       expect(PublicApi.calculateScoreForTehai).toBeDefined();
@@ -239,6 +275,7 @@ describe("公開APIのエクスポート", () => {
     "isMenzen",
     "calculateScore",
     "calculateScoreForTehai",
+    "rankScoresForTehai",
     "getPaymentTotal",
     "getYakumanMultiplier",
     // パーサ
