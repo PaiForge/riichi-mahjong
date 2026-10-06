@@ -35,8 +35,10 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # 公開 API テスト（tests/public-api.test.ts）はエクスポート一覧と実行時の
+      # 挙動を検証するため、src の単体テストと一緒に回す
       - name: Test
-        run: pnpm vitest run src
+        run: pnpm test
 
       # 受け入れテスト（Python mahjong ライブラリとの相互検証）。
       # 参照実装は Docker イメージ riichi-mahjong-verifier 上で動かす。

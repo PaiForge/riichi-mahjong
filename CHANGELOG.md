@@ -69,12 +69,17 @@ const hand: MentsuHouraStructure = {
 const isOpen =
   mentsu.furo !== undefined || (!isTsumo && mentsu.hais.includes(agariHai));
 
-// After
-const { agari } = result.detail.structure;
-const isOpen =
-  mentsu.furo !== undefined ||
-  (!isTsumo && agari.kind === "Mentsu" && agari.index === index);
+// After: agari は面子手（type === "Mentsu"）だけが持つので、先に絞り込む
+const { structure } = result.detail;
+if (structure.type === "Mentsu") {
+  const { agari } = structure;
+  const isOpen =
+    mentsu.furo !== undefined ||
+    (!isTsumo && agari.kind === "Mentsu" && agari.index === index);
+}
 ```
+
+`agari.index` は `fourMentsu` の添字なので、表示のために面子を並べ替える場合は添字も付け替えること。
 
 **待ちの形から和了牌の位置を推定していた場合**: `detail.structure.agari` をそのまま使う。推定は不要になる。
 
