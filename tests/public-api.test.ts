@@ -348,7 +348,6 @@ describe("公開APIのエクスポート", () => {
     it("期待される型シグネチャを満たすこと", () => {
       PublicApi.classifyMachi satisfies (
         hand: HouraStructure,
-        agariHai: HaiKindId,
       ) => MachiType | undefined;
       PublicApi.isMenzen satisfies (tehai: Tehai14) => boolean;
 

@@ -4,6 +4,7 @@ import {
   createChiitoitsuStructureFromMspz,
   createHouraContext,
   createTehai,
+  withAgari,
 } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import type { MentsuHouraStructure, HouraStructure } from "../../types";
@@ -19,7 +20,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
   it("標準的な二盃口が成立する場合（独立した2組の一盃口）、3翻であること", () => {
     // 112233m 445566p 99s
     const tehai = createTehai("112233m445566p99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
     // 意図した分解（順子4つ）を選択する必要があるが、
     // この構成なら自然と順子優先で分解される可能性が高い。
     // getHouraStructuresForMentsuTeは全ての可能性を返すので、その中にRyanpeikouを満たすものがあればよい。
@@ -46,7 +47,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
   it("一色四順（同じ順子が4つ）の場合も成立すること", () => {
     // 111122223333m 99s
     const tehai = createTehai("111122223333m99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
 
     const hasRyanpeikou = hands.some((hand) =>
       ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
@@ -59,7 +60,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     // 112233m 445566p 99s (Open)
     // 構造自体はRyanpeikouだが、Menzenでない
     const tehai = createTehai("112233m445566p99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
     const validHand = hands[0];
 
     if (!validHand) throw new Error("分解失敗");
@@ -72,7 +73,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
   it("一盃口が1つだけでは不成立", () => {
     // 112233m 456p 789s 99s
     const tehai = createTehai("112233m456p789s99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
 
     const hasRyanpeikou = hands.some((hand) =>
       ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
@@ -85,7 +86,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     // 111222333m 456p 99s
     // 123m x3, 456p x1
     const tehai = createTehai("111222333m456p99s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
 
     const hasRyanpeikou = hands.some((hand) =>
       ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),
@@ -97,7 +98,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
   it("一盃口のみの手牌では二盃口が成立しないこと", () => {
     // 112233m 456p 55s 789s（一盃口のみ）
     const tehai = createTehai("112233m456p55789s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
 
     const hasRyanpeikou = hands.some((hand) =>
       ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen),

@@ -11,6 +11,7 @@ import {
   createHouraContext,
   createMentsuStructureFromMspz,
   createTehai,
+  withAgari,
 } from "../../../utils/test-helpers";
 import { getHouraStructuresForKokushi } from "./structures/kokushi";
 import { getHouraStructuresForMentsuTe } from "./structures/mentsu-te";
@@ -29,7 +30,10 @@ describe("役判定ヘルパー", () => {
 
     it("ロン和了で和了牌を含む刻子は暗刻として数えないこと（シャボ待ち）", () => {
       // 111m 222m 333p 456s 99s (ロン 1m)
-      const hand = createMentsuStructureFromMspz("111m222m333p456s99s");
+      const hand = createMentsuStructureFromMspz("111m222m333p456s99s", {
+        hai: "1m",
+        in: "111m",
+      });
       const context = createHouraContext({
         isTsumo: false,
         agariHai: HaiKind.ManZu1,
@@ -41,7 +45,10 @@ describe("役判定ヘルパー", () => {
     it("ロン和了でも単騎待ちなら和了牌と同じ牌種の刻子を暗刻として数えること", () => {
       // 111m 222m 333p 456s 11z (ロン 1z: 単騎)
       // 刻子に和了牌は含まれないが、単騎判定の分岐を通ることを確認する
-      const hand = createMentsuStructureFromMspz("111m222m333p456s11z");
+      const hand = createMentsuStructureFromMspz("111m222m333p456s11z", {
+        hai: "1z",
+        in: "Jantou",
+      });
       const context = createHouraContext({
         isTsumo: false,
         agariHai: HaiKind.Ton,
@@ -115,7 +122,7 @@ describe("役判定ヘルパー", () => {
       );
       if (!fourShuntsu) throw new Error("順子 4 つの分解が得られること");
 
-      expect(countShuntsuPairs(fourShuntsu)).toBe(2);
+      expect(countShuntsuPairs(withAgari(fourShuntsu))).toBe(2);
     });
 
     it("面子手以外は 0 を返すこと", () => {

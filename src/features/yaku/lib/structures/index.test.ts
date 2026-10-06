@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getHouraStructures } from "./index";
 import { createTehai } from "../../../../utils/test-helpers";
 import { CompletedMentsu, MentsuType } from "../../../../types";
-import type { HouraStructure } from "../../types";
+import type { HouraDecomposition } from "../../../../types";
 
 describe("getHouraStructures (Unified)", () => {
   describe("和了形が一通りにしか解釈できない手牌", () => {
@@ -25,7 +25,7 @@ describe("getHouraStructures (Unified)", () => {
       expect(results.length).toBeGreaterThan(1);
 
       // パターン1: 刻子x3 (Toitoi系)
-      const hasToitoiShape = results.some((r: HouraStructure) => {
+      const hasToitoiShape = results.some((r: HouraDecomposition) => {
         if (r.type !== "Mentsu") return false;
         const koutsuCount = r.fourMentsu.filter(
           (m: CompletedMentsu) => m.type === MentsuType.Koutsu,
@@ -35,7 +35,7 @@ describe("getHouraStructures (Unified)", () => {
       expect(hasToitoiShape).toBe(true);
 
       // パターン2: 順子x3 (Pinfu系, Ryanpeikou系)
-      const hasPinfuShape = results.some((r: HouraStructure) => {
+      const hasPinfuShape = results.some((r: HouraDecomposition) => {
         if (r.type !== "Mentsu") return false;
         const shuntsuCount = r.fourMentsu.filter(
           (m: CompletedMentsu) => m.type === MentsuType.Shuntsu,
