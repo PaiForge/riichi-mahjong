@@ -4,6 +4,7 @@ import {
   createHouraContext,
   createMentsuStructureFromMspz,
   createTehai,
+  withAgari,
 } from "../../../../utils/test-helpers";
 import { getHouraStructuresForMentsuTe } from "../structures/mentsu-te";
 import type { HouraContext } from "../../types";
@@ -41,7 +42,7 @@ describe("一盃口の判定", () => {
   it("二盃口が成立する手牌では一盃口が成立しないこと（上位互換による排他）", () => {
     // 112233m 445566p 77s（二盃口の形）
     const tehai = createTehai("112233m445566p77s");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
 
     // 全ての分解において一盃口が成立しないことを確認
     const hasIipeikou = hands.some((hand) =>
@@ -54,7 +55,7 @@ describe("一盃口の判定", () => {
   it("同一色の二盃口が成立する手牌でも一盃口が成立しないこと", () => {
     // 112233s 778899s 11z（索子の同一色二盃口）
     const tehai = createTehai("112233778899s11z");
-    const hands = getHouraStructuresForMentsuTe(tehai);
+    const hands = getHouraStructuresForMentsuTe(tehai).map((d) => withAgari(d));
 
     const hasIipeikou = hands.some((hand) =>
       iipeikouDefinition.isSatisfied(hand, mockContextMenzen),

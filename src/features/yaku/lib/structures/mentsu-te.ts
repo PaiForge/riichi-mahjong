@@ -1,5 +1,5 @@
 import type { CompletedMentsu, HaiKindId } from "../../../../types";
-import type { MentsuHouraStructure } from "../../types";
+import type { MentsuDecomposition } from "../../../../types";
 import { countHaiKind, shuntsuKindsAt } from "../../../../core/hai-count";
 import { isTuple4 } from "../../../../utils/assertions";
 import { HAI_KIND_IDS } from "../../../../types";
@@ -37,21 +37,33 @@ function takeHais(
  * このように成立する役が変わる可能性があるため、可能な全ての構造化パターンをリストとして返します。
  * 利用側は、これらのパターンのうち最も高得点となるものを選択する必要があります。
  *
+ * 【和了牌の置き場所について】
+ * ここで返すのは面子分解だけで、和了牌をどのブロックに入れたかは持ちません
+ * （{@link MentsuDecomposition}）。置き場所の展開は和了牌を知る側
+ * （和了解釈の評価）が行います。
+ *
+ * 【重複について】
+ * 探索は先頭の牌から刻子・順子の両方を試すため、同じ面子の集合が異なる並びで
+ * 複数回現れます（例: 111123m は「111m → 123m」と「123m → 111m」）。並びが
+ * 違うだけの分解は同じ和了形なので、最初に現れたものだけを返します。
+ *
  * @param tehai 和了形の手牌
  * @returns 可能な構造化パターンのリスト。構造化できない場合は空配列。
  */
 export function getHouraStructuresForMentsuTe(
   tehai: Tehai14,
-): MentsuHouraStructure[] {
+): MentsuDecomposition[] {
   const counts = countHaiKind(tehai.closed);
   const requiredMentsuCount = 4 - tehai.exposed.length;
 
   // 雀頭候補ごとに、残りの牌が面子に分解できるか試す
-  return HAI_KIND_IDS.filter((kind) => counts[kind] >= 2).flatMap((kind) =>
+  const decompositions = HAI_KIND_IDS.filter(
+    (kind) => counts[kind] >= 2,
+  ).flatMap((kind) =>
     decomposeClosedMentsu(
       takeHais(counts, [kind, kind]),
       requiredMentsuCount,
-    ).flatMap((closedMentsu): MentsuHouraStructure[] => {
+    ).flatMap((closedMentsu): MentsuDecomposition[] => {
       // 副露面子と結合して完全な構成を作成する
       const fullMentsuList = [...closedMentsu, ...tehai.exposed];
 
@@ -66,6 +78,40 @@ export function getHouraStructuresForMentsuTe(
       ];
     }),
   );
+
+  return dedupeDecompositions(decompositions);
+}
+
+/**
+ * 面子の並びだけが異なる分解を 1 つにまとめる。
+ * 雀頭と、面子の多重集合（種類・牌・副露）が同じなら同じ分解とみなす。
+ */
+function dedupeDecompositions(
+  decompositions: readonly MentsuDecomposition[],
+): MentsuDecomposition[] {
+  const keyOf = (d: MentsuDecomposition): string => {
+    const mentsuKeys = d.fourMentsu
+      .map(
+        (m) =>
+          `${m.type}:${m.hais.join(",")}:${m.furo ? `${m.furo.type}/${m.furo.from}` : "closed"}`,
+      )
+      .sort();
+    return `${d.jantou.hais.join(",")}|${mentsuKeys.join("|")}`;
+  };
+
+  const { kept } = decompositions.reduce<{
+    readonly kept: readonly MentsuDecomposition[];
+    readonly seen: ReadonlySet<string>;
+  }>(
+    (acc, d) => {
+      const key = keyOf(d);
+      return acc.seen.has(key)
+        ? acc
+        : { kept: [...acc.kept, d], seen: new Set([...acc.seen, key]) };
+    },
+    { kept: [], seen: new Set() },
+  );
+  return [...kept];
 }
 
 /**

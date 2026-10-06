@@ -31,10 +31,8 @@ const checkPinfu: (hand: HouraStructure, context: HouraContext) => boolean = (
   if (!hand.fourMentsu.every((m): m is Shuntsu => m.type === "Shuntsu"))
     return false;
 
-  // 4. 両面待ちであること
-  const waitType = classifyMachi(hand, context.agariHai);
-
-  return waitType === "Ryanmen";
+  // 4. 両面待ちであること（待ちは和了構造の置き場所から決まる）
+  return classifyMachi(hand) === "Ryanmen";
 };
 
 export const pinfuDefinition: YakuDefinition = createYaku("Pinfu", {

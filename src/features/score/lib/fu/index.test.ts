@@ -1,13 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { calculateFu } from "./index";
 import {
+  createChiitoitsuStructureFromMspz,
   createHouraContext,
-  createTehai,
+  createMentsuStructureFromMspz,
+  type AgariSpec,
 } from "../../../../utils/test-helpers";
-import { getHouraStructures } from "../../../yaku/lib/structures";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../../yaku/types";
 import type { HouraStructure } from "../../../yaku/types";
+
+// 面子手の和了構造。待ち符・明暗は和了牌の置き場所（agari）で決まるため、
+// 待ちを試すテストでは置き場所まで指定する
+const getStruct = (mspz: string, agari?: AgariSpec): HouraStructure =>
+  createMentsuStructureFromMspz(mspz, agari);
 
 describe("calculateFu", () => {
   const baseContext: HouraContext = createHouraContext({
@@ -16,19 +22,8 @@ describe("calculateFu", () => {
     doraMarkers: [HaiKind.ManZu1], // Default dora marker
   });
 
-  const getStruct = (
-    mspz: string,
-    type: "Mentsu" | "Chiitoitsu" | "Kokushi" = "Mentsu",
-  ): HouraStructure => {
-    const tehai = createTehai(mspz);
-    const structs = getHouraStructures(tehai);
-    const target = structs.find((s) => s.type === type);
-    if (!target) throw new Error(`Structure ${type} not found for ${mspz}`);
-    return target;
-  };
-
   it("七対子は常に25符", () => {
-    const hand = getStruct("11m22m33m44m55m66m77m", "Chiitoitsu");
+    const hand = createChiitoitsuStructureFromMspz("11m22m33m44m55m66m77m");
     const result = calculateFu(hand, baseContext);
     expect(result.total).toBe(25);
     expect(result.details.base).toBe(25);
@@ -40,7 +35,7 @@ describe("calculateFu", () => {
     const pinfuMSPZ = "234m456m789m234p99s";
 
     it("平和ツモは20符 (特例)", () => {
-      const hand = getStruct(pinfuMSPZ);
+      const hand = getStruct(pinfuMSPZ, "4p");
       const ctx = { ...baseContext, isTsumo: true, agariHai: HaiKind.PinZu4 };
 
       const result = calculateFu(hand, ctx, true); // isPinfu=true
@@ -49,7 +44,7 @@ describe("calculateFu", () => {
     });
 
     it("平和ロンは30符 (基本20 + ロン10 = 30)", () => {
-      const hand = getStruct(pinfuMSPZ);
+      const hand = getStruct(pinfuMSPZ, "4p");
       const ctx = {
         ...baseContext,
         isMenzen: true,
@@ -70,7 +65,7 @@ describe("calculateFu", () => {
       // Base 20 + Kanchan 2 + Tsumo 2 = 24 -> 30 Fu.
       // Note: We need to construct a hand that looks like Pinfu but isn't Pinfu due to wait?
       // Actually if I pass isPinfu=false to calculateFu, it should calculate normally.
-      const hand = getStruct(pinfuMSPZ); // Standard Pinfu shape
+      const hand = getStruct(pinfuMSPZ, "3p"); // Standard Pinfu shape, Kanchan wait
       const ctx = { ...baseContext, isTsumo: true, agariHai: HaiKind.PinZu3 };
 
       const result = calculateFu(hand, ctx, false); // force isPinfu=false
@@ -167,7 +162,7 @@ describe("calculateFu", () => {
   describe("待ち符の計算", () => {
     it("カンチャン待ちは2符", () => {
       // 13m -> 2m
-      const hand = getStruct("13m456m789m123p99s2m");
+      const hand = getStruct("13m456m789m123p99s2m", "2m");
       const ctx = { ...baseContext, agariHai: HaiKind.ManZu2 };
       const result = calculateFu(hand, ctx);
       expect(result.details.machi).toBe(2);
@@ -175,7 +170,7 @@ describe("calculateFu", () => {
 
     it("ペンチャン待ちは2符", () => {
       // 12m -> 3m
-      const hand = getStruct("12m456m789m123p99s3m");
+      const hand = getStruct("12m456m789m123p99s3m", "3m");
       const ctx = { ...baseContext, agariHai: HaiKind.ManZu3 };
       const result = calculateFu(hand, ctx);
       expect(result.details.machi).toBe(2);
@@ -183,7 +178,11 @@ describe("calculateFu", () => {
 
     it("単騎待ちは2符", () => {
       // 123m 456m 789m 123p 1m (Tanki 1m)
-      const hand = getStruct("123m456m789m123p1m1m");
+      // 1m は 123m にも入るので、雀頭に入れたことを明示する
+      const hand = getStruct("123m456m789m123p1m1m", {
+        hai: "1m",
+        in: "Jantou",
+      });
       const ctx = { ...baseContext, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.machi).toBe(2);
@@ -191,7 +190,7 @@ describe("calculateFu", () => {
 
     it("両面待ちは0符", () => {
       // 23m -> 1m/4m
-      const hand = getStruct("23m456m789m123p99s1m");
+      const hand = getStruct("23m456m789m123p99s1m", "1m");
       const ctx = { ...baseContext, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.machi).toBe(0);
@@ -200,7 +199,7 @@ describe("calculateFu", () => {
     it("双碰待ちは0符", () => {
       // 11m 22m -> 1m/2m
       // 456m 789m 123p 11m 22m
-      const hand = getStruct("456m789m123p11m22m1m");
+      const hand = getStruct("456m789m123p11m22m1m", "1m");
       const ctx = { ...baseContext, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.machi).toBe(0);
@@ -210,7 +209,7 @@ describe("calculateFu", () => {
   describe("刻子・槓子の符", () => {
     it("中張牌の明刻は2符", () => {
       // 222m (Open)
-      const hand = getStruct("123m456m789m99p[222m]");
+      const hand = getStruct("123m456m789m99p[222m]", "1m");
       const ctx = { ...baseContext, isMenzen: false, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.mentsu).toBe(2);
@@ -218,7 +217,7 @@ describe("calculateFu", () => {
 
     it("中張牌の暗刻は4符", () => {
       // 222m (Closed)
-      const hand = getStruct("123m456m789m99p222m");
+      const hand = getStruct("123m456m789m99p222m", "1m");
       const ctx = { ...baseContext, isMenzen: true, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.mentsu).toBe(4);
@@ -226,7 +225,7 @@ describe("calculateFu", () => {
 
     it("么九牌の明刻は4符", () => {
       // 111m (Open)
-      const hand = getStruct("123m456m789m99p[111m]");
+      const hand = getStruct("123m456m789m99p[111m]", "1m");
       const ctx = { ...baseContext, isMenzen: false, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.mentsu).toBe(4);
@@ -234,7 +233,11 @@ describe("calculateFu", () => {
 
     it("么九牌の暗刻は8符", () => {
       // 111m (Closed)
-      const hand = getStruct("123m456m789m99p111m");
+      // 1m は 111m にも入るが、ツモなので置き場所によらず暗刻
+      const hand = getStruct("123m456m789m99p111m", {
+        hai: "1m",
+        in: "123m",
+      });
       const ctx = { ...baseContext, isMenzen: true, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.mentsu).toBe(8);
@@ -255,7 +258,7 @@ describe("calculateFu", () => {
   describe("喰いタン平和形 (オープン20符→30符)", () => {
     it("鳴き平和形は30符に切り上げ", () => {
       // 234m (Chi) + 234s + 234p + 456s + 99m head
-      const hand = getStruct("234s234p456s99m[234m]");
+      const hand = getStruct("234s234p456s99m[234m]", "2s");
       const ctx = {
         ...baseContext,
         isMenzen: false,
@@ -273,9 +276,7 @@ describe("110符を超える符の計算", () => {
   it("么九牌の暗槓3つ + 明刻の手が130符になること", () => {
     // (1111m)(9999m)(1111z)[999p] + 22z ツモ
     // 副底20 + 暗槓么九32×3 + 明刻么九4 + 雀頭0 + 単騎2 + ツモ2 = 124 -> 130符
-    const tehai = createTehai("(1111m)(9999m)(1111z)[999p]22z");
-    const hand = getHouraStructures(tehai)[0];
-    if (!hand) throw new Error("和了形が得られること");
+    const hand = getStruct("(1111m)(9999m)(1111z)[999p]22z", "2z");
 
     const context: HouraContext = createHouraContext({
       isMenzen: false,
@@ -291,9 +292,7 @@ describe("110符を超える符の計算", () => {
   it("么九牌の暗槓4つの手が160符になること", () => {
     // (1111m)(9999m)(1111z)(9999p) + 22z ツモ
     // 副底20 + 暗槓么九32×4 + 単騎2 + ツモ2 = 152 -> 160符
-    const tehai = createTehai("(1111m)(9999m)(1111z)(9999p)22z");
-    const hand = getHouraStructures(tehai)[0];
-    if (!hand) throw new Error("和了形が得られること");
+    const hand = getStruct("(1111m)(9999m)(1111z)(9999p)22z", "2z");
 
     const context: HouraContext = createHouraContext({
       agariHai: HaiKind.Nan,

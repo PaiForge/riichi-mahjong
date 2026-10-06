@@ -7,13 +7,14 @@ import type {
   Toitsu,
 } from "../types";
 import { type HouraContext } from "../types";
-import type { CompletedMentsu, HaiKindId } from "../../../types";
+import type { CompletedMentsu, HaiKindId, MentsuIndex } from "../../../types";
 import { HaiType } from "../../../types";
 import {
   isSuupai,
   kindIdToHaiType,
   kindIdToSuitIndex,
 } from "../../../core/hai";
+import { isCompletedByAgari } from "../../../core/agari";
 
 /**
  * 面子手の手牌枠（雀頭 + 4面子）を1つの配列として取得する。
@@ -52,6 +53,11 @@ export const extractTriplets = (
 /**
  * 手牌の刻子・槓子のうち、暗刻の数をカウントする
  * 四暗刻・三暗刻などの判定に使用
+ *
+ * 副露していない刻子・槓子は暗刻だが、ロン和了で和了牌が完成させた刻子
+ * （`hand.agari` が指す面子）だけは明刻になる。「和了牌を含む刻子」で
+ * 判定しないのは、同じ牌が順子にも入る手（例: 111m 123m の 1m）で、順子に
+ * 入れた解釈では刻子が暗刻のまま残るため。
  */
 export const countAnkou = (
   hand: HouraStructure,
@@ -61,19 +67,12 @@ export const countAnkou = (
     return 0;
   }
 
-  // 単騎待ちかどうかの判定: 雀頭の牌が和了牌と同じかどうか
-  const isTanki = hand.jantou.hais[0] === context.agariHai;
-
-  // 副露していない刻子・槓子のうち、暗刻とみなせるもの:
-  // - ツモなら全て暗刻
-  // - ロンなら、和了牌を含まない刻子、または単騎待ち（刻子は完成済み）の場合
-  return extractTriplets(hand).filter(
-    (triplet) =>
-      !triplet.furo &&
-      (context.isTsumo === true ||
-        !triplet.hais.includes(context.agariHai) ||
-        isTanki),
-  ).length;
+  const indices: readonly MentsuIndex[] = [0, 1, 2, 3];
+  return indices.filter((index) => {
+    const mentsu = hand.fourMentsu[index];
+    if (mentsu.type === "Shuntsu" || mentsu.furo) return false;
+    return context.isTsumo === true || !isCompletedByAgari(hand, index);
+  }).length;
 };
 
 /**

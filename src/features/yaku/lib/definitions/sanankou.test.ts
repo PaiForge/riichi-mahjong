@@ -32,7 +32,10 @@ describe("三暗刻（サンアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333p456s99s");
+    const hand = createMentsuStructureFromMspz("111m222m333p456s99s", {
+      hai: "1m",
+      in: "111m",
+    });
 
     // 111m は明刻扱い。222m, 333p は暗刻。合計2つなので三暗刻は不成立。
     expect(sanankouDefinition.isSatisfied(hand, context)).toBe(false);
@@ -47,7 +50,10 @@ describe("三暗刻（サンアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444p99s");
+    const hand = createMentsuStructureFromMspz("111m222m333m444p99s", {
+      hai: "1m",
+      in: "111m",
+    });
 
     expect(sanankouDefinition.isSatisfied(hand, context)).toBe(true);
   });
@@ -60,10 +66,12 @@ describe("三暗刻（サンアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu1,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m456p11s");
+    const hand = createMentsuStructureFromMspz("111m222m333m456p11s", {
+      hai: "1s",
+      in: "Jantou",
+    });
 
     // 111m, 222m, 333m は暗刻。1sは雀頭なので刻子ではない。
-    // あれ、これは単純な三暗刻のケース。単騎で刻子が完成するケースをテストしたい。
 
     expect(sanankouDefinition.isSatisfied(hand, context)).toBe(true);
   });

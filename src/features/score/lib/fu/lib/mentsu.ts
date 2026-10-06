@@ -1,14 +1,15 @@
 import type { FuResult, FuDetails, FuRuleConfig } from "../types";
 import type {
   CompletedMentsu,
-  Koutsu,
   MentsuHouraStructure,
+  MentsuIndex,
   Toitsu,
 } from "../../../../../types";
 import type { HouraContext } from "../../../../yaku/types";
 import { isSangenpai, isYaochu } from "../../../../../core/hai";
 import { type Fu } from "../../../../../types";
 import { classifyMachi, type MachiType } from "../../../../../core/machi";
+import { isCompletedByAgari } from "../../../../../core/agari";
 import {
   FU_BASE,
   FU_KOUTSU,
@@ -19,6 +20,9 @@ import {
   FU_PINFU_TSUMO,
   FU_OPEN_PINFU_GLAZE,
 } from "../constants";
+
+/** 4面子の添字。面子ごとの符は和了構造の置き場所と突き合わせるため添字で回す */
+const MENTSU_INDICES: readonly MentsuIndex[] = [0, 1, 2, 3];
 
 /** 面子手で取りうる符の値（10符刻み） */
 const VALID_FU_VALUES: readonly Fu[] = [
@@ -43,12 +47,21 @@ function roundUpToFu(sum: number): Fu {
 }
 
 /**
- * 刻子が明刻扱いになるか判定する。
- * 副露している場合に加え、ロン和了でその和了牌を含む刻子も明刻扱いとなる。
+ * 面子が明刻（明槓）扱いになるか判定する。
+ *
+ * 副露している場合に加え、ロン和了で和了牌が完成させた刻子も明刻扱いとなる。
+ * 「和了牌を含む刻子」ではなく「和了牌で完成した刻子」で判定するのは、
+ * 同じ牌が順子にも入る手（例: 222m 234m の 2m）で、順子に入れた解釈では
+ * 刻子が暗刻のまま残るため。どちらの解釈を採るかは高点法で決まる。
  */
-function isOpenKoutsu(mentsu: Koutsu, context: HouraContext): boolean {
+function isOpenMentsu(
+  hand: MentsuHouraStructure,
+  index: MentsuIndex,
+  context: HouraContext,
+): boolean {
+  const mentsu = hand.fourMentsu[index];
   if (mentsu.furo) return true;
-  return !context.isTsumo && mentsu.hais.includes(context.agariHai);
+  return !context.isTsumo && isCompletedByAgari(hand, index);
 }
 
 /**
@@ -56,16 +69,15 @@ function isOpenKoutsu(mentsu: Koutsu, context: HouraContext): boolean {
  * 刻子・槓子は「么九牌か数牌か」×「明か暗か」で符が決まる。
  */
 function calculateSingleMentsuFu(
-  mentsu: CompletedMentsu,
+  hand: MentsuHouraStructure,
+  index: MentsuIndex,
   context: HouraContext,
 ): number {
+  const mentsu: CompletedMentsu = hand.fourMentsu[index];
   if (mentsu.type === "Shuntsu") return 0;
 
   const table = mentsu.type === "Koutsu" ? FU_KOUTSU : FU_KANTSU;
-  const isOpen =
-    mentsu.type === "Koutsu"
-      ? isOpenKoutsu(mentsu, context)
-      : Boolean(mentsu.furo);
+  const isOpen = isOpenMentsu(hand, index, context);
 
   if (isYaochu(mentsu.hais[0])) {
     return isOpen ? table.YAOCHU_OPEN : table.YAOCHU_CLOSED;
@@ -106,12 +118,10 @@ const MACHI_FU_TABLE: Readonly<Record<MachiType, number>> = {
 
 /**
  * 待ち符を計算する。単騎・嵌張・辺張は2符、両面・双碰は0符。
+ * 待ちの形は和了構造の置き場所（`hand.agari`）から決まる。
  */
-function calculateMachiFu(
-  hand: MentsuHouraStructure,
-  context: HouraContext,
-): number {
-  const machiType = classifyMachi(hand, context.agariHai);
+function calculateMachiFu(hand: MentsuHouraStructure): number {
+  const machiType = classifyMachi(hand);
   return machiType === undefined ? 0 : MACHI_FU_TABLE[machiType];
 }
 
@@ -159,12 +169,12 @@ export function calculateMentsuFu(
 ): FuResult {
   const details: FuDetails = {
     base: FU_BASE.NORMAL,
-    mentsu: hand.fourMentsu.reduce(
-      (sum, mentsu) => sum + calculateSingleMentsuFu(mentsu, context),
+    mentsu: MENTSU_INDICES.reduce<number>(
+      (sum, index) => sum + calculateSingleMentsuFu(hand, index, context),
       0,
     ),
     jantou: calculateJantouFu(hand.jantou, context, ruleConfig),
-    machi: calculateMachiFu(hand, context),
+    machi: calculateMachiFu(hand),
     agari: calculateAgariFu(context, isPinfu),
   };
 
