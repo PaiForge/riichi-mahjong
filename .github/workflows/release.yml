@@ -49,7 +49,7 @@ jobs:
       # publish 前に品質ゲートを通す
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm vitest run src
+      - run: pnpm test
       - run: pnpm build
 
       - name: Resolve version and publish state

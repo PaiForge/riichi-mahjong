@@ -129,6 +129,93 @@ const CASES: ScoreCase[] = [
     isOya: false,
     expected: { han: 1, fu: 30, total: 1000 },
   },
+  // --------------------------------------------------------------------------
+  // 和了牌の置き場所が複数ある手（高点法）
+  //
+  // 同じ面子分解でも、和了牌を雀頭・順子・刻子のどこに入れたと見るかで役・符が
+  // 変わる。ライブラリは最も高い解釈を採る必要がある。期待値は役と符を手で
+  // 積み上げた値（Primary）で、参照実装は照合用（Secondary）。
+  // --------------------------------------------------------------------------
+  {
+    description:
+      "子 門前 雀頭と順子の両方に入る和了牌は平和が付く両面を採る 2飜30符",
+    tehai: "3344555m123456s", // 13枚. 345m 345m 55m 123s 456s
+    // 5m を 55m に入れると単騎（一盃口のみ 40符）、345m に入れると両面（平和 + 一盃口）。
+    // 20(副底) + 10(門前ロン) -> 30符
+    agariHai: HaiKind.ManZu5,
+    agariStr: "5m",
+    doraMarkers: [HaiKind.ManZu8],
+    doraStr: ["8m"],
+    isTsumo: false,
+    isOya: false,
+    expected: { han: 2, fu: 30, total: 2000 },
+  },
+  {
+    description:
+      "子 門前 同じ牌姿でも和了牌が順子にしか入らなければ平和のみ 1飜30符",
+    tehai: "3344555m123456s", // 13枚. 234m 345m 55m 123s 456s
+    // 2m は 234m にしか入らないので両面。一盃口は無い。
+    agariHai: HaiKind.ManZu2,
+    agariStr: "2m",
+    doraMarkers: [],
+    doraStr: [],
+    isTsumo: false,
+    isOya: false,
+    expected: { han: 1, fu: 30, total: 1000 },
+  },
+  {
+    description: "子 門前 雀頭と順子の両方に入るが単騎のほうが符が高い 3飜60符",
+    tehai: "3455m999p666s111z", // 13枚. 345m 55m 999p 666s 111z
+    // 刻子があるので平和は付かず、5m は単騎（+2符）で 60符、両面なら 50符。
+    // 20(副底) + 10(門前ロン) + 8(999p) + 4(666s) + 8(111z) + 2(単騎) = 52 -> 60符
+    // 場風(東) 1翻 + 三暗刻 2翻。
+    agariHai: HaiKind.ManZu5,
+    agariStr: "5m",
+    doraMarkers: [],
+    doraStr: [],
+    isTsumo: false,
+    isOya: false,
+    expected: { han: 3, fu: 60, total: 7700 },
+  },
+  {
+    description:
+      "子 門前 刻子と順子の両方に入る和了牌は刻子を暗刻に残す 1飜50符",
+    tehai: "22234m555z678s33s", // 13枚. 222m 234m 555z 678s 33s
+    // 2m を 222m に入れるとロンで明刻（2符）、234m に入れると両面で 222m は暗刻（4符）。
+    // 20(副底) + 10(門前ロン) + 4(222m 暗刻) + 8(555z 暗刻) = 42 -> 50符。白 1翻。
+    agariHai: HaiKind.ManZu2,
+    agariStr: "2m",
+    doraMarkers: [],
+    doraStr: [],
+    isTsumo: false,
+    isOya: false,
+    expected: { han: 1, fu: 50, total: 1600 },
+  },
+  {
+    description: "子 門前 刻子と順子の両方に入る和了牌で三暗刻を残す 2飜60符",
+    tehai: "11123m999p555s66z", // 13枚. 111m 123m 999p 555s 66z
+    // 1m を 111m に入れると明刻で暗刻 2 つ（役なし）、123m に入れると三暗刻。
+    // 20(副底) + 10(門前ロン) + 8(111m) + 8(999p) + 4(555s) + 2(發の雀頭) = 52 -> 60符
+    agariHai: HaiKind.ManZu1,
+    agariStr: "1m",
+    doraMarkers: [],
+    doraStr: [],
+    isTsumo: false,
+    isOya: false,
+    expected: { han: 2, fu: 60, total: 3900 },
+  },
+  {
+    description: "子 門前 2つの順子に入る和了牌は平和が付く両面を採る 1飜30符",
+    tehai: "12345m456p678s99p", // 13枚. 123m 345m 456p 678s 99p
+    // 3m を 123m に入れると辺張（役なし）、345m に入れると両面で平和。
+    agariHai: HaiKind.ManZu3,
+    agariStr: "3m",
+    doraMarkers: [],
+    doraStr: [],
+    isTsumo: false,
+    isOya: false,
+    expected: { han: 1, fu: 30, total: 1000 },
+  },
 ];
 // ============================================================================
 

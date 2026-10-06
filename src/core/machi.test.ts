@@ -5,52 +5,82 @@ import {
   createToitsu,
   createKoutsu,
   createMockHand,
-  getHaiKindId,
+  createChiitoitsuStructureFromMspz,
+  createMentsuStructureFromMspz,
 } from "../utils/test-helpers";
 
 describe("classifyMachi", () => {
   it("雀頭での和了（単騎待ち）を判定できること", () => {
-    const jantou = createToitsu("55m");
-    const hand = createMockHand(createShuntsu("123s"), jantou);
-    expect(classifyMachi(hand, getHaiKindId("5m"))).toBe("Tanki");
+    const hand = createMockHand(createShuntsu("123s"), createToitsu("55m"), {
+      hai: "5m",
+      in: "Jantou",
+    });
+    expect(classifyMachi(hand)).toBe("Tanki");
   });
 
   it("双碰待ち（シャボ）を判定できること", () => {
     // 11 22 -> Agari 1 -> 111 22.
-    // Hand structure has Koutsu 111.
-    const koutsu = createKoutsu("111m");
-    const hand = createMockHand(koutsu, createToitsu("22m"));
-    expect(classifyMachi(hand, getHaiKindId("1m"))).toBe("Shanpon");
+    const hand = createMockHand(createKoutsu("111m"), createToitsu("22m"), {
+      hai: "1m",
+      in: "111m",
+    });
+    expect(classifyMachi(hand)).toBe("Shanpon");
   });
 
   it("両面待ちを判定できること", () => {
-    // 234m, agari=2m -> Ryanmen (completion of 2,5 wait)
-    // Hand has 234m. Wait was 34m. Agari 2m or 5m.
-    // If Agari 2m -> Completed 234m.
-    const shuntsu1 = createShuntsu("234m");
-    const hand1 = createMockHand(shuntsu1, createToitsu("99p"));
-    expect(classifyMachi(hand1, getHaiKindId("2m"))).toBe("Ryanmen");
+    // 34m -> 2m/5m
+    const hand1 = createMockHand(createShuntsu("234m"), createToitsu("99p"), {
+      hai: "2m",
+      in: "234m",
+    });
+    expect(classifyMachi(hand1)).toBe("Ryanmen");
 
-    // If Agari 5m -> Completed 345m.
-    const shuntsu2 = createShuntsu("345m");
-    const hand2 = createMockHand(shuntsu2, createToitsu("99p"));
-    expect(classifyMachi(hand2, getHaiKindId("5m"))).toBe("Ryanmen");
+    const hand2 = createMockHand(createShuntsu("345m"), createToitsu("99p"), {
+      hai: "5m",
+      in: "345m",
+    });
+    expect(classifyMachi(hand2)).toBe("Ryanmen");
   });
 
   it("辺張待ち（ペンチャン）を判定できること", () => {
-    const shuntsu = createShuntsu("123m");
-    const hand = createMockHand(shuntsu, createToitsu("99p"));
-    expect(classifyMachi(hand, getHaiKindId("3m"))).toBe("Penchan");
+    const hand = createMockHand(createShuntsu("123m"), createToitsu("99p"), {
+      hai: "3m",
+      in: "123m",
+    });
+    expect(classifyMachi(hand)).toBe("Penchan");
+
+    const hand789 = createMockHand(createShuntsu("789m"), createToitsu("99p"), {
+      hai: "7m",
+      in: "789m",
+    });
+    expect(classifyMachi(hand789)).toBe("Penchan");
   });
 
   it("嵌張待ち（カンチャン）を判定できること", () => {
-    const shuntsu = createShuntsu("234m");
-    const hand = createMockHand(shuntsu, createToitsu("99p"));
-    expect(classifyMachi(hand, getHaiKindId("3m"))).toBe("Kanchan");
+    const hand = createMockHand(createShuntsu("234m"), createToitsu("99p"), {
+      hai: "3m",
+      in: "234m",
+    });
+    expect(classifyMachi(hand)).toBe("Kanchan");
   });
 
-  it("和了牌が手牌構造に含まれない場合は undefined を返すこと", () => {
-    const hand = createMockHand(createShuntsu("234m"), createToitsu("99p"));
-    expect(classifyMachi(hand, getHaiKindId("1z"))).toBe(undefined);
+  it("同じ和了牌でも置き場所が違えば待ちの形が変わること", () => {
+    // 345m 345m 55m 123s 456s の 5m: 雀頭なら単騎、順子なら両面
+    const tanki = createMentsuStructureFromMspz("33445555m123456s", {
+      hai: "5m",
+      in: "Jantou",
+    });
+    const ryanmen = createMentsuStructureFromMspz("33445555m123456s", {
+      hai: "5m",
+      in: "345m",
+    });
+
+    expect(classifyMachi(tanki)).toBe("Tanki");
+    expect(classifyMachi(ryanmen)).toBe("Ryanmen");
+  });
+
+  it("面子手でない場合は undefined を返すこと", () => {
+    const hand = createChiitoitsuStructureFromMspz("11223344556677m");
+    expect(classifyMachi(hand)).toBe(undefined);
   });
 });

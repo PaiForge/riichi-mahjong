@@ -9,9 +9,11 @@ import {
 import type { FuResult } from "./lib/fu/types";
 import type { HouraContext } from "../yaku/types";
 import { type Fu, HaiKind } from "../../types";
-import { calculateScoreForTehai } from "./index";
+import { calculateScoreForTehai, rankScoresForTehai } from "./index";
+import { detectYaku } from "../yaku";
 import {
   createHouraContext,
+  createScoreCalculationConfig,
   createTehai,
   getHaiKindId,
   unwrapOrThrow,
@@ -520,7 +522,7 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 風牌の役牌
     if (result.isErr()) return;
 
     // 副底20 + 門前ロン10 + 么九牌の暗刻8 = 38 -> 40符
-    expect(result.value.detail?.yakuResult).toEqual([["Bakaze", 1]]);
+    expect(result.value.detail.yakuResult).toEqual([["Bakaze", 1]]);
     expect(result.value.han).toBe(1);
     expect(result.value.fu).toBe(40);
     expect(getPaymentTotal(result.value.payment)).toBe(1300);
@@ -538,7 +540,7 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 風牌の役牌
     expect(result.isOk()).toBe(true);
     if (result.isErr()) return;
 
-    expect(result.value.detail?.yakuResult).toEqual([
+    expect(result.value.detail.yakuResult).toEqual([
       ["Bakaze", 1],
       ["Jikaze", 1],
     ]);
@@ -558,5 +560,112 @@ describe("手牌からの点数計算 (calculateScoreForTehai) - 風牌の役牌
       doraMarkers: [],
     });
     expect(result.isErr()).toBe(true);
+  });
+});
+
+describe("和了解釈ごとの点数の一覧 (rankScoresForTehai)", () => {
+  const configFor = (agari: string, isTsumo = false) =>
+    createScoreCalculationConfig({ agariHai: getHaiKindId(agari), isTsumo });
+
+  it("高点法の降順に並び、下位の有役な解釈も残ること", () => {
+    // 345m 345m 55m 123s 456s ロン(5m)
+    //   5m を 345m に入れる: 平和 + 一盃口 2翻30符 2000点
+    //   5m を 55m に入れる:  一盃口のみ 1翻40符 1300点
+    const results = rankScoresForTehai(
+      createTehai("33445555m123456s"),
+      configFor("5m"),
+    );
+
+    expect(results.map((r) => [r.han, r.fu, r.payment])).toEqual([
+      [2, 30, { type: "ron", amount: 2000 }],
+      [1, 40, { type: "ron", amount: 1300 }],
+    ]);
+    expect(results.map((r) => r.detail.machiType)).toEqual([
+      "Ryanmen",
+      "Tanki",
+    ]);
+    expect(results.map((r) => r.detail.structure.type)).toEqual([
+      "Mentsu",
+      "Mentsu",
+    ]);
+  });
+
+  it("同じ面子への置き場所は 1 つにまとめ、同じ要素を重ねて返さないこと", () => {
+    // 345m 345m のどちらに 5m を入れても同じ和了形なので、両面の解釈は 1 つ
+    const results = rankScoresForTehai(
+      createTehai("33445555m123456s"),
+      configFor("5m"),
+    );
+
+    expect(results).toHaveLength(2);
+  });
+
+  it("役が成立しない解釈は含めないこと", () => {
+    // 111m 123m 999p 555s 66z ロン(1m)
+    //   1m を 123m に入れる: 三暗刻
+    //   1m を 111m に入れる: 明刻になり暗刻 2 つで役なし -> 含めない
+    const results = rankScoresForTehai(
+      createTehai("111123m999p555s66z"),
+      configFor("1m"),
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.detail.yakuResult).toEqual([["Sanankou", 2]]);
+  });
+
+  it("面子手と七対子の両方に取れる手は両方を返すこと", () => {
+    // 112233445566m77p ロン(3m)
+    //   123m 123m 456m 456m 77p: 二盃口 3翻40符 (3m は 123m の辺張)
+    //   七対子: 2翻25符
+    const results = rankScoresForTehai(
+      createTehai("112233445566m77p"),
+      configFor("3m"),
+    );
+
+    expect(
+      results.map((r) => [r.detail.structure.type, r.detail.yakuResult]),
+    ).toEqual([
+      ["Mentsu", [["Ryanpeikou", 3]]],
+      ["Chiitoitsu", [["Chiitoitsu", 2]]],
+    ]);
+  });
+
+  it("役・符・点数が同じでも置き場所が違う解釈は別の要素として残し、列挙順を保つこと", () => {
+    // 111m 123m 999p 555s 66z ツモ(1m): ツモなので 111m はどちらでも暗刻
+    //   1m を 111m に入れる: 双碰 / 1m を 123m に入れる: 両面
+    //   いずれも 三暗刻 + 門前清自摸和 3翻50符で同点
+    const results = rankScoresForTehai(
+      createTehai("111123m999p555s66z"),
+      configFor("1m", true),
+    );
+
+    expect(results.map((r) => [r.han, r.fu])).toEqual([
+      [3, 50],
+      [3, 50],
+    ]);
+    expect(results.map((r) => r.detail.machiType)).toEqual([
+      "Shanpon",
+      "Ryanmen",
+    ]);
+  });
+
+  it("成立する和了が無ければ空配列を返すこと", () => {
+    const results = rankScoresForTehai(
+      createTehai("234m234p456s678s55z"),
+      configFor("4m"),
+    );
+
+    expect(results).toEqual([]);
+  });
+
+  it("先頭が calculateScoreForTehai の結果と一致し、役が detectYaku と一致すること", () => {
+    const tehai = createTehai("33445555m123456s");
+    const config = configFor("5m");
+
+    const [first] = rankScoresForTehai(tehai, config);
+    const best = unwrapOrThrow(calculateScoreForTehai(tehai, config));
+
+    expect(first).toEqual(best);
+    expect(first?.detail.yakuResult).toEqual(detectYaku(tehai, config));
   });
 });

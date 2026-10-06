@@ -1,3 +1,90 @@
+## Unreleased
+
+和了牌の置き場所（雀頭・順子・刻子のどこに入れたと見るか）まで高点法で選ぶようにしました。
+置き場所が複数ある手で点数が変わります（例: 33445555m123456s の 5m ロンは
+「一盃口のみ 1翻40符 1300点」から「平和 + 一盃口 2翻30符 2000点」に）。
+あわせて、和了解釈ごとの点数を順位付きで返す `rankScoresForTehai` を追加し、
+和了構造の型と `classifyMachi` の引数を変えました。移行手順は「移行ガイド」を参照してください。
+
+### Fixed
+
+- 和了牌を入れられるブロックが複数ある手で、役・符・点数が低い解釈を返していた
+  - 従来は待ちの判定（`classifyMachi`）・ロン時の刻子の明暗（符）・暗刻の数（三暗刻・四暗刻）の 3 か所が、それぞれ「和了牌を含む最初のブロック」で独立に決め打ちしていた。雀頭に入る牌はつねに単騎、刻子に入る牌はつねに明刻になり、順子に入れて平和や三暗刻を付ける解釈が検討されなかった
+  - 影響する手の例（いずれも東場・南家・門前ロン）
+    - 33445555m123456s（5m）: 一盃口のみ 1翻40符 → 平和 + 一盃口 2翻30符
+    - 222234m555z678s33s（2m）: 白 1翻40符（222m を明刻扱い）→ 白 1翻50符（222m は暗刻）
+    - 111123m999p555s66z（1m）: 役なし → 三暗刻 2翻60符
+    - 123345m456p678s99p（3m）: 役なし → 平和 1翻30符
+  - 和了牌が 1 か所にしか入らない手（和了形の大半）の結果は変わらない
+
+### Added
+
+- `rankScoresForTehai(tehai, config): readonly RankedScoreResult[]` を公開 API に追加した
+  - 「面子分解 × 和了牌の置き場所」の全候補のうち役が成立するものを、高点法（基本点 → 翻数 → 符の降順）に並べて返す。先頭は `calculateScoreForTehai` が返す解釈と同じ
+  - `RankedScoreResult` は `ScoreResult` の `detail` を必須にした型。要素ごとに `detail.structure.agari`（和了牌の位置）と `detail.fuResult`（符の内訳）が取れるため、利用側で解釈の一覧（面子分解の切り替え表示など）を作れる
+  - 役なしの解釈は含めない。成立する和了が無ければ空配列
+  - 面子の並びだけが違う分解と、同じ面子への置き場所は 1 つにまとめる。役・符・点数が同じでも置き場所が違う解釈は別の要素として残り、同点どうしの順序は列挙順で安定している。同点の先頭を唯一の正解として扱わないこと
+- `AgariPlacement` / `MentsuIndex` 型をエクスポートするようにした（下記 `MentsuHouraStructure.agari` の型）
+
+### Changed
+
+- **破壊的変更**: `MentsuHouraStructure` に和了牌の置き場所 `agari: AgariPlacement` を必須で追加した
+  - `{ kind: "Jantou", hai }`（雀頭で和了）か `{ kind: "Mentsu", index, hai }`（`fourMentsu[index]` で和了）。`hai` は和了牌で、ライブラリが返す構造では `agariHai` と必ず一致する
+  - 待ちの形・ロン時の刻子の明暗・暗刻の数はすべてこのフィールドから導く。「和了牌を含むブロックを探す」判定経路は残していない（任意フィールドにしてフォールバックを残すと、置き場所が複数ある手でどの経路を通ったかで結果が変わるため）
+  - `calculateScoreForTehai` の `detail.structure` にもこの値が乗る。利用側で待ちの形から和了牌の位置を推定していた処理は不要になる
+- **破壊的変更**: `classifyMachi(hand, agariHai)` を `classifyMachi(hand)` に変えた
+  - 待ちは `hand.agari` から決まるため和了牌の引数は不要。面子手でない構造（七対子・国士無双）では従来どおり `undefined`
+- `calculateScoreForTehai` の `Ok` の型が `RankedScoreResult`（`detail` 必須）になった。`ScoreResult` として受けていたコードはそのまま動く
+- `ScoreDetail.machiType` の説明を改めた。従来の「符が高くなる待ち形（両面より単騎）が採用される」は誤った挙動を仕様として書いたもので、実際は高点法で採用した置き場所の待ち
+
+### 移行ガイド (0.10.x → 0.11.0)
+
+**`classifyMachi` を呼んでいた場合**: 和了牌の引数を外す。渡す構造はライブラリが返したもの（`detail.structure`）を使う。
+
+```ts
+// Before
+const machi = classifyMachi(result.detail.structure, agariHai);
+
+// After
+const machi = classifyMachi(result.detail.structure);
+// または、待ちの形は結果に含まれている
+const machi = result.detail.machiType;
+```
+
+**`MentsuHouraStructure` を自前で組み立てていた場合**: `agari` を足す。`index` は `fourMentsu` の添字、`hai` は和了牌。
+
+```ts
+const hand: MentsuHouraStructure = {
+  type: "Mentsu",
+  fourMentsu: [shuntsu345m, shuntsu345m, shuntsu123s, shuntsu456s],
+  jantou: toitsu55m,
+  agari: { kind: "Mentsu", index: 0, hai: HaiKind.ManZu5 }, // 5m を先頭の 345m に入れた
+};
+```
+
+**ロン和了の刻子の明暗を「和了牌を含むか」で判定していた場合**: `agari` を読む。順子に入れた解釈では、和了牌と同じ牌の刻子が暗刻のまま残る。
+
+```ts
+// Before
+const isOpen =
+  mentsu.furo !== undefined || (!isTsumo && mentsu.hais.includes(agariHai));
+
+// After: agari は面子手（type === "Mentsu"）だけが持つので、先に絞り込む
+const { structure } = result.detail;
+if (structure.type === "Mentsu") {
+  const { agari } = structure;
+  const isOpen =
+    mentsu.furo !== undefined ||
+    (!isTsumo && agari.kind === "Mentsu" && agari.index === index);
+}
+```
+
+`agari.index` は `fourMentsu` の添字なので、表示のために面子を並べ替える場合は添字も付け替えること。
+
+**待ちの形から和了牌の位置を推定していた場合**: `detail.structure.agari` をそのまま使う。推定は不要になる。
+
+**点数が変わる手**: 置き場所が複数ある手（上記 Fixed の例）で、保存済みの期待値や問題の正解を持っている場合は再計算すること。
+
 ## 0.10.0 (2026-10-03)
 
 数値を範囲検証したうえで牌種ID・牌IDに変換する `validateHaiKindId` / `validateHaiId` を追加しました。

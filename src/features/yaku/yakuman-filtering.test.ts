@@ -701,8 +701,8 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 内訳は事実として両方返る（翻数は 13 + 13 = 26）
-    expect(result.detail?.yakuResult).toContainEqual(["Daisangen", 13]);
-    expect(result.detail?.yakuResult).toContainEqual(["Tsuuiisou", 13]);
+    expect(result.detail.yakuResult).toContainEqual(["Daisangen", 13]);
+    expect(result.detail.yakuResult).toContainEqual(["Tsuuiisou", 13]);
     expect(result.han).toBe(26);
     // 支払いは最高位の役満1つ分
     expect(result.scoreLevel).toBe("Yakuman");
@@ -735,9 +735,9 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
 
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
-    expect(result.detail?.yakuResult).toContainEqual(["Suuankou", 26]);
-    expect(result.detail?.yakuResult).toContainEqual(["Tsuuiisou", 13]);
-    expect(result.detail?.yakuResult).toContainEqual(["Shousuushii", 13]);
+    expect(result.detail.yakuResult).toContainEqual(["Suuankou", 26]);
+    expect(result.detail.yakuResult).toContainEqual(["Tsuuiisou", 13]);
+    expect(result.detail.yakuResult).toContainEqual(["Shousuushii", 13]);
     expect(result.scoreLevel).toBe("DoubleYakuman");
     expect(result.yakumanMultiplier).toBe(4);
     // 子ツモ 8000×4ベース: 32000/64000 = 計128000
@@ -760,7 +760,7 @@ describe("役満フィルタリング: 統合テスト (calculateScoreForTehai)"
     const result = unwrapOrThrow(calculateScoreForTehai(tehai, config));
 
     // 役満役は成立していない
-    expect(result.detail?.yakuResult.every(([, han]) => han < 13)).toBe(true);
+    expect(result.detail.yakuResult.every(([, han]) => han < 13)).toBe(true);
     expect(result.yakumanMultiplier).toBe(0);
     // 翻数が13を超えていても役満（32000）止まり
     expect(result.han).toBeGreaterThanOrEqual(13);

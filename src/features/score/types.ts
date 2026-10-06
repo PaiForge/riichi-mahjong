@@ -155,8 +155,9 @@ export interface ScoreDetail {
    * 選択された構造における待ちの形
    *
    * 面子手の場合のみ判定される。七対子・国士無双の場合は undefined。
-   * 同じアガリ牌が順子と雀頭の両方に含まれる場合、符が高くなる
-   * 待ち形（例: 両面より単騎）が採用される。
+   * 待ちは `structure.agari`（和了牌の置き場所）から導いた値で、符の内訳の
+   * 待ち符と必ず一致する。同じ和了牌が雀頭と順子の両方に入る手では、
+   * 高点法で採用した置き場所の待ち（例: 平和が付くなら両面）になる。
    */
   readonly machiType: MachiType | undefined;
   /**
@@ -197,4 +198,14 @@ export interface ScoreResult {
    * このフィールドの値をそのまま使用すること。
    */
   readonly detail?: ScoreDetail;
+}
+
+/**
+ * 和了解釈ごとの点数計算結果 (RankedScoreResult)
+ *
+ * {@link rankScoresForTehai} が返す要素。手牌から計算した結果なので、
+ * 採用した構造解釈（{@link ScoreDetail}）を必ず持つ。
+ */
+export interface RankedScoreResult extends ScoreResult {
+  readonly detail: ScoreDetail;
 }

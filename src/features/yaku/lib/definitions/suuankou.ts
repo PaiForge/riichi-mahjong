@@ -2,6 +2,7 @@ import { createYaku } from "../builder";
 import type { HouraStructure, YakuDefinition } from "../../types";
 import { HouraContext } from "../../types";
 import { countAnkou } from "../helpers";
+import { isTankiAgari } from "../../../../core/agari";
 
 const checkSuuankou = (
   hand: HouraStructure,
@@ -26,8 +27,7 @@ export const suuankouDefinition: YakuDefinition = createYaku("Suuankou", {
 })
   .require(checkSuuankou)
   .dynamicHan((hand, context) => {
-    const isTanki =
-      hand.type === "Mentsu" && hand.jantou.hais[0] === context.agariHai;
+    const isTanki = hand.type === "Mentsu" && isTankiAgari(hand);
     return isTanki && context.yakumanRuleConfig?.suuankouTanki === true
       ? 26
       : 13;

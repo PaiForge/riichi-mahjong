@@ -16,6 +16,7 @@ import {
 } from "../features/parser";
 import { isValidShuntsu } from "../core/mentsu";
 import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/mentsu-te";
+import { enumerateAgariPlacements } from "../core/agari";
 import { getHouraStructuresForChiitoitsu } from "../features/yaku/lib/structures/chiitoitsu";
 import { isTuple2, isTuple3 } from "./assertions";
 import type { DetectYakuConfig, HouraContext } from "../features/yaku/types";
@@ -28,8 +29,89 @@ import type {
   CompletedMentsu,
   HouraStructure,
   MentsuHouraStructure,
+  MentsuDecomposition,
+  AgariPlacement,
   ChiitoitsuHouraStructure,
 } from "../types";
+
+/**
+ * テスト用の和了牌の指定 (AgariSpec)
+ *
+ * - 文字列（例: `"5m"`）: 和了牌だけを指定する。置き場所は列挙の先頭
+ *   （雀頭 → 面子の並び順）。待ちや明暗に依存しないテスト向け
+ * - `{ hai, in }`: 置き場所まで指定する。`in` は `"Jantou"` か、和了牌を入れる
+ *   面子の MSPZ（例: `"345m"`）。同じ牌が複数のブロックに入る手（例:
+ *   345m 345m 55m の 5m）で待ち・明暗・暗刻数を試すテストでは必ずこちらを使う
+ */
+export type AgariSpec = string | { readonly hai: string; readonly in: string };
+
+/**
+ * 和了牌の指定を置き場所に解決します。
+ * 指定した置き場所が候補に無ければエラーをスローします。
+ */
+function resolveAgariPlacement(
+  decomposition: MentsuDecomposition,
+  spec: AgariSpec,
+): AgariPlacement {
+  const haiStr = typeof spec === "string" ? spec : spec.hai;
+  const hai = getHaiKindId(haiStr);
+  const candidates = enumerateAgariPlacements(decomposition, hai);
+  const first = candidates[0];
+  if (first === undefined) {
+    throw new Error(`和了牌 ${haiStr} を入れられるブロックがありません`);
+  }
+  if (typeof spec === "string") return first;
+
+  const found =
+    spec.in === "Jantou"
+      ? candidates.find((p) => p.kind === "Jantou")
+      : candidates.find((p) => {
+          if (p.kind !== "Mentsu") return false;
+          const hais = decomposition.fourMentsu[p.index].hais;
+          const expected = parseToKindIds(spec.in);
+          return (
+            hais.length === expected.length &&
+            hais.every((h, i) => h === expected[i])
+          );
+        });
+  if (found === undefined) {
+    throw new Error(
+      `和了牌 ${haiStr} を ${spec.in} に入れる置き場所がありません`,
+    );
+  }
+  return found;
+}
+
+/**
+ * 和了牌の指定が無いときの置き場所。雀頭の単騎は必ず成立するため、
+ * 待ち・明暗に依存しない役のテストではこれで十分。
+ */
+function defaultAgariPlacement(
+  decomposition: MentsuDecomposition,
+): AgariPlacement {
+  return { kind: "Jantou", hai: decomposition.jantou.hais[0] };
+}
+
+/**
+ * 面子分解に和了牌の置き場所を与えて和了構造にします。
+ * 分解の列挙結果（`getHouraStructuresForMentsuTe`）をそのまま役・符の判定に
+ * 渡したいテストで使います。
+ *
+ * @param decomposition 置き場所未確定の面子分解
+ * @param agari 和了牌の指定（{@link AgariSpec}）。省略時は雀頭の単騎
+ */
+export function withAgari(
+  decomposition: MentsuDecomposition,
+  agari?: AgariSpec,
+): MentsuHouraStructure {
+  return {
+    ...decomposition,
+    agari:
+      agari === undefined
+        ? defaultAgariPlacement(decomposition)
+        : resolveAgariPlacement(decomposition, agari),
+  };
+}
 
 /**
  * Result から値を取り出します。Err の場合はそのエラーをスローします。
@@ -142,6 +224,7 @@ export function createChiitoitsuStructureFromMspz(
  *
  * @param fourMentsu 4つの面子
  * @param jantou 雀頭
+ * @param agari 和了牌の指定（{@link AgariSpec}）。省略時は雀頭の単騎
  * @returns 面子手の和了構造
  */
 export function createMentsuStructure(
@@ -152,8 +235,9 @@ export function createMentsuStructure(
     CompletedMentsu,
   ],
   jantou: Toitsu,
+  agari?: AgariSpec,
 ): MentsuHouraStructure {
-  return { type: "Mentsu", fourMentsu, jantou };
+  return withAgari({ type: "Mentsu", fourMentsu, jantou }, agari);
 }
 
 /**
@@ -222,21 +306,23 @@ export function createScoreCalculationConfig(
 
 /**
  * Extended MSPZ形式の文字列から面子手（4面子1雀頭）の和了構造を作成します。
- * 面子分解が複数ありうる場合は最初の解釈を返します。
+ * 面子分解が複数ありうる場合は最初の分解を使います。
  * 構造化できない牌姿を渡した場合はエラーをスローします。
  *
  * @param mspzString Extended MSPZ形式、または通常のMSPZ形式の文字列
+ * @param agari 和了牌の指定（{@link AgariSpec}）。省略時は雀頭の単騎
  * @returns 面子手の和了構造
  */
 export function createMentsuStructureFromMspz(
   mspzString: string,
+  agari?: AgariSpec,
 ): MentsuHouraStructure {
   const hands = getHouraStructuresForMentsuTe(createTehai(mspzString));
   const hand = hands[0];
   if (hand === undefined) {
     throw new Error(`面子手として構造化できません: ${mspzString}`);
   }
-  return hand;
+  return withAgari(hand, agari);
 }
 
 /**
@@ -310,16 +396,24 @@ export function getHaiKindId(mspz: string): HaiKindId {
 /**
  * テスト用のモック手牌 (HouraStructure) を作成します。
  * 指定された面子と雀頭を使用し、残りはダミーの順子で埋めます。
+ *
+ * @param targetMentsu 先頭に置く面子
+ * @param jantou 雀頭
+ * @param agari 和了牌の指定（{@link AgariSpec}）。省略時は雀頭の単騎
  */
 export function createMockHand(
   targetMentsu: CompletedMentsu,
   jantou: Toitsu,
+  agari?: AgariSpec,
 ): HouraStructure {
   // Fill rest with dummy
   const dummyShuntsu = createShuntsu("123s");
-  return {
-    type: "Mentsu",
-    fourMentsu: [targetMentsu, dummyShuntsu, dummyShuntsu, dummyShuntsu],
-    jantou,
-  };
+  return withAgari(
+    {
+      type: "Mentsu",
+      fourMentsu: [targetMentsu, dummyShuntsu, dummyShuntsu, dummyShuntsu],
+      jantou,
+    },
+    agari,
+  );
 }

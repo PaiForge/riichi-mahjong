@@ -10,37 +10,26 @@ export type MachiType =
   | "Penchan"; // 辺張待ち
 
 /**
- * 手牌構造と和了牌から待ちの形を判定する
- * @param hand 分解された手牌構造
- * @param agariHai 和了牌
- * @returns 待ちの形（判定できない、または Shanpon などの場合は undefined）
+ * 和了構造から待ちの形を判定する (classifyMachi)
+ *
+ * 待ちは和了牌の置き場所（{@link MentsuHouraStructure.agari}）で決まる。
+ * 雀頭なら単騎、刻子なら双碰、順子なら和了牌の位置で両面・嵌張・辺張。
+ * 置き場所が複数ある手でどれを採るかは高点法の問題であり、この関数は
+ * 与えられた和了構造の置き場所をそのまま読む。
+ *
+ * @param hand 和了構造
+ * @returns 待ちの形。面子手でない（七対子・国士無双）場合は undefined
  */
-export function classifyMachi(
-  hand: HouraStructure,
-  agariHai: HaiKindId,
-): MachiType | undefined {
+export function classifyMachi(hand: HouraStructure): MachiType | undefined {
   if (hand.type !== "Mentsu") return undefined;
 
-  // 1. 雀頭での和了（単騎待ち）
-  if (hand.jantou.hais.includes(agariHai)) {
-    return "Tanki";
-  }
+  const { agari } = hand;
+  if (agari.kind === "Jantou") return "Tanki";
 
-  // 2. 順子・刻子・槓子での和了
-  for (const mentsu of hand.fourMentsu) {
-    if (mentsu.type === "Shuntsu") {
-      const machi = classifyShuntsuWait(mentsu, agariHai);
-      if (machi) return machi;
-    } else {
-      // 3. 刻子・槓子での和了（双碰待ち）
-      // 刻子の一部が和了牌＝シャボ待ちで和了
-      if (mentsu.hais.includes(agariHai)) {
-        return "Shanpon";
-      }
-    }
-  }
-
-  return undefined;
+  const mentsu = hand.fourMentsu[agari.index];
+  return mentsu.type === "Shuntsu"
+    ? classifyShuntsuWait(mentsu, agari.hai)
+    : "Shanpon";
 }
 
 /**
@@ -50,10 +39,7 @@ function classifyShuntsuWait(
   shuntsu: Shuntsu,
   agariHai: HaiKindId,
 ): MachiType | undefined {
-  const { hais } = shuntsu;
-  if (!hais.includes(agariHai)) return undefined;
-
-  const [a, b, c] = hais; // 順子はソートされている前提
+  const [a, b, c] = shuntsu.hais; // 順子はソートされている前提
 
   if (agariHai === a) {
     // [Agari, b, c]: 789 の 7 待ちのみ辺張、それ以外は両面

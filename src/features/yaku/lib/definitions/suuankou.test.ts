@@ -31,7 +31,10 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu9,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+      hai: "9s",
+      in: "Jantou",
+    });
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(13);
@@ -45,7 +48,10 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+      hai: "9s",
+      in: "Jantou",
+    });
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(26);
@@ -59,12 +65,13 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+      hai: "9s",
+      in: "Jantou",
+    });
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
-    // 一般的なルールでは単騎待ちツモもダブル役満扱いとすることが多いが、
-    // 実装(suuankou.ts)では `hand.jantou.hais[0] === context.agariHai` で判定しているので、
-    // ツモでも単騎待ちなら26になるはず。
+    // 単騎かどうかは和了構造の置き場所（agari）で決まり、ツモ・ロンによらない。
     expect(suuankouDefinition.getHansu(hand, context)).toBe(26);
   });
 
@@ -76,7 +83,10 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+      hai: "1m",
+      in: "111m",
+    });
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(13);
@@ -90,7 +100,10 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
+    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+      hai: "1m",
+      in: "111m",
+    });
 
     expect(suuankouDefinition.isSatisfied(hand, context)).toBe(false);
     expect(suuankouDefinition.getHansu(hand, context)).toBe(0);
