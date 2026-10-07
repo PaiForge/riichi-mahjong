@@ -1,9 +1,11 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
+  AkaHai,
   type Furo,
   FuroType,
   HAI_KIND_IDS,
+  type HaiCode,
   type HaiId,
   HaiKind,
   type HaiKindId,
@@ -67,28 +69,104 @@ describe("Tacha (他家)", () => {
 
 describe("Furo (副露メタ情報)", () => {
   it("Chi/Pon/Daiminkan/Kakan は Furo 型として適合すること", () => {
-    expectTypeOf({ type: FuroType.Chi, from: Tacha.Kamicha }).toExtend<Furo>();
-    expectTypeOf({ type: FuroType.Pon, from: Tacha.Toimen }).toExtend<Furo>();
+    expectTypeOf({
+      type: FuroType.Chi,
+      from: Tacha.Kamicha,
+      nakiHai: HaiKind.ManZu1,
+    }).toExtend<Furo>();
+    expectTypeOf({
+      type: FuroType.Pon,
+      from: Tacha.Toimen,
+      nakiHai: HaiKind.PinZu5,
+    }).toExtend<Furo>();
     expectTypeOf({
       type: FuroType.Daiminkan,
       from: Tacha.Shimocha,
+      nakiHai: HaiKind.Chun,
     }).toExtend<Furo>();
     expectTypeOf({
       type: FuroType.Kakan,
       from: Tacha.Kamicha,
+      nakiHai: HaiKind.PinZu5,
+      kakanHai: HaiKind.PinZu5,
     }).toExtend<Furo>();
+  });
+
+  it("牌コード (HaiCode) の副露は赤 5 を鳴いた牌・加槓牌に持てること", () => {
+    expectTypeOf({
+      type: FuroType.Chi,
+      from: Tacha.Kamicha,
+      nakiHai: AkaHai.ManZu5,
+    }).toExtend<Furo<HaiCode>>();
+    expectTypeOf({
+      type: FuroType.Kakan,
+      from: Tacha.Toimen,
+      nakiHai: HaiKind.PinZu5,
+      kakanHai: AkaHai.PinZu5,
+    }).toExtend<Furo<HaiCode>>();
+    // 牌種IDの副露には赤 5 を入れられない
+    expectTypeOf({
+      type: FuroType.Pon,
+      from: Tacha.Toimen,
+      nakiHai: AkaHai.PinZu5,
+    }).not.toExtend<Furo>();
   });
 
   it("不正な構造は Furo 型として扱われないこと", () => {
     // missing type
-    expectTypeOf({ from: Tacha.Kamicha }).not.toExtend<Furo>();
+    expectTypeOf({
+      from: Tacha.Kamicha,
+      nakiHai: HaiKind.ManZu1,
+    }).not.toExtend<Furo>();
     // missing from
-    expectTypeOf({ type: FuroType.Chi }).not.toExtend<Furo>();
+    expectTypeOf({
+      type: FuroType.Chi,
+      nakiHai: HaiKind.ManZu1,
+    }).not.toExtend<Furo>();
+    // missing nakiHai（鳴いた牌は必須）
+    expectTypeOf({
+      type: FuroType.Pon,
+      from: Tacha.Toimen,
+    }).not.toExtend<Furo>();
+    // Kakan without kakanHai（加槓牌は必須）
+    expectTypeOf({
+      type: FuroType.Kakan,
+      from: Tacha.Toimen,
+      nakiHai: HaiKind.PinZu5,
+    }).not.toExtend<Furo>();
+    // Chi from non-kamicha（チーは上家からのみ）
+    expectTypeOf({
+      type: FuroType.Chi,
+      from: Tacha.Toimen,
+      nakiHai: HaiKind.ManZu1,
+    }).not.toExtend<Furo>();
     // invalid type
     expectTypeOf({
       type: "InvalidFuro",
       from: Tacha.Kamicha,
+      nakiHai: HaiKind.ManZu1,
     }).not.toExtend<Furo>();
+  });
+});
+
+describe("HaiCode (牌コード)", () => {
+  it("赤牌IDは 34〜36 で牌種IDと重ならないこと", () => {
+    expect(AkaHai.ManZu5).toBe(34);
+    expect(AkaHai.PinZu5).toBe(35);
+    expect(AkaHai.SouZu5).toBe(36);
+    expect(Object.keys(AkaHai)).toHaveLength(3);
+  });
+
+  it("牌種IDは牌コードの部分型であること", () => {
+    expectTypeOf<HaiKindId>().toExtend<HaiCode>();
+    expectTypeOf(AkaHai.ManZu5).toExtend<HaiCode>();
+    expectTypeOf(AkaHai.ManZu5).not.toExtend<HaiKindId>();
+    expectTypeOf(37).not.toExtend<HaiCode>();
+  });
+
+  it("牌種IDの手牌はそのまま牌コードの手牌として扱えること", () => {
+    const tehai: Tehai = { closed: [HaiKind.ManZu1], exposed: [] };
+    expectTypeOf(tehai).toExtend<Tehai<HaiCode>>();
   });
 });
 

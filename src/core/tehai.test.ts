@@ -5,11 +5,19 @@ import {
   ShoushaiError,
   TahaiError,
 } from "../errors";
-import type { CompletedMentsu, HaiKindId, Kantsu, Shuntsu } from "../types";
-import { HaiKind, MentsuType } from "../types";
+import type {
+  CompletedMentsu,
+  HaiCode,
+  HaiKindId,
+  Kantsu,
+  Shuntsu,
+  Tehai,
+} from "../types";
+import { AkaHai, HaiKind, MentsuType, Tacha } from "../types";
 import {
   isTehai13,
   isTehai14,
+  tehaiToHaiKindId,
   validateTehai,
   validateTehai13,
   validateTehai14,
@@ -19,7 +27,7 @@ describe("Tehai Validation (手牌の検証)", () => {
   // 指定枚数の連番牌（HaiKindId）と副露リストからダミーの Tehai を組み立てるヘルパー。
   // 連番にすることで InvalidHaiQuantityError を避け、
   // 開始オフセット 18 (SouZu1) で dummyMentsu/dummyKantsu (ManZu) との重複を避ける。
-  // ※ src/utils/test-helpers.ts の createTehai (Extended MSPZ 文字列から Tehai14 を作る) とは別物。
+  // ※ src/utils/test-helpers.ts の createTehai (Extended MPSZ 文字列から Tehai14 を作る) とは別物。
   const createSequentialTehai = (
     closedCount: number,
     furos: CompletedMentsu[] = [],
@@ -269,5 +277,77 @@ describe("Tehai Validation (手牌の検証)", () => {
       const res = validateTehai13(tehaiLow);
       expect(res.isOk()).toBe(true);
     });
+  });
+});
+
+describe("tehaiToHaiKindId (牌コードの手牌を牌種IDに変換)", () => {
+  it("純手牌・面子・副露情報の赤 5 をすべて 5 の牌種IDに落とし、並び順を保つこと", () => {
+    const tehai: Tehai<HaiCode> = {
+      closed: [AkaHai.ManZu5, HaiKind.ManZu1, HaiKind.ManZu5],
+      exposed: [
+        {
+          type: MentsuType.Shuntsu,
+          hais: [HaiKind.PinZu4, AkaHai.PinZu5, HaiKind.PinZu6],
+          furo: { type: "Chi", from: Tacha.Kamicha, nakiHai: AkaHai.PinZu5 },
+        },
+        {
+          type: MentsuType.Kantsu,
+          hais: [HaiKind.SouZu5, HaiKind.SouZu5, HaiKind.SouZu5, AkaHai.SouZu5],
+          furo: {
+            type: "Kakan",
+            from: Tacha.Toimen,
+            nakiHai: AkaHai.SouZu5,
+            kakanHai: HaiKind.SouZu5,
+          },
+        },
+        {
+          type: MentsuType.Kantsu,
+          hais: [HaiKind.ManZu5, HaiKind.ManZu5, HaiKind.ManZu5, AkaHai.ManZu5],
+        },
+      ],
+    };
+
+    expect(tehaiToHaiKindId(tehai)).toEqual({
+      closed: [HaiKind.ManZu5, HaiKind.ManZu1, HaiKind.ManZu5],
+      exposed: [
+        {
+          type: MentsuType.Shuntsu,
+          hais: [HaiKind.PinZu4, HaiKind.PinZu5, HaiKind.PinZu6],
+          furo: { type: "Chi", from: Tacha.Kamicha, nakiHai: HaiKind.PinZu5 },
+        },
+        {
+          type: MentsuType.Kantsu,
+          hais: [
+            HaiKind.SouZu5,
+            HaiKind.SouZu5,
+            HaiKind.SouZu5,
+            HaiKind.SouZu5,
+          ],
+          furo: {
+            type: "Kakan",
+            from: Tacha.Toimen,
+            nakiHai: HaiKind.SouZu5,
+            kakanHai: HaiKind.SouZu5,
+          },
+        },
+        {
+          type: MentsuType.Kantsu,
+          hais: [
+            HaiKind.ManZu5,
+            HaiKind.ManZu5,
+            HaiKind.ManZu5,
+            HaiKind.ManZu5,
+          ],
+        },
+      ],
+    });
+  });
+
+  it("副露情報の無い面子には furo を付けないこと", () => {
+    const converted = tehaiToHaiKindId({
+      closed: [],
+      exposed: [{ type: MentsuType.Kantsu, hais: [27, 27, 27, 27] }],
+    });
+    expect(converted.exposed[0]).not.toHaveProperty("furo");
   });
 });

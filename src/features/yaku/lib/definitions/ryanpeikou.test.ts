@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ryanpeikouDefinition } from "./ryanpeikou";
 import {
-  createChiitoitsuStructureFromMspz,
+  createChiitoitsuStructureFromMpsz,
   createHouraContext,
   createTehai,
   withAgari,
@@ -111,7 +111,7 @@ describe("二盃口（リャンペーコー）の判定", () => {
     // 112233m 445566p 99s
     // 二盃口の形だが、七対子として解釈された構造オブジェクトに対してはfalseを返す
     const hand: HouraStructure =
-      createChiitoitsuStructureFromMspz("112233m445566p99s");
+      createChiitoitsuStructureFromMpsz("112233m445566p99s");
 
     expect(ryanpeikouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,

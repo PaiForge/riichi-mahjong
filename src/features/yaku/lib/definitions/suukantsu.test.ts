@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { suukantsuDefinition } from "./suukantsu";
 import {
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
 } from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
@@ -12,8 +12,8 @@ describe("四槓子（スーカンツ）の判定", () => {
   it("槓子が4つある場合、成立すること", () => {
     // [1111m], [2222p], [3333s], [4444z], 99p (単騎待ち)
     // 通常は単騎待ち等のアガリ形になる
-    const hand = createMentsuStructureFromMspz(
-      "99p[1111m][2222p][3333s][4444z]",
+    const hand = createMentsuStructureFromMpsz(
+      "99p[1=111m][2=222p][3=333s][4=444z]",
     );
 
     expect(suukantsuDefinition.isSatisfied(hand, mockContext)).toBe(true);
@@ -22,7 +22,9 @@ describe("四槓子（スーカンツ）の判定", () => {
 
   it("槓子が3つ以下の場合は不成立", () => {
     // [1111m], [2222p], [3333s], 789m, 99p
-    const hand = createMentsuStructureFromMspz("789m99p[1111m][2222p][3333s]");
+    const hand = createMentsuStructureFromMpsz(
+      "789m99p[1=111m][2=222p][3=333s]",
+    );
 
     expect(suukantsuDefinition.isSatisfied(hand, mockContext)).toBe(false);
   });

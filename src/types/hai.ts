@@ -111,6 +111,41 @@ export const HaiKind = {
 export type HaiKind = (typeof HaiKind)[keyof typeof HaiKind];
 
 /**
+ * 赤牌 (AkaHai)
+ *
+ * 赤 5 を表す牌コードの定数定義。赤 5 は 5 と同じ牌種（`HaiKindId`）で
+ * 赤属性だけが異なるため、牌種IDとは別の値域（34〜36）に置く。
+ */
+export const AkaHai = {
+  ManZu5: 34,
+  PinZu5: 35,
+  SouZu5: 36,
+} as const;
+
+/**
+ * 赤牌ID (AkaHaiId)
+ *
+ * 赤 5 を表す牌コード（34: 赤5m, 35: 赤5p, 36: 赤5s）。
+ */
+export type AkaHaiId = (typeof AkaHai)[keyof typeof AkaHai];
+
+/**
+ * 牌コード (HaiCode)
+ *
+ * 牌種IDに赤属性を加えた 37 値の牌の表現。赤でない牌は牌種ID（0〜33）と
+ * 同じ値、赤 5 は {@link AkaHai}（34〜36）で表す。
+ *
+ * Extended MPSZ の解釈結果（`parseMpsz` / `parseExtendedMpsz`）と正規形への
+ * 変換（`formatMpsz`）はこの型で牌を扱う。赤属性を区別しない計算
+ * （シャンテン数・役・点数）に渡す前に `haiCodeToKindId` /
+ * `tehaiToHaiKindId` で牌種IDへ変換する。
+ *
+ * `HaiKindId` は `HaiCode` の部分型なので、赤を含まない手牌はそのまま
+ * `Tehai<HaiCode>` として扱える。
+ */
+export type HaiCode = HaiKindId | AkaHaiId;
+
+/**
  * 牌種タイプ (HaiType)
  */
 export const HaiType = {

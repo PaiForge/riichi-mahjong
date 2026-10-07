@@ -5,11 +5,13 @@
 // =============================================================================
 // Types & Constants
 // =============================================================================
-export { HaiKind, Tacha, FuroType, MentsuType, HaiType } from "./types";
+export { HaiKind, AkaHai, Tacha, FuroType, MentsuType, HaiType } from "./types";
 
 export type {
   HaiId,
   HaiKindId,
+  HaiCode,
+  AkaHaiId,
   Furo,
   Shuntsu,
   Koutsu,
@@ -68,7 +70,7 @@ export {
   InvalidHaiQuantityError,
   ChomboError,
   NoYakuError,
-  MspzParseError,
+  MpszParseError,
 } from "./errors";
 
 // =============================================================================
@@ -77,7 +79,10 @@ export {
 export {
   validateHaiKindId,
   validateHaiId,
+  validateHaiCode,
   haiIdToKindId,
+  haiCodeToKindId,
+  isAkaHai,
   kindIdToHaiType,
   haiKindToNumber,
   isSuupai,
@@ -94,6 +99,7 @@ export {
   validateTehai14,
   isTehai13,
   isTehai14,
+  tehaiToHaiKindId,
 } from "./core/tehai";
 export type { TehaiError } from "./core/tehai";
 
@@ -137,13 +143,18 @@ export { isMenzen } from "./features/yaku/utils";
 export { isKazehai } from "./core/hai";
 
 // =============================================================================
-// Features - Parser
+// Features - Parser (Extended MPSZ 2.0)
 // =============================================================================
-export { parseMspz, parseExtendedMspz } from "./features/parser";
-export { isMspz, isExtendedMspz } from "./features/parser/mspz";
-// 型ガード isMspz / isExtendedMspz が絞り込む先の型。利用側が絞り込んだ値を
+export {
+  parseMpsz,
+  parseExtendedMpsz,
+  isMpsz,
+  isExtendedMpsz,
+  formatMpsz,
+} from "./features/parser";
+// 型ガード isMpsz / isExtendedMpsz が絞り込む先の型。利用側が絞り込んだ値を
 // 変数や引数として保持するために必要なため公開する。
-export type { MspzString, ExtendedMspzString } from "./features/parser";
+export type { MpszString, ExtendedMpszString } from "./features/parser";
 
 // =============================================================================
 // Features - Score

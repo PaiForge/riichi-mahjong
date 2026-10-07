@@ -21,7 +21,7 @@ describe("getHouraStructuresForKokushi", () => {
 
   it("鳴きがある場合は国士無双として構造化できないこと", () => {
     // 国士に近いが鳴いているケース
-    const hand = createTehai("19m19p19s1234567z[111z]");
+    const hand = createTehai("19m19p19s1234567z[1=11z]");
     const results = getHouraStructuresForKokushi(hand);
     expect(results).toHaveLength(0);
   });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Result } from "neverthrow";
 import * as PublicApi from "../src/index";
 import type {
+  HaiCode,
   HaiId,
   HaiKindId,
   HouraStructure,
@@ -88,7 +89,9 @@ describe("公開APIのエクスポート", () => {
 
     it("成立する和了が無ければ空配列を返すこと", () => {
       // 234m 234p 456s 678s 55z は役なし
-      const tehai = unwrapOrThrow(PublicApi.parseMspz("234m234p456s678s55z"));
+      const tehai = PublicApi.tehaiToHaiKindId(
+        unwrapOrThrow(PublicApi.parseMpsz("234m234p456s678s55z")),
+      );
       const validated = unwrapOrThrow(PublicApi.validateTehai14(tehai));
 
       const results = PublicApi.rankScoresForTehai(validated, {
@@ -120,7 +123,9 @@ describe("公開APIのエクスポート", () => {
 
     it("役が成立しない手では NoYakuError を Err として返すこと", () => {
       // 234m 234p 456s 678s + 55z(白) は役なし
-      const tehai = unwrapOrThrow(PublicApi.parseMspz("234m234p456s678s55z"));
+      const tehai = PublicApi.tehaiToHaiKindId(
+        unwrapOrThrow(PublicApi.parseMpsz("234m234p456s678s55z")),
+      );
       const validated = unwrapOrThrow(PublicApi.validateTehai14(tehai));
 
       const result = PublicApi.calculateScoreForTehai(validated, {
@@ -198,30 +203,58 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
-  describe("Parser (parseMspz / parseExtendedMspz)", () => {
+  describe("Parser (parseMpsz / parseExtendedMpsz / formatMpsz)", () => {
     it("関数としてエクスポートされていること", () => {
-      expect(PublicApi.parseMspz).toBeDefined();
-      expect(typeof PublicApi.parseMspz).toBe("function");
-
-      expect(PublicApi.parseExtendedMspz).toBeDefined();
-      expect(typeof PublicApi.parseExtendedMspz).toBe("function");
+      expect(typeof PublicApi.parseMpsz).toBe("function");
+      expect(typeof PublicApi.parseExtendedMpsz).toBe("function");
+      expect(typeof PublicApi.formatMpsz).toBe("function");
     });
 
-    it("parseMspz が期待される型シグネチャを満たすこと", () => {
-      // パーサーは Branded ではない Tehai を Result で返す
-      PublicApi.parseMspz satisfies (
+    it("parseMpsz / parseExtendedMpsz が期待される型シグネチャを満たすこと", () => {
+      // パーサーは Branded ではない、牌コードの Tehai を Result で返す
+      PublicApi.parseMpsz satisfies (
         input: string,
-      ) => Result<PublicApi.Tehai, PublicApi.MspzParseError>;
+      ) => Result<Tehai<HaiCode>, PublicApi.MpszParseError>;
+      PublicApi.parseExtendedMpsz satisfies (
+        input: string,
+      ) => Result<Tehai<HaiCode>, PublicApi.MpszParseError>;
 
       expect(true).toBe(true);
     });
 
-    it("parseExtendedMspz が期待される型シグネチャを満たすこと", () => {
-      PublicApi.parseExtendedMspz satisfies (
-        input: string,
-      ) => Result<PublicApi.Tehai, PublicApi.MspzParseError>;
+    it("formatMpsz が期待される型シグネチャを満たし、牌種IDの手牌も渡せること", () => {
+      PublicApi.formatMpsz satisfies (tehai: Tehai<HaiCode>) => string;
 
-      expect(true).toBe(true);
+      const kindTehai: Tehai = {
+        closed: [PublicApi.HaiKind.ManZu1],
+        exposed: [],
+      };
+      expect(PublicApi.formatMpsz(kindTehai)).toBe("1m");
+    });
+
+    it("解釈 → 牌種IDへ変換 → 検証 → 点数計算 の流れがつながること", () => {
+      // 赤 5 と副露を含む手牌。赤属性は点数には乗らない（docs/scope.md）
+      const parsed = unwrapOrThrow(
+        PublicApi.parseExtendedMpsz("234m340p678s[6+66s]22p"),
+      );
+      expect(parsed.closed).toContain(PublicApi.AkaHai.PinZu5);
+
+      const tehai = PublicApi.tehaiToHaiKindId(parsed);
+      const validated = unwrapOrThrow(PublicApi.validateTehai14(tehai));
+      const result = PublicApi.calculateScoreForTehai(validated, {
+        agariHai: PublicApi.HaiKind.PinZu2,
+        isTsumo: false,
+        jikaze: PublicApi.HaiKind.Nan,
+        bakaze: PublicApi.HaiKind.Ton,
+        doraMarkers: [],
+      });
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.detail.yakuResult).toEqual([["Tanyao", 1]]);
+      }
+      // 正規形は赤属性と鳴き元を保持する
+      expect(PublicApi.formatMpsz(parsed)).toBe("234m22340p678s[6+66s]");
     });
   });
 
@@ -238,14 +271,17 @@ describe("公開APIのエクスポート", () => {
     "InvalidHaiQuantityError",
     "MahjongArgumentError",
     "MahjongError",
-    "MspzParseError",
+    "MpszParseError",
     "NoYakuError",
     "ShoushaiError",
     "TahaiError",
     // 牌
     "validateHaiKindId",
     "validateHaiId",
+    "validateHaiCode",
     "haiIdToKindId",
+    "haiCodeToKindId",
+    "isAkaHai",
     "haiKindToNumber",
     "isKazehai",
     "isSuupai",
@@ -266,6 +302,7 @@ describe("公開APIのエクスポート", () => {
     "validateTehai",
     "validateTehai13",
     "validateTehai14",
+    "tehaiToHaiKindId",
     // 待ち・シャンテン
     "classifyMachi",
     "calculateShanten",
@@ -279,10 +316,11 @@ describe("公開APIのエクスポート", () => {
     "getPaymentTotal",
     "getYakumanMultiplier",
     // パーサ
-    "isExtendedMspz",
-    "isMspz",
-    "parseExtendedMspz",
-    "parseMspz",
+    "isExtendedMpsz",
+    "isMpsz",
+    "parseExtendedMpsz",
+    "parseMpsz",
+    "formatMpsz",
   ];
 
   describe("エクスポートの網羅", () => {
@@ -308,6 +346,14 @@ describe("公開APIのエクスポート", () => {
         value: number,
       ) => Result<HaiId, PublicApi.MahjongArgumentError>;
       PublicApi.haiIdToKindId satisfies (id: HaiId) => HaiKindId;
+      PublicApi.validateHaiCode satisfies (
+        value: number,
+      ) => Result<HaiCode, PublicApi.MahjongArgumentError>;
+      PublicApi.haiCodeToKindId satisfies (code: HaiCode) => HaiKindId;
+      PublicApi.isAkaHai satisfies (
+        code: HaiCode,
+      ) => code is PublicApi.AkaHaiId;
+      PublicApi.tehaiToHaiKindId satisfies (tehai: Tehai<HaiCode>) => Tehai;
       PublicApi.haiKindToNumber satisfies (
         kind: HaiKindId,
       ) => number | undefined;
@@ -368,14 +414,14 @@ describe("公開APIのエクスポート", () => {
     });
   });
 
-  describe("MSPZ型ガードの型シグネチャ", () => {
+  describe("MPSZ型ガードの型シグネチャ", () => {
     it("期待される型シグネチャを満たすこと", () => {
-      PublicApi.isMspz satisfies (
+      PublicApi.isMpsz satisfies (
         input: string,
-      ) => input is PublicApi.MspzString;
-      PublicApi.isExtendedMspz satisfies (
+      ) => input is PublicApi.MpszString;
+      PublicApi.isExtendedMpsz satisfies (
         input: string,
-      ) => input is PublicApi.ExtendedMspzString;
+      ) => input is PublicApi.ExtendedMpszString;
 
       expect(true).toBe(true);
     });

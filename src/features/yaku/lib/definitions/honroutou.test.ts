@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { honroutouDefinition } from "./honroutou";
 import {
-  createChiitoitsuStructureFromMspz,
+  createChiitoitsuStructureFromMpsz,
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
 } from "../../../../utils/test-helpers";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
@@ -17,7 +17,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
 
   it("対々和形で条件を満たす場合、成立すること", () => {
     // 111m 999p 111s 999s 11z
-    const hand = createMentsuStructureFromMspz("111m999p111s999s11z");
+    const hand = createMentsuStructureFromMpsz("111m999p111s999s11z");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
     expect(honroutouDefinition.getHansu(hand, mockContextMenzen)).toBe(2);
@@ -25,7 +25,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
 
   it("鳴きありでも成立すること", () => {
     // 111m 999p 111s 11z [999s] (Pon)
-    const hand = createMentsuStructureFromMspz("111m999p111s11z[999s]");
+    const hand = createMentsuStructureFromMpsz("111m999p111s11z[9=99s]");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextOpen)).toBe(true);
     expect(honroutouDefinition.getHansu(hand, mockContextOpen)).toBe(2);
@@ -34,14 +34,14 @@ describe("混老頭（ホンロウトウ）の判定", () => {
   it("七対子形で条件を満たす場合、成立すること", () => {
     // 11m 99m 11p 99p 11s 99s 77z
     const hand: HouraStructure =
-      createChiitoitsuStructureFromMspz("1199m1199p1199s77z");
+      createChiitoitsuStructureFromMpsz("1199m1199p1199s77z");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
   });
 
   it("順子が含まれる場合は不成立（ホンチャン）", () => {
     // 123m 999p 111s 999s 11z (123mがNG)
-    const hand = createMentsuStructureFromMspz("123m999p111s999s11z");
+    const hand = createMentsuStructureFromMpsz("123m999p111s999s11z");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,
@@ -50,7 +50,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
 
   it("字牌が含まれない場合は不成立（清老頭）", () => {
     // 111m 999p 111s 999s 99m (字牌がないのでNG)
-    const hand = createMentsuStructureFromMspz("111m999p111s999s99m");
+    const hand = createMentsuStructureFromMpsz("111m999p111s999s99m");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,
@@ -59,7 +59,7 @@ describe("混老頭（ホンロウトウ）の判定", () => {
 
   it("中張牌が含まれる場合は不成立", () => {
     // 111m 222p 111s 999s 11z (222pがNG)
-    const hand = createMentsuStructureFromMspz("111m222p111s999s11z");
+    const hand = createMentsuStructureFromMpsz("111m222p111s999s11z");
 
     expect(honroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,

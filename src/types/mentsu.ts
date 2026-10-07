@@ -1,4 +1,4 @@
-import type { HaiKindId, HaiId } from "./hai";
+import type { HaiCode, HaiId, HaiKindId } from "./hai";
 
 /**
  * 他家 (Tacha)
@@ -38,12 +38,37 @@ export type FuroType = (typeof FuroType)[keyof typeof FuroType];
  * 暗槓（自力で4枚揃える行為）はここには含めない。
  *
  * 構成する牌自体はここには含めず、この型を持つ親（Mentsuなど）が保持することを想定する。
+ *
+ * - `from`: 鳴き元（他家）。チーは上家からしか行えないため型で上家に固定する
+ * - `nakiHai`: 鳴いた牌。チー・ポン・大明槓で他家から取り込んだ牌。加槓では元のポンで取り込んだ牌
+ * - `kakanHai`: 加槓牌。加槓で明刻子に加えた 4 枚目の牌
+ *
+ * 鳴いた牌・加槓牌は省略できない（「未指定」の状態をデータモデルに持たない）。
+ *
+ * @template T 牌の型 (HaiKindId | HaiCode | HaiId)
  */
-export type Furo =
-  | { readonly type: typeof FuroType.Chi; readonly from: Tacha }
-  | { readonly type: typeof FuroType.Pon; readonly from: Tacha }
-  | { readonly type: typeof FuroType.Daiminkan; readonly from: Tacha }
-  | { readonly type: typeof FuroType.Kakan; readonly from: Tacha };
+export type Furo<T extends HaiCode | HaiId = HaiKindId> =
+  | {
+      readonly type: typeof FuroType.Chi;
+      readonly from: typeof Tacha.Kamicha;
+      readonly nakiHai: T;
+    }
+  | {
+      readonly type: typeof FuroType.Pon;
+      readonly from: Tacha;
+      readonly nakiHai: T;
+    }
+  | {
+      readonly type: typeof FuroType.Daiminkan;
+      readonly from: Tacha;
+      readonly nakiHai: T;
+    }
+  | {
+      readonly type: typeof FuroType.Kakan;
+      readonly from: Tacha;
+      readonly nakiHai: T;
+      readonly kakanHai: T;
+    };
 
 /**
  * 面子種別 (MentsuType)
@@ -61,11 +86,12 @@ export type MentsuType = (typeof MentsuType)[keyof typeof MentsuType];
 /**
  * 基本的な面子構造 (ジェネリック)
  *
- * 牌の型をジェネリクス `T` で抽象化することで、以下の両方のユースケースに対応します：
+ * 牌の型をジェネリクス `T` で抽象化することで、以下のユースケースに対応します：
  * 1. `HaiKindId`: MPSZ形式の手牌をもとにシャンテン計算を行うなど、牌の種類のみに関心がある場合（抽象的な計算）。
- * 2. `HaiId`: 実際のゲームの牌譜など、牌の物理的なIDを処理対象とする場合（具象的な計算）。
+ * 2. `HaiCode`: Extended MPSZ の解釈結果など、赤属性を保持したい場合。
+ * 3. `HaiId`: 実際のゲームの牌譜など、牌の物理的なIDを処理対象とする場合（具象的な計算）。
  */
-interface BaseMentsu<T extends HaiKindId | HaiId> {
+interface BaseMentsu<T extends HaiCode | HaiId> {
   readonly type: MentsuType;
   /**
    * 構成する牌のリスト。
@@ -79,34 +105,34 @@ interface BaseMentsu<T extends HaiKindId | HaiId> {
 /**
  * 順子 (Shuntsu)
  */
-export type Shuntsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
+export type Shuntsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Shuntsu;
   readonly hais: readonly [T, T, T];
-  readonly furo?: Furo;
+  readonly furo?: Furo<T>;
 };
 
 /**
  * 刻子 (Koutsu)
  */
-export type Koutsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
+export type Koutsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Koutsu;
   readonly hais: readonly [T, T, T];
-  readonly furo?: Furo;
+  readonly furo?: Furo<T>;
 };
 
 /**
  * 槓子 (Kantsu)
  */
-export type Kantsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
+export type Kantsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Kantsu;
   readonly hais: readonly [T, T, T, T];
-  readonly furo?: Furo;
+  readonly furo?: Furo<T>;
 };
 
 /**
  * 対子 (Toitsu)
  */
-export type Toitsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
+export type Toitsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Toitsu;
   readonly hais: readonly [T, T];
   readonly furo?: never;
@@ -115,7 +141,7 @@ export type Toitsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
 /**
  * 塔子 (Tatsu)
  */
-export type Tatsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
+export type Tatsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Tatsu;
   readonly hais: readonly [T, T];
   readonly furo?: never;
@@ -127,7 +153,7 @@ export type Tatsu<T extends HaiKindId | HaiId = HaiKindId> = BaseMentsu<T> & {
  * - 刻子 (Koutsu)
  * - 槓子 (Kantsu)
  */
-export type CompletedMentsu<T extends HaiKindId | HaiId = HaiKindId> =
+export type CompletedMentsu<T extends HaiCode | HaiId = HaiKindId> =
   | Shuntsu<T>
   | Koutsu<T>
   | Kantsu<T>;
@@ -137,7 +163,7 @@ export type CompletedMentsu<T extends HaiKindId | HaiId = HaiKindId> =
  * - 対子 (Toitsu)
  * - 塔子 (Tatsu)
  */
-export type IncompletedMentsu<T extends HaiKindId | HaiId = HaiKindId> =
+export type IncompletedMentsu<T extends HaiCode | HaiId = HaiKindId> =
   | Toitsu<T>
   | Tatsu<T>;
 
@@ -146,6 +172,6 @@ export type IncompletedMentsu<T extends HaiKindId | HaiId = HaiKindId> =
  *
  * 広義の面子（ブロック）。指定がない場合は HaiKindId のリストを持つ。
  */
-export type Mentsu<T extends HaiKindId | HaiId = HaiKindId> =
+export type Mentsu<T extends HaiCode | HaiId = HaiKindId> =
   | CompletedMentsu<T>
   | IncompletedMentsu<T>;
