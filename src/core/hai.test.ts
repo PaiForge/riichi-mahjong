@@ -1,8 +1,18 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { MahjongArgumentError } from "../errors";
-import { type HaiId, HaiKind, type HaiKindId, HaiType } from "../types";
 import {
+  AkaHai,
+  type HaiCode,
+  type HaiId,
+  HaiKind,
+  type HaiKindId,
+  HaiType,
+} from "../types";
+import {
+  haiCodeToKindId,
   haiIdToKindId,
+  isAkaHai,
+  validateHaiCode,
   haiKindToNumber,
   isJihai,
   isKazehai,
@@ -34,6 +44,46 @@ describe("validateHaiKindId (牌種IDの検証)", () => {
         expect(result.error).toBeInstanceOf(MahjongArgumentError);
       }
     }
+  });
+});
+
+describe("validateHaiCode (牌コードの検証)", () => {
+  it("0〜36 の整数は Ok として牌コードを返す", () => {
+    const kind = validateHaiCode(33);
+    const aka = validateHaiCode(36);
+    expect(kind.isOk() && kind.value).toBe(HaiKind.Chun);
+    expect(aka.isOk() && aka.value).toBe(AkaHai.SouZu5);
+    if (aka.isOk()) {
+      expectTypeOf(aka.value).toEqualTypeOf<HaiCode>();
+    }
+  });
+
+  it("範囲外・非整数は MahjongArgumentError を Err として返す", () => {
+    for (const value of [-1, 37, 34.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      const result = validateHaiCode(value);
+      expect(result.isErr(), String(value)).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(MahjongArgumentError);
+      }
+    }
+  });
+});
+
+describe("isAkaHai / haiCodeToKindId (赤牌と牌コード)", () => {
+  it("赤 5（34〜36）だけを赤牌と判定する", () => {
+    expect(isAkaHai(AkaHai.ManZu5)).toBe(true);
+    expect(isAkaHai(AkaHai.PinZu5)).toBe(true);
+    expect(isAkaHai(AkaHai.SouZu5)).toBe(true);
+    expect(isAkaHai(HaiKind.ManZu5)).toBe(false);
+    expect(isAkaHai(HaiKind.Chun)).toBe(false);
+  });
+
+  it("赤 5 は対応する 5 の牌種IDに、それ以外はそのまま変換する", () => {
+    expect(haiCodeToKindId(AkaHai.ManZu5)).toBe(HaiKind.ManZu5);
+    expect(haiCodeToKindId(AkaHai.PinZu5)).toBe(HaiKind.PinZu5);
+    expect(haiCodeToKindId(AkaHai.SouZu5)).toBe(HaiKind.SouZu5);
+    expect(haiCodeToKindId(HaiKind.ManZu1)).toBe(HaiKind.ManZu1);
+    expect(haiCodeToKindId(HaiKind.Chun)).toBe(HaiKind.Chun);
   });
 });
 
