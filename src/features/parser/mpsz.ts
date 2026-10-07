@@ -133,7 +133,9 @@ export function isExtendedMpsz(input: string): input is ExtendedMpszString {
  * 文字列を MpszString に検証変換するスマートコンストラクタ。
  */
 export function asMpsz(input: string): Result<MpszString, MpszParseError> {
-  return parseMpsz(input).map(() => brandMpsz(input));
+  return isMpsz(input)
+    ? ok(input)
+    : err(new MpszParseError(`標準 MPSZ 形式ではありません: ${input}`));
 }
 
 /**
@@ -145,12 +147,4 @@ export function asExtendedMpsz(
   return isExtendedMpsz(input)
     ? ok(input)
     : err(new MpszParseError(`Extended MPSZ 形式ではありません: ${input}`));
-}
-
-/**
- * 検証済みの文字列にブランドを付ける（isMpsz を通した後にだけ呼ぶ）。
- */
-function brandMpsz(input: string): MpszString {
-  // parseMpsz が Ok を返した文字列だけがここに来るため、絞り込みは常に成功する
-  return isMpsz(input) ? input : brandMpsz(input);
 }
