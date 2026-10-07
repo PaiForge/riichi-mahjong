@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { iipeikouDefinition } from "./iipeikou";
 import {
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
   createTehai,
   withAgari,
 } from "../../../../utils/test-helpers";
@@ -18,7 +18,7 @@ describe("一盃口の判定", () => {
 
   it("条件を満たす場合、正しく判定されること", () => {
     // 123m 123m 456p 555s 22z
-    const hand = createMentsuStructureFromMspz("123m123m456p555s22z");
+    const hand = createMentsuStructureFromMpsz("123m123m456p555s22z");
 
     expect(iipeikouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(true);
     expect(iipeikouDefinition.getHansu(hand, mockContextMenzen)).toBe(1);
@@ -26,14 +26,14 @@ describe("一盃口の判定", () => {
 
   it("鳴きがある場合、条件を満たしていても翻数が0であること", () => {
     // 123m 123m 456p 22z [555s]
-    const hand = createMentsuStructureFromMspz("123m123m456p22z[555s]");
+    const hand = createMentsuStructureFromMpsz("123m123m456p22z[5=55s]");
 
     expect(iipeikouDefinition.getHansu(hand, mockContextOpen)).toBe(0);
   });
 
   it("同一順子がない場合、条件を満たさないこと", () => {
     // 123m 456m 456p 555s 22z
-    const hand = createMentsuStructureFromMspz("123m456m456p555s22z");
+    const hand = createMentsuStructureFromMpsz("123m456m456p555s22z");
 
     expect(iipeikouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(false);
     expect(iipeikouDefinition.getHansu(hand, mockContextMenzen)).toBe(0);

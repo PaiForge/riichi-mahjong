@@ -7,9 +7,9 @@ import {
   countSpecificKoutsu,
 } from "./helpers";
 import {
-  createChiitoitsuStructureFromMspz,
+  createChiitoitsuStructureFromMpsz,
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
   createTehai,
   withAgari,
 } from "../../../utils/test-helpers";
@@ -22,7 +22,7 @@ describe("役判定ヘルパー", () => {
   describe("暗刻の数 (countAnkou)", () => {
     it("ツモ和了では副露していない刻子・槓子をすべて暗刻として数えること", () => {
       // 111m 222m 333m 456p 99s (ツモ)
-      const hand = createMentsuStructureFromMspz("111m222m333m456p99s");
+      const hand = createMentsuStructureFromMpsz("111m222m333m456p99s");
       const context = createHouraContext({ isTsumo: true });
 
       expect(countAnkou(hand, context)).toBe(3);
@@ -30,7 +30,7 @@ describe("役判定ヘルパー", () => {
 
     it("ロン和了で和了牌を含む刻子は暗刻として数えないこと（シャボ待ち）", () => {
       // 111m 222m 333p 456s 99s (ロン 1m)
-      const hand = createMentsuStructureFromMspz("111m222m333p456s99s", {
+      const hand = createMentsuStructureFromMpsz("111m222m333p456s99s", {
         hai: "1m",
         in: "111m",
       });
@@ -45,7 +45,7 @@ describe("役判定ヘルパー", () => {
     it("ロン和了でも単騎待ちなら和了牌と同じ牌種の刻子を暗刻として数えること", () => {
       // 111m 222m 333p 456s 11z (ロン 1z: 単騎)
       // 刻子に和了牌は含まれないが、単騎判定の分岐を通ることを確認する
-      const hand = createMentsuStructureFromMspz("111m222m333p456s11z", {
+      const hand = createMentsuStructureFromMpsz("111m222m333p456s11z", {
         hai: "1z",
         in: "Jantou",
       });
@@ -59,14 +59,14 @@ describe("役判定ヘルパー", () => {
 
     it("副露した刻子は暗刻として数えないこと", () => {
       // [111m] 222m 333p 456s 99s (ツモ)
-      const hand = createMentsuStructureFromMspz("222m333p456s99s[111m]");
+      const hand = createMentsuStructureFromMpsz("222m333p456s99s[1=11m]");
       const context = createHouraContext({ isTsumo: true, isMenzen: false });
 
       expect(countAnkou(hand, context)).toBe(2);
     });
 
     it("面子手以外は 0 を返すこと", () => {
-      const hand = createChiitoitsuStructureFromMspz("11223344556677m");
+      const hand = createChiitoitsuStructureFromMpsz("11223344556677m");
       const context = createHouraContext({ isTsumo: true });
 
       expect(countAnkou(hand, context)).toBe(0);
@@ -76,14 +76,14 @@ describe("役判定ヘルパー", () => {
   describe("特定牌種の刻子数 (countSpecificKoutsu)", () => {
     it("指定した牌種からなる刻子・槓子だけを数えること", () => {
       // 111z 222z 555z 123m 99s → 風牌の刻子 2 つ、三元牌の刻子 1 つ
-      const hand = createMentsuStructureFromMspz("111z222z555z123m99s");
+      const hand = createMentsuStructureFromMpsz("111z222z555z123m99s");
 
       expect(countSpecificKoutsu(hand, KAZEHAI_KIND_IDS)).toBe(2);
       expect(countSpecificKoutsu(hand, SANGENPAI_KIND_IDS)).toBe(1);
     });
 
     it("該当する刻子が無ければ 0 を返すこと", () => {
-      const hand = createMentsuStructureFromMspz("123m456p789s111m99s");
+      const hand = createMentsuStructureFromMpsz("123m456p789s111m99s");
 
       expect(countSpecificKoutsu(hand, KAZEHAI_KIND_IDS)).toBe(0);
     });
@@ -108,7 +108,7 @@ describe("役判定ヘルパー", () => {
   describe("同一順子のペア数 (countShuntsuPairs)", () => {
     it("同じ順子が 2 つあれば 1 ペアと数えること", () => {
       // 112233m 456p 789s 99s → 123m x2
-      const hand = createMentsuStructureFromMspz("112233m456p789s99s");
+      const hand = createMentsuStructureFromMpsz("112233m456p789s99s");
 
       expect(countShuntsuPairs(hand)).toBe(1);
     });
@@ -126,7 +126,7 @@ describe("役判定ヘルパー", () => {
     });
 
     it("面子手以外は 0 を返すこと", () => {
-      const hand = createChiitoitsuStructureFromMspz("11223344556677m");
+      const hand = createChiitoitsuStructureFromMpsz("11223344556677m");
 
       expect(countShuntsuPairs(hand)).toBe(0);
     });
@@ -135,7 +135,7 @@ describe("役判定ヘルパー", () => {
   describe("一色系パターンの分析 (analyzeIshokuPattern)", () => {
     it("面子手で数牌が 1 種のみなら牌種タイプを返すこと", () => {
       // 123m 456m 789m 111z 99m → 字牌あり、数牌は萬子のみ
-      const hand = createMentsuStructureFromMspz("123m456m789m111z99m");
+      const hand = createMentsuStructureFromMpsz("123m456m789m111z99m");
 
       expect(analyzeIshokuPattern(hand)).toEqual({
         hasJihai: true,
@@ -144,7 +144,7 @@ describe("役判定ヘルパー", () => {
     });
 
     it("数牌が複数種なら suupaiSuit は undefined になること", () => {
-      const hand = createMentsuStructureFromMspz("123m456p789s111z99m");
+      const hand = createMentsuStructureFromMpsz("123m456p789s111z99m");
 
       expect(analyzeIshokuPattern(hand)).toEqual({
         hasJihai: true,
@@ -153,7 +153,7 @@ describe("役判定ヘルパー", () => {
     });
 
     it("字牌のみ（数牌なし）なら suupaiSuit は undefined になること", () => {
-      const hand = createMentsuStructureFromMspz("111z222z333z444z55z");
+      const hand = createMentsuStructureFromMpsz("111z222z333z444z55z");
 
       expect(analyzeIshokuPattern(hand)).toEqual({
         hasJihai: true,
@@ -162,7 +162,7 @@ describe("役判定ヘルパー", () => {
     });
 
     it("七対子も分析対象になること", () => {
-      const hand = createChiitoitsuStructureFromMspz("11223344556677p");
+      const hand = createChiitoitsuStructureFromMpsz("11223344556677p");
 
       expect(analyzeIshokuPattern(hand)).toEqual({
         hasJihai: false,

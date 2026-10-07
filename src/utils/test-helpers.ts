@@ -1,4 +1,5 @@
 import type {
+  HaiCode,
   HaiId,
   HaiKindId,
   Tehai,
@@ -8,12 +9,9 @@ import type {
   MentsuType,
 } from "../types";
 import type { Result } from "neverthrow";
-import { validateTehai13 } from "../core/tehai";
-import {
-  isExtendedMspz,
-  parseExtendedMspz,
-  parseMspz,
-} from "../features/parser";
+import { tehaiToHaiKindId, validateTehai13 } from "../core/tehai";
+import { parseExtendedMpsz, parseMpsz } from "../features/parser";
+import { haiCodeToKindId } from "../core/hai";
 import { isValidShuntsu } from "../core/mentsu";
 import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/mentsu-te";
 import { enumerateAgariPlacements } from "../core/agari";
@@ -40,7 +38,7 @@ import type {
  * - 文字列（例: `"5m"`）: 和了牌だけを指定する。置き場所は列挙の先頭
  *   （雀頭 → 面子の並び順）。待ちや明暗に依存しないテスト向け
  * - `{ hai, in }`: 置き場所まで指定する。`in` は `"Jantou"` か、和了牌を入れる
- *   面子の MSPZ（例: `"345m"`）。同じ牌が複数のブロックに入る手（例:
+ *   面子の MPSZ（例: `"345m"`）。同じ牌が複数のブロックに入る手（例:
  *   345m 345m 55m の 5m）で待ち・明暗・暗刻数を試すテストでは必ずこちらを使う
  */
 export type AgariSpec = string | { readonly hai: string; readonly in: string };
@@ -133,12 +131,11 @@ export function unwrapOrThrow<T, E extends Error>(
 }
 
 /**
- * MSPZ形式の文字列を牌種IDの配列に変換する内部ヘルパー。
+ * MPSZ形式の文字列を牌種IDの配列に変換する内部ヘルパー（赤属性は落とす）。
  * パースに失敗した場合はエラーをスローします。
  */
-function parseToKindIds(mspz: string): HaiKindId[] {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return unwrapOrThrow(parseMspz(mspz)).closed as HaiKindId[];
+function parseToKindIds(mpsz: string): HaiKindId[] {
+  return unwrapOrThrow(parseMpsz(mpsz)).closed.map(haiCodeToKindId);
 }
 
 /**
@@ -158,21 +155,21 @@ export function createTehai13<T extends HaiKindId | HaiId>(
 }
 
 /**
- * MSPZ形式の文字列からテスト用の Tehai13 オブジェクトを作成します。
- * 13枚の手牌をMSPZ形式で指定できる便利関数です。
+ * MPSZ形式の文字列からテスト用の Tehai13 オブジェクトを作成します。
+ * 13枚の手牌をMPSZ形式で指定できる便利関数です。
  *
- * @param mspzString MSPZ形式の文字列 (例: "123m456p789s11z22z")
+ * @param mpszString MPSZ形式の文字列 (例: "123m456p789s11z22z")
  * @returns Tehai13 オブジェクト
  */
-export function createTehai13FromMspz(mspzString: string): Tehai13 {
-  const ids = parseToKindIds(mspzString);
+export function createTehai13FromMpsz(mpszString: string): Tehai13 {
+  const ids = parseToKindIds(mpszString);
   return createTehai13(ids);
 }
 
 /**
  * テスト用の Mentsu オブジェクトを作成します。
  */
-export function createMentsu<T extends HaiKindId | HaiId>(
+export function createMentsu<T extends HaiCode | HaiId>(
   type: MentsuType,
   hais: readonly T[],
 ): Mentsu<T> {
@@ -182,17 +179,14 @@ export function createMentsu<T extends HaiKindId | HaiId>(
 
 /**
  * テスト用の Tehai14 (和了手など) オブジェクトを作成します。
- * Extended MSPZ形式の文字列をサポートし、副露や暗槓を含む手牌を簡単に作成できます。
+ * Extended MPSZ形式の文字列をサポートし、副露や暗槓を含む手牌を簡単に作成できます。
+ * 赤 5（`0`）は牌種IDに落とします（計算系のテスト用）。
  *
- * @param mspzString Extended MSPZ形式、または通常のMSPZ形式の文字列
+ * @param mpszString Extended MPSZ形式、または通常のMPSZ形式の文字列
  * @returns Tehai14 オブジェクト
  */
-export function createTehai(mspzString: string): Tehai14 {
-  const tehai = unwrapOrThrow(
-    isExtendedMspz(mspzString)
-      ? parseExtendedMspz(mspzString)
-      : parseMspz(mspzString),
-  );
+export function createTehai(mpszString: string): Tehai14 {
+  const tehai = tehaiToHaiKindId(unwrapOrThrow(parseExtendedMpsz(mpszString)));
 
   // ファクトリ関数内での as 使用は許容
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -200,19 +194,19 @@ export function createTehai(mspzString: string): Tehai14 {
 }
 
 /**
- * MSPZ形式の文字列から七対子の和了構造を作成します。
+ * MPSZ形式の文字列から七対子の和了構造を作成します。
  * 七対子として成立しない牌姿を渡した場合はエラーをスローします。
  *
- * @param mspzString MSPZ形式の文字列 (例: "11223344556677m")
+ * @param mpszString MPSZ形式の文字列 (例: "11223344556677m")
  * @returns 七対子の和了構造
  */
-export function createChiitoitsuStructureFromMspz(
-  mspzString: string,
+export function createChiitoitsuStructureFromMpsz(
+  mpszString: string,
 ): ChiitoitsuHouraStructure {
-  const hands = getHouraStructuresForChiitoitsu(createTehai(mspzString));
+  const hands = getHouraStructuresForChiitoitsu(createTehai(mpszString));
   const hand = hands[0];
   if (hand === undefined) {
-    throw new Error(`七対子として構造化できません: ${mspzString}`);
+    throw new Error(`七対子として構造化できません: ${mpszString}`);
   }
   return hand;
 }
@@ -305,47 +299,47 @@ export function createScoreCalculationConfig(
 }
 
 /**
- * Extended MSPZ形式の文字列から面子手（4面子1雀頭）の和了構造を作成します。
+ * Extended MPSZ形式の文字列から面子手（4面子1雀頭）の和了構造を作成します。
  * 面子分解が複数ありうる場合は最初の分解を使います。
  * 構造化できない牌姿を渡した場合はエラーをスローします。
  *
- * @param mspzString Extended MSPZ形式、または通常のMSPZ形式の文字列
+ * @param mpszString Extended MPSZ形式、または通常のMPSZ形式の文字列
  * @param agari 和了牌の指定（{@link AgariSpec}）。省略時は雀頭の単騎
  * @returns 面子手の和了構造
  */
-export function createMentsuStructureFromMspz(
-  mspzString: string,
+export function createMentsuStructureFromMpsz(
+  mpszString: string,
   agari?: AgariSpec,
 ): MentsuHouraStructure {
-  const hands = getHouraStructuresForMentsuTe(createTehai(mspzString));
+  const hands = getHouraStructuresForMentsuTe(createTehai(mpszString));
   const hand = hands[0];
   if (hand === undefined) {
-    throw new Error(`面子手として構造化できません: ${mspzString}`);
+    throw new Error(`面子手として構造化できません: ${mpszString}`);
   }
   return withAgari(hand, agari);
 }
 
 /**
- * MSPZ形式の文字列から HaiKindId の配列を作成します。
+ * MPSZ形式の文字列から HaiKindId の配列を作成します。
  * テストデータの期待値作成などで使用します。
  *
- * @param mspzString MSPZ形式の文字列 (例: "123m")
+ * @param mpszString MPSZ形式の文字列 (例: "123m")
  * @returns HaiKindId の配列
  */
-export function createHaiKindIds(mspzString: string): HaiKindId[] {
-  return parseToKindIds(mspzString);
+export function createHaiKindIds(mpszString: string): HaiKindId[] {
+  return parseToKindIds(mpszString);
 }
 
 /**
  * テスト用の順子 (Shuntsu) を作成します。
  * isValidShuntsu によるバリデーションを行います。
  */
-export function createShuntsu(mspz: string): Shuntsu {
-  const ids = parseToKindIds(mspz);
+export function createShuntsu(mpsz: string): Shuntsu {
+  const ids = parseToKindIds(mpsz);
 
   // Use core validation
   if (!isValidShuntsu(ids)) {
-    throw new Error(`Invalid Shuntsu: ${mspz}`);
+    throw new Error(`Invalid Shuntsu: ${mpsz}`);
   }
 
   // isValidShuntsu ensures it is a valid Tuple3 of HaiKindId
@@ -361,9 +355,9 @@ export function createShuntsu(mspz: string): Shuntsu {
 /**
  * テスト用の刻子 (Koutsu) を作成します。
  */
-export function createKoutsu(mspz: string): Koutsu {
-  const ids = parseToKindIds(mspz);
-  if (!isTuple3(ids)) throw new Error(`Invalid Koutsu: ${mspz}`);
+export function createKoutsu(mpsz: string): Koutsu {
+  const ids = parseToKindIds(mpsz);
+  if (!isTuple3(ids)) throw new Error(`Invalid Koutsu: ${mpsz}`);
   return {
     type: "Koutsu",
     hais: ids,
@@ -373,9 +367,9 @@ export function createKoutsu(mspz: string): Koutsu {
 /**
  * テスト用の対子 (Toitsu) を作成します。
  */
-export function createToitsu(mspz: string): Toitsu {
-  const ids = parseToKindIds(mspz);
-  if (!isTuple2(ids)) throw new Error(`Invalid Toitsu: ${mspz}`);
+export function createToitsu(mpsz: string): Toitsu {
+  const ids = parseToKindIds(mpsz);
+  if (!isTuple2(ids)) throw new Error(`Invalid Toitsu: ${mpsz}`);
   return {
     type: "Toitsu",
     hais: ids,
@@ -385,9 +379,9 @@ export function createToitsu(mspz: string): Toitsu {
 /**
  * テスト用の HaiKindId を取得します。
  */
-export function getHaiKindId(mspz: string): HaiKindId {
-  const ids = parseToKindIds(mspz);
-  if (ids.length === 0) throw new Error(`Invalid HaiKindId: ${mspz}`);
+export function getHaiKindId(mpsz: string): HaiKindId {
+  const ids = parseToKindIds(mpsz);
+  if (ids.length === 0) throw new Error(`Invalid HaiKindId: ${mpsz}`);
   const id = ids[0];
   if (id === undefined) throw new Error(`Internal Error: id is undefined`);
   return id;

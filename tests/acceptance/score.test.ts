@@ -11,8 +11,8 @@ import {
   runReferenceVerifier,
 } from "./reference-verifier";
 
-// 現状は門前手のみテストするため、mspz文字列 (例: "123m456p...") で十分です。
-// createTehai の mspz 形式は mahjong ライブラリの one_line_string_to_136_array ("123m") と互換性があります。
+// 現状は門前手のみテストするため、mpsz文字列 (例: "123m456p...") で十分です。
+// createTehai の mpsz 形式は mahjong ライブラリの one_line_string_to_136_array ("123m") と互換性があります。
 
 // ============================================================================
 // テストケース定義
@@ -22,7 +22,7 @@ import {
 // 両方を検証します。参照実装は手牌 13 枚 (`tehai`) + 和了牌 (`agariStr`) を受け取ります。
 interface ScoreCase {
   description: string;
-  /** 和了牌を除く 13 枚 (MSPZ) */
+  /** 和了牌を除く 13 枚 (MPSZ) */
   tehai: string;
   agariHai: HaiKindId;
   agariStr: string;

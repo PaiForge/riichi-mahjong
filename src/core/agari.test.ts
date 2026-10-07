@@ -6,7 +6,7 @@ import {
   isTankiAgari,
 } from "./agari";
 import {
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
   createTehai,
   getHaiKindId,
 } from "../utils/test-helpers";
@@ -14,15 +14,15 @@ import { getHouraStructuresForMentsuTe } from "../features/yaku/lib/structures/m
 import type { MentsuDecomposition } from "../types";
 
 /** 牌姿の最初の面子分解（置き場所未確定）を返す */
-function decompose(mspz: string): MentsuDecomposition {
-  const first = getHouraStructuresForMentsuTe(createTehai(mspz))[0];
-  if (first === undefined) throw new Error(`分解できません: ${mspz}`);
+function decompose(mpsz: string): MentsuDecomposition {
+  const first = getHouraStructuresForMentsuTe(createTehai(mpsz))[0];
+  if (first === undefined) throw new Error(`分解できません: ${mpsz}`);
   return first;
 }
 
 /** 分解の中で指定した面子の位置を返す */
-function indexOf(decomposition: MentsuDecomposition, mspz: string): number {
-  const hais = createTehai(mspz).closed;
+function indexOf(decomposition: MentsuDecomposition, mpsz: string): number {
+  const hais = createTehai(mpsz).closed;
   return decomposition.fourMentsu.findIndex(
     (m) =>
       m.hais.length === hais.length && m.hais.every((h, i) => h === hais[i]),
@@ -68,7 +68,7 @@ describe("和了牌の置き場所の列挙 (enumerateAgariPlacements)", () => {
 
   it("副露した面子は和了牌の置き場所にならないこと", () => {
     // [222m] 234m 555z 678s 33s の 2m: ポンした 222m は和了より前に完成している
-    const d = decompose("234m555z678s33s[222m]");
+    const d = decompose("234m555z678s33s[2=22m]");
     const placements = enumerateAgariPlacements(d, getHaiKindId("2m"));
 
     expect(placements).toEqual([
@@ -106,7 +106,7 @@ describe("置き場所ごとの和了構造への展開 (expandAgariPlacements)"
 
 describe("置き場所の判定 (isCompletedByAgari / isTankiAgari)", () => {
   it("和了牌が完成させた面子の位置だけが真になること", () => {
-    const hand = createMentsuStructureFromMspz("222234m555z678s33s", {
+    const hand = createMentsuStructureFromMpsz("222234m555z678s33s", {
       hai: "2m",
       in: "234m",
     });
@@ -119,7 +119,7 @@ describe("置き場所の判定 (isCompletedByAgari / isTankiAgari)", () => {
   });
 
   it("雀頭で和了した場合はどの面子も真にならないこと", () => {
-    const hand = createMentsuStructureFromMspz("33445555m123456s", {
+    const hand = createMentsuStructureFromMpsz("33445555m123456s", {
       hai: "5m",
       in: "Jantou",
     });

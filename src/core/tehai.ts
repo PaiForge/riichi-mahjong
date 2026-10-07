@@ -5,8 +5,17 @@ import {
   TahaiError,
 } from "../errors";
 import { Result, ok, err } from "neverthrow";
-import type { HaiId, HaiKindId, Tehai, Tehai13, Tehai14 } from "../types";
-import { haiIdToKindId } from "./hai";
+import type {
+  CompletedMentsu,
+  Furo,
+  HaiCode,
+  HaiId,
+  HaiKindId,
+  Tehai,
+  Tehai13,
+  Tehai14,
+} from "../types";
+import { haiCodeToKindId, haiIdToKindId } from "./hai";
 
 export type TehaiError =
   | ShoushaiError
@@ -144,4 +153,74 @@ export function isTehai14<T extends HaiKindId | HaiId>(
   tehai: Tehai<T>,
 ): tehai is Tehai14<T> {
   return validateTehai14(tehai).isOk();
+}
+
+/**
+ * 副露情報 (Furo) の牌コードを牌種IDに変換する。
+ */
+function furoToHaiKindId(furo: Furo<HaiCode>): Furo {
+  const nakiHai = haiCodeToKindId(furo.nakiHai);
+  switch (furo.type) {
+    case "Chi":
+      return { type: furo.type, from: furo.from, nakiHai };
+    case "Pon":
+    case "Daiminkan":
+      return { type: furo.type, from: furo.from, nakiHai };
+    case "Kakan":
+      return {
+        type: furo.type,
+        from: furo.from,
+        nakiHai,
+        kakanHai: haiCodeToKindId(furo.kakanHai),
+      };
+  }
+}
+
+/**
+ * 完成面子 (CompletedMentsu) の牌コードを牌種IDに変換する。
+ */
+function mentsuToHaiKindId(mentsu: CompletedMentsu<HaiCode>): CompletedMentsu {
+  const furo =
+    mentsu.furo === undefined ? {} : { furo: furoToHaiKindId(mentsu.furo) };
+  switch (mentsu.type) {
+    case "Shuntsu":
+    case "Koutsu": {
+      const [a, b, c] = mentsu.hais;
+      return {
+        type: mentsu.type,
+        hais: [haiCodeToKindId(a), haiCodeToKindId(b), haiCodeToKindId(c)],
+        ...furo,
+      };
+    }
+    case "Kantsu": {
+      const [a, b, c, d] = mentsu.hais;
+      return {
+        type: mentsu.type,
+        hais: [
+          haiCodeToKindId(a),
+          haiCodeToKindId(b),
+          haiCodeToKindId(c),
+          haiCodeToKindId(d),
+        ],
+        ...furo,
+      };
+    }
+  }
+}
+
+/**
+ * 手牌 (Tehai) の牌コードを牌種IDに変換する（赤属性を落とす）。
+ *
+ * Extended MPSZ の解釈結果（`Tehai<HaiCode>`）をシャンテン数・役・点数の
+ * 計算に渡すときに使う。純手牌・面子・副露情報（鳴いた牌・加槓牌）のすべてを
+ * 変換し、並び順は保つ。
+ *
+ * @param tehai 牌コードの手牌
+ * @returns 牌種IDの手牌
+ */
+export function tehaiToHaiKindId(tehai: Tehai<HaiCode>): Tehai {
+  return {
+    closed: tehai.closed.map(haiCodeToKindId),
+    exposed: tehai.exposed.map(mentsuToHaiKindId),
+  };
 }

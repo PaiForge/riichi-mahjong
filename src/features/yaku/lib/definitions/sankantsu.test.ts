@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { sankantsuDefinition } from "./sankantsu";
 import {
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
 } from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
@@ -18,7 +18,9 @@ describe("三槓子（サンカンツ）の判定", () => {
     // 三槓子は副露していても成立するので、明槓でテストする。
 
     // [1111m], [2222p], [3333s], 789m, 99p
-    const hand = createMentsuStructureFromMspz("789m99p[1111m][2222p][3333s]");
+    const hand = createMentsuStructureFromMpsz(
+      "789m99p[1=111m][2=222p][3=333s]",
+    );
 
     expect(sankantsuDefinition.isSatisfied(hand, mockContext)).toBe(true);
     expect(sankantsuDefinition.getHansu(hand, mockContext)).toBe(2);
@@ -26,7 +28,7 @@ describe("三槓子（サンカンツ）の判定", () => {
 
   it("槓子が2つしかない場合は不成立", () => {
     // [1111m], [2222p], 333s, 789m, 99p
-    const hand = createMentsuStructureFromMspz("789m99p333s[1111m][2222p]");
+    const hand = createMentsuStructureFromMpsz("789m99p333s[1=111m][2=222p]");
 
     expect(sankantsuDefinition.isSatisfied(hand, mockContext)).toBe(false);
   });

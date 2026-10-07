@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { chinroutouDefinition } from "./chinroutou";
 import {
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
 } from "../../../../utils/test-helpers";
 import type { HouraContext } from "../../types";
 
@@ -15,7 +15,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("条件を満たす場合、役満（13翻）であること", () => {
     // 111m 999m 111p 999p 11s
-    const hand = createMentsuStructureFromMspz("111m999m111p999p11s");
+    const hand = createMentsuStructureFromMpsz("111m999m111p999p11s");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       true,
@@ -25,7 +25,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("副露していても成立すること", () => {
     // 111m 999m 111p 11s [999p] (Pon)
-    const hand = createMentsuStructureFromMspz("111m999m111p11s[999p]");
+    const hand = createMentsuStructureFromMpsz("111m999m111p11s[9=99p]");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextOpen)).toBe(true);
     expect(chinroutouDefinition.getHansu(hand, mockContextOpen)).toBe(13);
@@ -33,7 +33,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("字牌が含まれる場合は不成立（混老頭）", () => {
     // 111m 999m 111p 999p 11z
-    const hand = createMentsuStructureFromMspz("111m999m111p999p11z");
+    const hand = createMentsuStructureFromMpsz("111m999m111p999p11z");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,
@@ -42,7 +42,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
 
   it("中張牌が含まれる場合は不成立", () => {
     // 111m 999m 111p 234s 99s (234sがNG)
-    const hand = createMentsuStructureFromMspz("111m999m111p234s99s");
+    const hand = createMentsuStructureFromMpsz("111m999m111p234s99s");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,
@@ -59,7 +59,7 @@ describe("清老頭（チンロウトウ）の判定", () => {
     // 123m 999m... のような形は、牌構成として「2m, 3m」を含むため「老頭牌のみ」のチェックで落ちる。
 
     // 123m 999m 111p 999p 11s
-    const hand = createMentsuStructureFromMspz("123m999m111p999p11s");
+    const hand = createMentsuStructureFromMpsz("123m999m111p999p11s");
 
     expect(chinroutouDefinition.isSatisfied(hand, mockContextMenzen)).toBe(
       false,

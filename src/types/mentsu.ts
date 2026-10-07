@@ -38,12 +38,37 @@ export type FuroType = (typeof FuroType)[keyof typeof FuroType];
  * 暗槓（自力で4枚揃える行為）はここには含めない。
  *
  * 構成する牌自体はここには含めず、この型を持つ親（Mentsuなど）が保持することを想定する。
+ *
+ * - `from`: 鳴き元（他家）。チーは上家からしか行えないため型で上家に固定する
+ * - `nakiHai`: 鳴いた牌。チー・ポン・大明槓で他家から取り込んだ牌。加槓では元のポンで取り込んだ牌
+ * - `kakanHai`: 加槓牌。加槓で明刻子に加えた 4 枚目の牌
+ *
+ * 鳴いた牌・加槓牌は省略できない（「未指定」の状態をデータモデルに持たない）。
+ *
+ * @template T 牌の型 (HaiKindId | HaiCode | HaiId)
  */
-export type Furo =
-  | { readonly type: typeof FuroType.Chi; readonly from: Tacha }
-  | { readonly type: typeof FuroType.Pon; readonly from: Tacha }
-  | { readonly type: typeof FuroType.Daiminkan; readonly from: Tacha }
-  | { readonly type: typeof FuroType.Kakan; readonly from: Tacha };
+export type Furo<T extends HaiCode | HaiId = HaiKindId> =
+  | {
+      readonly type: typeof FuroType.Chi;
+      readonly from: typeof Tacha.Kamicha;
+      readonly nakiHai: T;
+    }
+  | {
+      readonly type: typeof FuroType.Pon;
+      readonly from: Tacha;
+      readonly nakiHai: T;
+    }
+  | {
+      readonly type: typeof FuroType.Daiminkan;
+      readonly from: Tacha;
+      readonly nakiHai: T;
+    }
+  | {
+      readonly type: typeof FuroType.Kakan;
+      readonly from: Tacha;
+      readonly nakiHai: T;
+      readonly kakanHai: T;
+    };
 
 /**
  * 面子種別 (MentsuType)
@@ -83,7 +108,7 @@ interface BaseMentsu<T extends HaiCode | HaiId> {
 export type Shuntsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Shuntsu;
   readonly hais: readonly [T, T, T];
-  readonly furo?: Furo;
+  readonly furo?: Furo<T>;
 };
 
 /**
@@ -92,7 +117,7 @@ export type Shuntsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
 export type Koutsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Koutsu;
   readonly hais: readonly [T, T, T];
-  readonly furo?: Furo;
+  readonly furo?: Furo<T>;
 };
 
 /**
@@ -101,7 +126,7 @@ export type Koutsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
 export type Kantsu<T extends HaiCode | HaiId = HaiKindId> = BaseMentsu<T> & {
   readonly type: typeof MentsuType.Kantsu;
   readonly hais: readonly [T, T, T, T];
-  readonly furo?: Furo;
+  readonly furo?: Furo<T>;
 };
 
 /**

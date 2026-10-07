@@ -91,7 +91,7 @@ describe("手牌からの役判定 (detectYaku) - 統合テスト", () => {
 
     it("鳴いた場風の刻子も1翻で成立すること", () => {
       // 東場・南家: [111z] ポン + 234m 456p 789s 11p
-      const hand = createTehai("234m456p789s11p[111z]");
+      const hand = createTehai("234m456p789s11p[1=11z]");
 
       const result = detectYaku(
         hand,

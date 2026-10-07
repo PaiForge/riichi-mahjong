@@ -17,25 +17,25 @@ describe("isMenzen", () => {
 
   it("明順（チー）を含む手牌は門前ではない", () => {
     // 123m 456p 11z [789s]
-    const hand = createTehai("123m456p11z[789s]");
+    const hand = createTehai("123m456p11z[7-89s]");
     expect(isMenzen(hand)).toBe(false);
   });
 
   it("明刻（ポン）を含む手牌は門前ではない", () => {
     // 123m 456p 11z [222m]
-    const hand = createTehai("123m456p11z[222m]");
+    const hand = createTehai("123m456p11z[2=22m]");
     expect(isMenzen(hand)).toBe(false);
   });
 
   it("大明槓（ミンカン）を含む手牌は門前ではない", () => {
     // 123m 456p 11z [2222m]
-    const hand = createTehai("123m456p11z[2222m]");
+    const hand = createTehai("123m456p11z[2=222m]");
     expect(isMenzen(hand)).toBe(false);
   });
 
   it("暗槓と明副露が混在する場合は門前ではない", () => {
     // [123m] (4444p) ...
-    const hand = createTehai("[123m](4444p)789s11z");
+    const hand = createTehai("[1-23m](4444p)789s11z");
     expect(isMenzen(hand)).toBe(false);
   });
 });

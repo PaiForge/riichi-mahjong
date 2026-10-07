@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { toitoiDefinition } from "./toitoi";
 import {
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
 } from "../../../../utils/test-helpers";
 import type { HouraStructure } from "../../types";
 import type { HouraContext } from "../../types";
@@ -12,7 +12,7 @@ describe("対々和（トイトイ）の判定", () => {
 
   it("全ての面子が刻子の場合、成立すること", () => {
     // 111m, 222p, 333s, 444z, 55z
-    const hand = createMentsuStructureFromMspz("111m222p333s444z55z");
+    const hand = createMentsuStructureFromMpsz("111m222p333s444z55z");
 
     expect(toitoiDefinition.isSatisfied(hand, mockContext)).toBe(true);
     expect(toitoiDefinition.getHansu(hand, mockContext)).toBe(2);
@@ -21,7 +21,7 @@ describe("対々和（トイトイ）の判定", () => {
   it("暗槓・明槓が含まれていても成立すること", () => {
     // [1111m](暗槓), [2222p](明槓), 333s, 444z, 55z
     // 副露が含まれるため、門前ではないコンテキスト
-    const hand = createMentsuStructureFromMspz("333s444z55z[1111m][2222p]");
+    const hand = createMentsuStructureFromMpsz("333s444z55z[1=111m][2=222p]");
     const context: HouraContext = { ...mockContext, isMenzen: false };
 
     expect(toitoiDefinition.isSatisfied(hand, context)).toBe(true);
@@ -30,7 +30,7 @@ describe("対々和（トイトイ）の判定", () => {
 
   it("順子が含まれる場合は不成立", () => {
     // 123m, 222p, 333s, 444z, 55z
-    const hand = createMentsuStructureFromMspz("123m222p333s444z55z");
+    const hand = createMentsuStructureFromMpsz("123m222p333s444z55z");
 
     expect(toitoiDefinition.isSatisfied(hand, mockContext)).toBe(false);
   });

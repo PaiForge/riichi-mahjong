@@ -53,7 +53,7 @@ describe("getHouraStructuresForMentsuTe", () => {
   describe("副露手 (Exposed / Open Hand)", () => {
     it("チーを含む手を構造化できること", () => {
       // 123m 456s 789s 22m [456p] (Chi)
-      const hand = createTehai("123m456s789s22m[456p]");
+      const hand = createTehai("123m456s789s22m[4-56p]");
       const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
@@ -82,7 +82,7 @@ describe("getHouraStructuresForMentsuTe", () => {
 
     it("ポン（刻子副露）を含む手を構造化できること", () => {
       // 123m 456s 789s 22m [888p] (Pon)
-      const hand = createTehai("123m456s789s22m[888p]");
+      const hand = createTehai("123m456s789s22m[8=88p]");
       const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
@@ -104,7 +104,7 @@ describe("getHouraStructuresForMentsuTe", () => {
 
     it("大明槓を含む手を構造化できること", () => {
       // 123m 456s 789p 22m [2222s] (Daiminkan)
-      const hand = createTehai("123m456s789p22m[2222s]");
+      const hand = createTehai("123m456s789p22m[2=222s]");
       const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);
@@ -157,7 +157,7 @@ describe("getHouraStructuresForMentsuTe", () => {
     it("役が成立しない手牌（形式聴牌・和了形）でも正しく構造化できること", () => {
       // 役なしの例: 鳴きあり、役牌なし、么九牌含み
       // 123m 789m 123p 11s [789s] (Chi)
-      const hand = createTehai("123m789m123p11s[789s]");
+      const hand = createTehai("123m789m123p11s[7-89s]");
       const results = getHouraStructuresForMentsuTe(hand);
 
       expect(results.length).toBeGreaterThan(0);

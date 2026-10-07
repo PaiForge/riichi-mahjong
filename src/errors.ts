@@ -117,16 +117,16 @@ export class NoYakuError extends ChomboError {
 }
 
 /**
- * MSPZ文字列の解析エラー
+ * MPSZ 文字列の解析エラー (MpszParseError)
  *
- * MSPZ形式の文字列が不正な場合にスローされます。
+ * MPSZ / Extended MPSZ 形式の文字列が不正な場合に Err として返されます。
  */
-export class MspzParseError extends MahjongError {
+export class MpszParseError extends MahjongError {
   /**
    * @param message エラーメッセージ（省略時は既定メッセージ）
    */
-  constructor(message = "MSPZ文字列の解析に失敗しました。") {
+  constructor(message = "MPSZ文字列の解析に失敗しました。") {
     super(message);
-    this.name = "MspzParseError";
+    this.name = "MpszParseError";
   }
 }

@@ -334,7 +334,7 @@ describe("通常役のみの場合はフィルタリングされないこと", (
         {
           type: "Koutsu",
           hais: [HaiKind.SouZu4, HaiKind.SouZu4, HaiKind.SouZu4] as const,
-          furo: { type: "Pon", from: 2 },
+          furo: { type: "Pon", from: 2, nakiHai: HaiKind.SouZu4 },
         },
       ],
       createToitsu("55z"),
@@ -368,17 +368,17 @@ describe("役満フィルタリング: エッジケース", () => {
           {
             type: "Koutsu",
             hais: [HaiKind.Haku, HaiKind.Haku, HaiKind.Haku] as const,
-            furo: { type: "Pon", from: 2 },
+            furo: { type: "Pon", from: 2, nakiHai: HaiKind.Haku },
           },
           {
             type: "Koutsu",
             hais: [HaiKind.Hatsu, HaiKind.Hatsu, HaiKind.Hatsu] as const,
-            furo: { type: "Pon", from: 3 },
+            furo: { type: "Pon", from: 3, nakiHai: HaiKind.Hatsu },
           },
           {
             type: "Koutsu",
             hais: [HaiKind.Chun, HaiKind.Chun, HaiKind.Chun] as const,
-            furo: { type: "Pon", from: 1 },
+            furo: { type: "Pon", from: 1, nakiHai: HaiKind.Chun },
           },
           createShuntsu("123m"),
         ],
@@ -408,17 +408,17 @@ describe("役満フィルタリング: エッジケース", () => {
           {
             type: "Koutsu",
             hais: [HaiKind.Ton, HaiKind.Ton, HaiKind.Ton] as const,
-            furo: { type: "Pon", from: 2 },
+            furo: { type: "Pon", from: 2, nakiHai: HaiKind.Ton },
           },
           {
             type: "Koutsu",
             hais: [HaiKind.Nan, HaiKind.Nan, HaiKind.Nan] as const,
-            furo: { type: "Pon", from: 3 },
+            furo: { type: "Pon", from: 3, nakiHai: HaiKind.Nan },
           },
           {
             type: "Koutsu",
             hais: [HaiKind.Sha, HaiKind.Sha, HaiKind.Sha] as const,
-            furo: { type: "Pon", from: 1 },
+            furo: { type: "Pon", from: 1, nakiHai: HaiKind.Sha },
           },
           createKoutsu("555z"),
         ],
@@ -587,12 +587,12 @@ describe("役満フィルタリング: エッジケース", () => {
           {
             type: "Koutsu",
             hais: [HaiKind.Ton, HaiKind.Ton, HaiKind.Ton] as const,
-            furo: { type: "Pon", from: 2 },
+            furo: { type: "Pon", from: 2, nakiHai: HaiKind.Ton },
           },
           {
             type: "Koutsu",
             hais: [HaiKind.Haku, HaiKind.Haku, HaiKind.Haku] as const,
-            furo: { type: "Pon", from: 3 },
+            furo: { type: "Pon", from: 3, nakiHai: HaiKind.Haku },
           },
           createKoutsu("111m"),
           createKoutsu("999m"),

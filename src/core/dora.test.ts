@@ -47,7 +47,7 @@ describe("dora", () => {
 
     it("副露した牌もカウントする", () => {
       // Tehai: 123m [456p] 789s ...
-      const tehai = createTehai("123m789s11z[456p]");
+      const tehai = createTehai("123m789s11z[4-56p]");
       // Indicator: 3p (Dora: 4p)
       const indicators = [HaiKind.PinZu3];
       // 4p in [456p] is 1.
@@ -56,7 +56,7 @@ describe("dora", () => {
 
     it("槓子内のドラも4枚すべてカウントする", () => {
       // Tehai: [1111m] (Kan)
-      const tehai = createTehai("234s99s[1111m]");
+      const tehai = createTehai("234s99s[1=111m]");
       // Indicator: 9m (Dora: 1m)
       const indicators = [HaiKind.ManZu9];
       // 1m x4 = 4
