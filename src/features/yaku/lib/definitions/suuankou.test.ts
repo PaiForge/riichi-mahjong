@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { suuankouDefinition } from "./suuankou";
 import {
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
 } from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
 import type { HouraContext } from "../../types";
@@ -18,7 +18,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
 
   it("ツモ和了の場合、4つの暗刻があれば成立し、13翻（役満）であること", () => {
     // 111m 222m 333m 444m 99s (ツモ)
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s");
+    const hand = createMentsuStructureFromMpsz("111m222m333m444m99s");
 
     expect(suuankouDefinition.isSatisfied(hand, mockContextTsumo)).toBe(true);
     expect(suuankouDefinition.getHansu(hand, mockContextTsumo)).toBe(13);
@@ -31,7 +31,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.SouZu9,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+    const hand = createMentsuStructureFromMpsz("111m222m333m444m99s", {
       hai: "9s",
       in: "Jantou",
     });
@@ -48,7 +48,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+    const hand = createMentsuStructureFromMpsz("111m222m333m444m99s", {
       hai: "9s",
       in: "Jantou",
     });
@@ -65,7 +65,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+    const hand = createMentsuStructureFromMpsz("111m222m333m444m99s", {
       hai: "9s",
       in: "Jantou",
     });
@@ -83,7 +83,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       doraMarkers: [],
       yakumanRuleConfig: { suuankouTanki: true },
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+    const hand = createMentsuStructureFromMpsz("111m222m333m444m99s", {
       hai: "1m",
       in: "111m",
     });
@@ -100,7 +100,7 @@ describe("四暗刻（スーアンコウ）の判定", () => {
       agariHai: HaiKind.ManZu1,
       doraMarkers: [],
     };
-    const hand = createMentsuStructureFromMspz("111m222m333m444m99s", {
+    const hand = createMentsuStructureFromMpsz("111m222m333m444m99s", {
       hai: "1m",
       in: "111m",
     });

@@ -21,7 +21,7 @@ describe("getHouraStructuresForChiitoitsu", () => {
 
   it("鳴きがある場合は七対子として構造化できないこと", () => {
     // 11 22 33 44 55 66 [77s] (Pon) - そもそも枚数合わないが、Exposedがあれば即座に弾くべき
-    const hand = createTehai("11m22m33m44p55p66s[777s]");
+    const hand = createTehai("11m22m33m44p55p66s[7=77s]");
     const results = getHouraStructuresForChiitoitsu(hand);
     expect(results).toHaveLength(0);
   });

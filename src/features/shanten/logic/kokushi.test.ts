@@ -5,7 +5,7 @@ import { HaiKind, MentsuType } from "../../../types";
 import { haiIdToKindId } from "../../../core/hai"; // Add import
 import {
   createTehai13,
-  createTehai13FromMspz,
+  createTehai13FromMpsz,
 } from "../../../utils/test-helpers";
 
 describe("calculateKokushiShanten", () => {
@@ -57,7 +57,7 @@ describe("calculateKokushiShanten", () => {
   it("聴牌（0シャンテン） - 13面待ちの場合", () => {
     // 13種類, 対子なし. 対子ができるのを待っている状態.
     // 13 - 13 - 0 = 0.
-    const tehai = createTehai13FromMspz("19m19p19s1234567z");
+    const tehai = createTehai13FromMpsz("19m19p19s1234567z");
     expect(calculateKokushiShanten(tehai)).toBe(0);
   });
 

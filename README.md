@@ -10,6 +10,29 @@
 <br>
 本パッケージは **Pure ESM** です。利用する際は `require` ではなく `import` を使用してください。
 
+## 対応仕様 (Supported Specifications)
+
+- **手牌表記法**: [Extended MPSZ](https://github.com/PaiForge/extended-mpsz) **2.0（Draft）**
+  - `parseMpsz` / `parseExtendedMpsz` が仕様どおりに解釈し、`formatMpsz` が第 7 節の正規形に変換します。
+  - 旧仕様（Extended MSPZ 1.x）の表記（方向注釈のない `[123m]` など）は受理しません。移行手順は [CHANGELOG](CHANGELOG.md) を参照してください。
+
+```ts
+import {
+  parseExtendedMpsz,
+  formatMpsz,
+  tehaiToHaiKindId,
+} from "@pai-forge/riichi-mahjong";
+
+// 赤 5p を上家からチー、中を対面からポンして加槓
+const parsed = parseExtendedMpsz("123m789s11z[40-6p]{7=777^z}");
+if (parsed.isOk()) {
+  // 正規形（等値比較・保存用）
+  formatMpsz(parsed.value); // => "123m789s11z[40-6p]{7=777^z}"
+  // 役・点数計算に渡す前に牌種 ID へ変換する（赤属性を落とす）
+  const tehai = tehaiToHaiKindId(parsed.value);
+}
+```
+
 ## 前提条件 (Prerequisites)
 
 開発やテスト実行には以下のツールが必要です。

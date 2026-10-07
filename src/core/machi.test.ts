@@ -5,8 +5,8 @@ import {
   createToitsu,
   createKoutsu,
   createMockHand,
-  createChiitoitsuStructureFromMspz,
-  createMentsuStructureFromMspz,
+  createChiitoitsuStructureFromMpsz,
+  createMentsuStructureFromMpsz,
 } from "../utils/test-helpers";
 
 describe("classifyMachi", () => {
@@ -66,11 +66,11 @@ describe("classifyMachi", () => {
 
   it("同じ和了牌でも置き場所が違えば待ちの形が変わること", () => {
     // 345m 345m 55m 123s 456s の 5m: 雀頭なら単騎、順子なら両面
-    const tanki = createMentsuStructureFromMspz("33445555m123456s", {
+    const tanki = createMentsuStructureFromMpsz("33445555m123456s", {
       hai: "5m",
       in: "Jantou",
     });
-    const ryanmen = createMentsuStructureFromMspz("33445555m123456s", {
+    const ryanmen = createMentsuStructureFromMpsz("33445555m123456s", {
       hai: "5m",
       in: "345m",
     });
@@ -80,7 +80,7 @@ describe("classifyMachi", () => {
   });
 
   it("面子手でない場合は undefined を返すこと", () => {
-    const hand = createChiitoitsuStructureFromMspz("11223344556677m");
+    const hand = createChiitoitsuStructureFromMpsz("11223344556677m");
     expect(classifyMachi(hand)).toBe(undefined);
   });
 });

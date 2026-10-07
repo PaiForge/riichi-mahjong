@@ -5,7 +5,7 @@ import {
   MahjongError,
   ShoushaiError,
   TahaiError,
-  MspzParseError,
+  MpszParseError,
 } from "./errors";
 
 describe("MahjongError", () => {
@@ -35,18 +35,18 @@ describe("TahaiError", () => {
   });
 });
 
-describe("MspzParseError", () => {
+describe("MpszParseError", () => {
   it("MahjongErrorのインスタンスであること", () => {
-    const error = new MspzParseError("Invalid MSPZ string: abc");
+    const error = new MpszParseError("Invalid MPSZ string: abc");
     expect(error).toBeInstanceOf(MahjongError);
     expect(error).toBeInstanceOf(Error);
-    expect(error.message).toBe("Invalid MSPZ string: abc");
-    expect(error.name).toBe("MspzParseError");
+    expect(error.message).toBe("Invalid MPSZ string: abc");
+    expect(error.name).toBe("MpszParseError");
   });
 
   it("デフォルトメッセージが設定されること", () => {
-    const error = new MspzParseError();
-    expect(error.message).toBe("MSPZ文字列の解析に失敗しました。");
+    const error = new MpszParseError();
+    expect(error.message).toBe("MPSZ文字列の解析に失敗しました。");
   });
 });
 

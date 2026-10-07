@@ -1,7 +1,10 @@
 import { type Result, err, ok } from "neverthrow";
 import { MahjongArgumentError } from "../errors";
 import {
+  AkaHai,
+  type AkaHaiId,
   HAI_KIND_IDS,
+  type HaiCode,
   type HaiId,
   HaiKind,
   type HaiKindId,
@@ -56,6 +59,67 @@ export function validateHaiId(
   // 範囲検証済みのため Branded Type への付与は安全
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return ok(value as HaiId);
+}
+
+/**
+ * 赤牌IDの一覧 (34〜36)
+ */
+const AKA_HAI_IDS: readonly AkaHaiId[] = [
+  AkaHai.ManZu5,
+  AkaHai.PinZu5,
+  AkaHai.SouZu5,
+];
+
+/**
+ * 赤牌ID → 対応する牌種ID（5m / 5p / 5s）
+ */
+const AKA_HAI_KIND_OF: Readonly<Record<AkaHaiId, HaiKindId>> = {
+  [AkaHai.ManZu5]: HaiKind.ManZu5,
+  [AkaHai.PinZu5]: HaiKind.PinZu5,
+  [AkaHai.SouZu5]: HaiKind.SouZu5,
+};
+
+/**
+ * 赤牌 (AkaHai) かどうかを判定する型ガード。
+ * 牌コードのうち赤 5（34〜36）であれば true。
+ *
+ * @param code 判定対象の牌コード
+ * @returns 赤 5 であれば true
+ */
+export function isAkaHai(code: HaiCode): code is AkaHaiId {
+  return AKA_HAI_IDS.some((aka) => aka === code);
+}
+
+/**
+ * 数値を牌コード (HaiCode) として検証するスマートコンストラクタ。
+ * 0〜33（牌種ID）または 34〜36（赤 5）の整数であれば Ok、それ以外は
+ * MahjongArgumentError を Err として返す。
+ *
+ * @param value 検証対象の数値
+ * @returns 検証済みの牌コード
+ */
+export function validateHaiCode(
+  value: number,
+): Result<HaiCode, MahjongArgumentError> {
+  const aka = AKA_HAI_IDS.find((a) => a === value);
+  if (aka !== undefined) return ok(aka);
+  return validateHaiKindId(value).mapErr(
+    () =>
+      new MahjongArgumentError(
+        `牌コードは 0〜36 の整数である必要があります: ${value}`,
+      ),
+  );
+}
+
+/**
+ * 牌コードから牌種IDを取得する（赤属性を落とす）。
+ * 赤 5 は対応する 5 の牌種ID、それ以外はそのまま返す。
+ *
+ * @param code 牌コード
+ * @returns 牌種ID
+ */
+export function haiCodeToKindId(code: HaiCode): HaiKindId {
+  return isAkaHai(code) ? AKA_HAI_KIND_OF[code] : code;
 }
 
 /**

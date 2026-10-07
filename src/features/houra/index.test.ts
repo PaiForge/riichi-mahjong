@@ -225,8 +225,8 @@ describe("役判定と点数計算の解釈の一致", () => {
 
   it.each(CASES)(
     "%s の和了牌 %s (ツモ: %s) で detectYaku と calculateScoreForTehai が同じ解釈を採ること",
-    (mspz, agari, isTsumo) => {
-      const tehai = createTehai(mspz);
+    (mpsz, agari, isTsumo) => {
+      const tehai = createTehai(mpsz);
       const config = createConfig(agari, isTsumo);
 
       const yakuResult = detectYaku(tehai, config);

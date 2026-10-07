@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { calculateFu } from "./index";
 import {
-  createChiitoitsuStructureFromMspz,
+  createChiitoitsuStructureFromMpsz,
   createHouraContext,
-  createMentsuStructureFromMspz,
+  createMentsuStructureFromMpsz,
   type AgariSpec,
 } from "../../../../utils/test-helpers";
 import { HaiKind } from "../../../../types";
@@ -12,8 +12,8 @@ import type { HouraStructure } from "../../../yaku/types";
 
 // 面子手の和了構造。待ち符・明暗は和了牌の置き場所（agari）で決まるため、
 // 待ちを試すテストでは置き場所まで指定する
-const getStruct = (mspz: string, agari?: AgariSpec): HouraStructure =>
-  createMentsuStructureFromMspz(mspz, agari);
+const getStruct = (mpsz: string, agari?: AgariSpec): HouraStructure =>
+  createMentsuStructureFromMpsz(mpsz, agari);
 
 describe("calculateFu", () => {
   const baseContext: HouraContext = createHouraContext({
@@ -23,7 +23,7 @@ describe("calculateFu", () => {
   });
 
   it("七対子は常に25符", () => {
-    const hand = createChiitoitsuStructureFromMspz("11m22m33m44m55m66m77m");
+    const hand = createChiitoitsuStructureFromMpsz("11m22m33m44m55m66m77m");
     const result = calculateFu(hand, baseContext);
     expect(result.total).toBe(25);
     expect(result.details.base).toBe(25);
@@ -32,10 +32,10 @@ describe("calculateFu", () => {
   describe("平和形の符計算", () => {
     // 234m 456m 789m 234p 99s (Head 9s, Wait 4p - Ryanmen)
     // Agari: 4p (PinZu4) -> 234p wait 1/4 -> Ryanmen
-    const pinfuMSPZ = "234m456m789m234p99s";
+    const pinfuMPSZ = "234m456m789m234p99s";
 
     it("平和ツモは20符 (特例)", () => {
-      const hand = getStruct(pinfuMSPZ, "4p");
+      const hand = getStruct(pinfuMPSZ, "4p");
       const ctx = { ...baseContext, isTsumo: true, agariHai: HaiKind.PinZu4 };
 
       const result = calculateFu(hand, ctx, true); // isPinfu=true
@@ -44,7 +44,7 @@ describe("calculateFu", () => {
     });
 
     it("平和ロンは30符 (基本20 + ロン10 = 30)", () => {
-      const hand = getStruct(pinfuMSPZ, "4p");
+      const hand = getStruct(pinfuMPSZ, "4p");
       const ctx = {
         ...baseContext,
         isMenzen: true,
@@ -65,7 +65,7 @@ describe("calculateFu", () => {
       // Base 20 + Kanchan 2 + Tsumo 2 = 24 -> 30 Fu.
       // Note: We need to construct a hand that looks like Pinfu but isn't Pinfu due to wait?
       // Actually if I pass isPinfu=false to calculateFu, it should calculate normally.
-      const hand = getStruct(pinfuMSPZ, "3p"); // Standard Pinfu shape, Kanchan wait
+      const hand = getStruct(pinfuMPSZ, "3p"); // Standard Pinfu shape, Kanchan wait
       const ctx = { ...baseContext, isTsumo: true, agariHai: HaiKind.PinZu3 };
 
       const result = calculateFu(hand, ctx, false); // force isPinfu=false
@@ -209,7 +209,7 @@ describe("calculateFu", () => {
   describe("刻子・槓子の符", () => {
     it("中張牌の明刻は2符", () => {
       // 222m (Open)
-      const hand = getStruct("123m456m789m99p[222m]", "1m");
+      const hand = getStruct("123m456m789m99p[2=22m]", "1m");
       const ctx = { ...baseContext, isMenzen: false, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.mentsu).toBe(2);
@@ -225,7 +225,7 @@ describe("calculateFu", () => {
 
     it("么九牌の明刻は4符", () => {
       // 111m (Open)
-      const hand = getStruct("123m456m789m99p[111m]", "1m");
+      const hand = getStruct("123m456m789m99p[1=11m]", "1m");
       const ctx = { ...baseContext, isMenzen: false, agariHai: HaiKind.ManZu1 };
       const result = calculateFu(hand, ctx);
       expect(result.details.mentsu).toBe(4);
@@ -249,16 +249,16 @@ describe("calculateFu", () => {
     // Decomposer might treat 1111m as Koutsu + 1 or similar if not explicit.
     // For unit test, we can mock the structure if parser is limited.
     // But let's try assuming standard parsing or just trust calculator logic.
-    // Actually, createTehai uses parseMspz. Let's verify Kantsu support.
-    // parseMspz does support K: [1111m] (Open Kantsu). (1111m) ? No.
-    // Standard mspz uses k for kan. [1k111] ?
+    // Actually, createTehai uses parseMpsz. Let's verify Kantsu support.
+    // parseMpsz does support K: [1111m] (Open Kantsu). (1111m) ? No.
+    // Standard mpsz uses k for kan. [1k111] ?
     // I will mock structure for Kantsu tests to be safe.
   });
 
   describe("喰いタン平和形 (オープン20符→30符)", () => {
     it("鳴き平和形は30符に切り上げ", () => {
       // 234m (Chi) + 234s + 234p + 456s + 99m head
-      const hand = getStruct("234s234p456s99m[234m]", "2s");
+      const hand = getStruct("234s234p456s99m[2-34m]", "2s");
       const ctx = {
         ...baseContext,
         isMenzen: false,
@@ -276,7 +276,7 @@ describe("110符を超える符の計算", () => {
   it("么九牌の暗槓3つ + 明刻の手が130符になること", () => {
     // (1111m)(9999m)(1111z)[999p] + 22z ツモ
     // 副底20 + 暗槓么九32×3 + 明刻么九4 + 雀頭0 + 単騎2 + ツモ2 = 124 -> 130符
-    const hand = getStruct("(1111m)(9999m)(1111z)[999p]22z", "2z");
+    const hand = getStruct("(1111m)(9999m)(1111z)[9=99p]22z", "2z");
 
     const context: HouraContext = createHouraContext({
       isMenzen: false,
