@@ -1,3 +1,95 @@
+## 0.12.0 (未リリース)
+
+手牌表記法を [Extended MPSZ](https://github.com/PaiForge/extended-mpsz) 2.0（Draft）に
+対応させました。旧仕様（Extended MSPZ 1.x）との後方互換はありません。
+方向注釈のない副露（`[123m]`）は不正になり、パーサー関連の識別子は `Mspz` から
+`Mpsz` に改名しています。移行手順は「移行ガイド」を参照してください。
+
+### Added
+
+- `formatMpsz(tehai): string` を公開 API に追加した
+  - 手牌を仕様第 7 節の正規形（純手牌を色ごとにまとめて整列し、面子ブロックを色 → 数字列 → 括弧の種類 → 文字列全体の順に並べた文字列）に変換する。同じ手牌を表す `Tehai` は必ず同じ文字列になるため、等値比較や保存のキーに使える
+  - 牌種 ID（`HaiKindId`）の手牌はそのまま渡せる（赤 5 を含まない手牌として書き出す）
+- 赤 5 を保持する牌コード `HaiCode` と、その周辺を追加した
+  - `HaiCode = HaiKindId | AkaHaiId`。赤でない牌は牌種 ID と同じ値、赤 5 は `AkaHai`（`ManZu5: 34`, `PinZu5: 35`, `SouZu5: 36`）
+  - `validateHaiCode(value)`、`isAkaHai(code)`、`haiCodeToKindId(code)`
+  - `tehaiToHaiKindId(tehai)`: 牌コードの手牌を牌種 ID の手牌に変換する（純手牌・面子・副露情報の赤属性を落とす）
+- 加槓を表記できるようになった。`{5=555^p}` は「5p を対面からポンした明刻子に 5p を加槓」
+- 赤 5 を表記できるようになった。`0m` `0p` `0s` は赤 5 で、順子・刻子・槓子の判定では 5 と同一視しつつ赤属性を保持する
+
+### Changed
+
+- **破壊的変更**: パーサー関連の識別子を `Mspz` から `Mpsz` に改名した（互換エイリアスなし）
+
+  | 変更前 | 変更後 |
+  | --- | --- |
+  | `parseMspz` | `parseMpsz` |
+  | `parseExtendedMspz` | `parseExtendedMpsz` |
+  | `isMspz` | `isMpsz` |
+  | `isExtendedMspz` | `isExtendedMpsz` |
+  | `MspzParseError` | `MpszParseError` |
+  | `MspzString` | `MpszString` |
+  | `ExtendedMspzString` | `ExtendedMpszString` |
+
+- **破壊的変更**: `parseMpsz` / `parseExtendedMpsz` の戻り値が `Result<Tehai<HaiCode>, MpszParseError>` になった
+  - 赤 5 を落とさないため、純手牌・面子の牌が牌コードになる。シャンテン数・役・点数の計算に渡す前に `tehaiToHaiKindId` で牌種 ID の手牌へ変換する（`validateTehai13` / `validateTehai14` は牌種 ID と牌 ID の手牌だけを受け付ける）
+- **破壊的変更**: 受理する表記が Extended MPSZ 2.0 の仕様どおりになった
+  - 副露 `[...]` には鳴いた牌に方向注釈（`-` 上家 / `=` 対面 / `+` 下家）がちょうど 1 つ必要。`[123m]` `[555p]` は不正。チーは `-` のみ
+  - 1.x で暗黙に設定していた鳴き元（チー=上家、ポン・大明槓=対面）のデフォルトは廃止
+  - `[5555p]` は大明槓ではなく不正（方向注釈がない）。大明槓は `[5=555p]`、加槓は `{5=555^p}`
+  - 範囲外の数字（`0z` `8z` `9z`）、ブロック内の複数サフィックス（`[1m2m3m]`）、純手牌への注釈、括弧の入れ子、大文字、空白は、黙って読み飛ばさず文字列全体を不正として拒否する
+  - `isMpsz` / `isExtendedMpsz` も同じ検証を行う。1.x で true だった `isMspz("0z")` のような文字列は false になる
+- **破壊的変更**: `Furo` に鳴いた牌 `nakiHai` を必須で追加し、加槓（`type: "Kakan"`）には加槓牌 `kakanHai` も必須で追加した
+  - `Furo<T>` は牌の型でジェネリックになった（既定は `HaiKindId`）。`Shuntsu<T>` 等の `furo` は `Furo<T>`
+  - チーの `from` は型で `Tacha.Kamicha` に固定した
+  - 「鳴いた牌が未指定」の状態は持たない。`Furo` を自前で組み立てている場合は必ず鳴いた牌を入れる
+- 面子の牌（`hais`）は表記順ではなく正規形の整列順（1, 2, 3, 4, 5, 0, 6, 7, 8, 9）で返す。1.x でも順子は昇順に並べていたため、刻子・槓子に赤 5 が混ざる場合以外は変わらない
+- `MpszParseError` のメッセージを日本語にし、不正な位置（何文字目か）を含めるようにした
+
+### 移行ガイド (0.11.x → 0.12.0)
+
+**手牌文字列を書き換える**: 副露ブロックに方向注釈を付ける。鳴き元が分からない保存データは、1.x のデフォルト（チー=上家 `-`、ポン・大明槓=対面 `=`）を付ければ従来と同じ意味になる。
+
+| 1.x | 2.0 | 意味 |
+| --- | --- | --- |
+| `[123m]` | `[1-23m]` | 1m を上家からチー（鳴いた牌は任意の 1 枚を選ぶ） |
+| `[555p]` | `[5=55p]` | 5p を対面からポン |
+| `[5555p]` | `[5=555p]` | 5p を対面から大明槓 |
+| （表現不可） | `{5=555^p}` | 5p を対面からポンした明刻子に 5p を加槓 |
+| `(1111z)` | `(1111z)` | 暗槓（変更なし） |
+| （読み飛ばし） | `0p` | 赤 5p |
+
+**識別子を置き換える**: 上の対応表のとおり `Mspz` を `Mpsz` に置き換える。
+
+**解釈結果を計算系に渡していた場合**: `tehaiToHaiKindId` を挟む。
+
+```ts
+// Before
+const tehai = unwrap(parseExtendedMspz(str));
+const validated = unwrap(validateTehai14(tehai));
+
+// After
+const tehai = tehaiToHaiKindId(unwrap(parseExtendedMpsz(str)));
+const validated = unwrap(validateTehai14(tehai));
+```
+
+**`Furo` を自前で組み立てていた場合**: 鳴いた牌を足す。加槓は加槓牌も足す。
+
+```ts
+// Before
+{ type: "Pon", from: Tacha.Toimen }
+
+// After
+{ type: "Pon", from: Tacha.Toimen, nakiHai: HaiKind.PinZu5 }
+{ type: "Kakan", from: Tacha.Toimen, nakiHai: HaiKind.PinZu5, kakanHai: HaiKind.PinZu5 }
+```
+
+**独自に手牌を文字列化していた場合**: `formatMpsz` に置き換える。鳴き元・鳴いた牌・赤属性を含めて正規形になるため、文字列の一致で手牌の等値を判定できる。
+
+```ts
+const key = formatMpsz(tehai); // 例: "123m4506p{5=5^55p}(1111z)[7+77z]"
+```
+
 ## 0.11.0 (2026-10-06)
 
 和了牌の置き場所（雀頭・順子・刻子のどこに入れたと見るか）まで高点法で選ぶようにしました。
