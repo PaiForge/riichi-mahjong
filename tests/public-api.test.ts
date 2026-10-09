@@ -282,6 +282,8 @@ describe("公開APIのエクスポート", () => {
     "haiIdToKindId",
     "haiCodeToKindId",
     "isAkaHai",
+    "compareHaiCode",
+    "sortHaiCodes",
     "haiKindToNumber",
     "isKazehai",
     "isSuupai",
@@ -303,6 +305,10 @@ describe("公開APIのエクスポート", () => {
     "validateTehai13",
     "validateTehai14",
     "tehaiToHaiKindId",
+    "sortTehai",
+    // 手牌配置
+    "sortBlocksByTehai",
+    "sortHouraBlocksByTehai",
     // 待ち・シャンテン
     "classifyMachi",
     "calculateShanten",
@@ -424,6 +430,61 @@ describe("公開APIのエクスポート", () => {
       ) => input is PublicApi.ExtendedMpszString;
 
       expect(true).toBe(true);
+    });
+  });
+
+  describe("理牌・手牌配置 (compareHaiCode / sortHaiCodes / sortTehai / sortBlocksByTehai / sortHouraBlocksByTehai)", () => {
+    it("期待される型シグネチャを満たすこと", () => {
+      PublicApi.compareHaiCode satisfies (a: HaiCode, b: HaiCode) => number;
+      PublicApi.sortHaiCodes satisfies <T extends HaiCode>(
+        hais: readonly T[],
+      ) => T[];
+      PublicApi.sortTehai satisfies <H extends Tehai<HaiCode>>(tehai: H) => H;
+      PublicApi.sortBlocksByTehai satisfies <B>(
+        blocks: readonly B[],
+        describe: (block: B) => PublicApi.TehaiBlock,
+      ) => B[];
+      PublicApi.sortHouraBlocksByTehai satisfies (
+        structure: PublicApi.MentsuHouraStructure,
+      ) => readonly PublicApi.HouraBlock[];
+
+      expect(true).toBe(true);
+    });
+
+    it("牌種IDの列・Tehai14 を渡すと同じ型のまま返ること", () => {
+      const kinds: HaiKindId[] = [
+        PublicApi.HaiKind.SouZu1,
+        PublicApi.HaiKind.ManZu1,
+      ];
+      const sortedKinds: HaiKindId[] = PublicApi.sortHaiCodes(kinds);
+      expect(sortedKinds).toEqual([
+        PublicApi.HaiKind.ManZu1,
+        PublicApi.HaiKind.SouZu1,
+      ]);
+
+      const tehai14 = unwrapOrThrow(
+        PublicApi.validateTehai14(
+          PublicApi.tehaiToHaiKindId(
+            unwrapOrThrow(
+              PublicApi.parseExtendedMpsz("9s11m22z[2-34p]{7=777^z}456s"),
+            ),
+          ),
+        ),
+      );
+      const sorted: Tehai14 = PublicApi.sortTehai(tehai14);
+      expect(PublicApi.formatMpsz(sorted)).toBe("11m456s9s22z[2-34p]{7=777^z}");
+      expect(sorted.closed).toEqual([
+        PublicApi.HaiKind.ManZu1,
+        PublicApi.HaiKind.ManZu1,
+        PublicApi.HaiKind.SouZu4,
+        PublicApi.HaiKind.SouZu5,
+        PublicApi.HaiKind.SouZu6,
+        PublicApi.HaiKind.SouZu9,
+        PublicApi.HaiKind.Nan,
+        PublicApi.HaiKind.Nan,
+      ]);
+      // 晒した面子は鳴いた順のまま
+      expect(sorted.exposed.map((m) => m.type)).toEqual(["Shuntsu", "Kantsu"]);
     });
   });
 
