@@ -83,6 +83,8 @@ export {
   haiIdToKindId,
   haiCodeToKindId,
   isAkaHai,
+  compareHaiCode,
+  sortHaiCodes,
   kindIdToHaiType,
   haiKindToNumber,
   isSuupai,
