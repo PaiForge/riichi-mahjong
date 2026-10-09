@@ -1,11 +1,7 @@
 import type { CompletedMentsu, Furo, HaiCode, Tacha, Tehai } from "../../types";
 import { Tacha as TachaValue } from "../../types";
-import {
-  compareHaiCode,
-  haiCodeToNotation,
-  suitOrder,
-  type HaiNotation,
-} from "./mpsz-hai";
+import { compareHaiCode } from "../../core/hai";
+import { haiCodeToNotation, suitOrder, type HaiNotation } from "./mpsz-hai";
 import type { Annotation, Suit } from "./mpsz-scanner";
 
 /** 鳴き元 → 方向注釈 */

@@ -83,6 +83,8 @@ export {
   haiIdToKindId,
   haiCodeToKindId,
   isAkaHai,
+  compareHaiCode,
+  sortHaiCodes,
   kindIdToHaiType,
   haiKindToNumber,
   isSuupai,
@@ -100,8 +102,15 @@ export {
   isTehai13,
   isTehai14,
   tehaiToHaiKindId,
+  sortTehai,
 } from "./core/tehai";
 export type { TehaiError } from "./core/tehai";
+
+// =============================================================================
+// Core - Tehai Layout (手牌配置)
+// =============================================================================
+export { sortBlocksByTehai, sortHouraBlocksByTehai } from "./core/tehai-layout";
+export type { TehaiBlock, HouraBlock } from "./core/tehai-layout";
 
 // =============================================================================
 // Core - Mentsu (Meld) Validation
