@@ -15,7 +15,7 @@ import type {
   Tehai13,
   Tehai14,
 } from "../types";
-import { haiCodeToKindId, haiIdToKindId } from "./hai";
+import { haiCodeToKindId, haiIdToKindId, sortHaiCodes } from "./hai";
 
 export type TehaiError =
   | ShoushaiError
@@ -223,4 +223,23 @@ export function tehaiToHaiKindId(tehai: Tehai<HaiCode>): Tehai {
     closed: tehai.closed.map(haiCodeToKindId),
     exposed: tehai.exposed.map(mentsuToHaiKindId),
   };
+}
+
+/**
+ * 手牌の純手牌を理牌した手牌を返す（理牌）。
+ *
+ * 純手牌（`closed`）を {@link sortHaiCodes} の順（萬子 → 筒子 → 索子 → 字牌、
+ * 赤 5 は 5 の直後）に並べ替える。晒した面子（`exposed`）は順も中身も
+ * 変えない（鳴いた順の情報を保つ）。引数の手牌は変更しない。
+ *
+ * 理牌で枚数と牌の整合性は変わらないため、`Tehai13` / `Tehai14` を渡せば
+ * 同じ型（ブランド）のまま返る。`parseExtendedMpsz` は純手牌を表記順のまま
+ * 返すので、理牌した手牌が欲しいときは `parseExtendedMpsz(s).map(sortTehai)`
+ * のように合成する。
+ *
+ * @param tehai 手牌（牌コードまたは牌種ID）
+ * @returns 純手牌を理牌した手牌
+ */
+export function sortTehai<H extends Tehai<HaiCode>>(tehai: H): H {
+  return { ...tehai, closed: sortHaiCodes(tehai.closed) };
 }

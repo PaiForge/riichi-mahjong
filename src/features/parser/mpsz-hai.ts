@@ -94,15 +94,3 @@ export function haiCodeToNotation(code: HaiCode): HaiNotation {
 export function suitOrder(suit: Suit): number {
   return SUIT_ORDER.indexOf(suit);
 }
-
-/**
- * 正規形の整列順（SPEC 7.1）で牌コードを比較する。
- * 色は m → p → s → z、色の中では 1, 2, 3, 4, 5, 0, 6, 7, 8, 9 の順。
- *
- * @returns 負なら a が先、正なら b が先、0 なら同じ牌
- */
-export function compareHaiCode(a: HaiCode, b: HaiCode): number {
-  const na = haiCodeToNotation(a);
-  const nb = haiCodeToNotation(b);
-  return suitOrder(na.suit) - suitOrder(nb.suit) || na.rank - nb.rank;
-}

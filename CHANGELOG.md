@@ -1,3 +1,44 @@
+## 1.1.0 (2026-10-09)
+
+牌の並び順（理牌）と、手牌のブロック（面子・雀頭）を手牌の並びの順に揃える
+API を追加しました。並び順の定義はこれまで `formatMpsz` の内部にしかなく、
+利用側が `.sort((a, b) => a - b)` 等で独自に持つ必要がありましたが、
+ライブラリから公開することで定義を 1 か所にします。既存 API の挙動は
+変わりません（純粋な追加）。
+
+### Added
+
+- 牌の比較と理牌（`src/core/hai`）
+  - `compareHaiCode(a, b): number`: 理牌の順（萬子 → 筒子 → 索子 → 字牌、色の中では
+    1, 2, 3, 4, 5, 0, 6, 7, 8, 9 で赤 5 は通常の 5 の直後）で牌コードを比較する。
+    `formatMpsz` の正規形と同じ順で、`Array.prototype.sort` にそのまま渡せる。
+    牌種 ID（`HaiKindId`）どうしでは牌種 ID の大小と一致する
+  - `sortHaiCodes(hais): T[]`: 牌の列を理牌した新しい配列を返す。`HaiKindId[]` を
+    渡せば `HaiKindId[]` が返る（ジェネリック）
+- `sortTehai(tehai): H`（`src/core/tehai`）: 純手牌（`closed`）を理牌した手牌を返す。
+  晒した面子（`exposed`）は順も中身も変えない。`Tehai13` / `Tehai14` を渡せば
+  同じ型のまま返る
+- 手牌配置（`src/core/tehai-layout`）: 手牌から切り出したブロックを「手牌の左から右」
+  の順に並べる
+  - `sortBlocksByTehai(blocks, describe): B[]`: 手の内のブロックを、各ブロックの牌を
+    理牌した列の辞書順（接頭辞なら短い方が先）に並べ、晒したブロック（副露・暗槓）を
+    その後ろに元の順（鳴いた順）で置く。安定ソートで同じ牌のブロックは元の順を保つ。
+    `describe` はブロックの牌と晒すかどうか（`TehaiBlock`）を返す
+  - `sortHouraBlocksByTehai(structure): readonly HouraBlock[]`: 面子手の和了構造
+    （`MentsuHouraStructure`）の雀頭と 4 面子を同じ規則で並べた 5 要素を返す。
+    雀頭は面子の間に混ざる。各要素は `{ kind: "Jantou", block }` または
+    `{ kind: "Mentsu", index, block }` で、`kind` / `index` は `AgariPlacement` と
+    同じ形なので和了牌のブロックを突き合わせられる
+  - 型 `TehaiBlock`、`HouraBlock`
+
+### Notes
+
+- `parseMpsz` / `parseExtendedMpsz` は引き続き純手牌を表記順のまま返す。理牌した
+  手牌が欲しいときは `parseExtendedMpsz(s).map(sortTehai)` のように合成する
+- 晒したブロックの順は `tehai.exposed`（鳴いた順）を保つ。`formatMpsz` の正規形の
+  順（色 → 数字列 → 括弧の種類）とは異なる。正規形の順に揃えたい場合は
+  `parseExtendedMpsz(formatMpsz(tehai))` を通してから渡す
+
 ## 1.0.0 (2026-10-07)
 
 初の安定版です。手牌表記法を [Extended MPSZ](https://github.com/PaiForge/extended-mpsz)
@@ -21,14 +62,14 @@
 
 - **破壊的変更**: パーサー関連の識別子を `Mspz` から `Mpsz` に改名した（互換エイリアスなし）
 
-  | 変更前 | 変更後 |
-  | --- | --- |
-  | `parseMspz` | `parseMpsz` |
-  | `parseExtendedMspz` | `parseExtendedMpsz` |
-  | `isMspz` | `isMpsz` |
-  | `isExtendedMspz` | `isExtendedMpsz` |
-  | `MspzParseError` | `MpszParseError` |
-  | `MspzString` | `MpszString` |
+  | 変更前               | 変更後               |
+  | -------------------- | -------------------- |
+  | `parseMspz`          | `parseMpsz`          |
+  | `parseExtendedMspz`  | `parseExtendedMpsz`  |
+  | `isMspz`             | `isMpsz`             |
+  | `isExtendedMspz`     | `isExtendedMpsz`     |
+  | `MspzParseError`     | `MpszParseError`     |
+  | `MspzString`         | `MpszString`         |
   | `ExtendedMspzString` | `ExtendedMpszString` |
 
 - **破壊的変更**: `parseMpsz` / `parseExtendedMpsz` の戻り値が `Result<Tehai<HaiCode>, MpszParseError>` になった
@@ -50,14 +91,14 @@
 
 **手牌文字列を書き換える**: 副露ブロックに方向注釈を付ける。鳴き元が分からない保存データは、1.x のデフォルト（チー=上家 `-`、ポン・大明槓=対面 `=`）を付ければ従来と同じ意味になる。
 
-| 1.x | 2.0 | 意味 |
-| --- | --- | --- |
-| `[123m]` | `[1-23m]` | 1m を上家からチー（鳴いた牌は任意の 1 枚を選ぶ） |
-| `[555p]` | `[5=55p]` | 5p を対面からポン |
-| `[5555p]` | `[5=555p]` | 5p を対面から大明槓 |
-| （表現不可） | `{5=555^p}` | 5p を対面からポンした明刻子に 5p を加槓 |
-| `(1111z)` | `(1111z)` | 暗槓（変更なし） |
-| （読み飛ばし） | `0p` | 赤 5p |
+| 1.x            | 2.0         | 意味                                             |
+| -------------- | ----------- | ------------------------------------------------ |
+| `[123m]`       | `[1-23m]`   | 1m を上家からチー（鳴いた牌は任意の 1 枚を選ぶ） |
+| `[555p]`       | `[5=55p]`   | 5p を対面からポン                                |
+| `[5555p]`      | `[5=555p]`  | 5p を対面から大明槓                              |
+| （表現不可）   | `{5=555^p}` | 5p を対面からポンした明刻子に 5p を加槓          |
+| `(1111z)`      | `(1111z)`   | 暗槓（変更なし）                                 |
+| （読み飛ばし） | `0p`        | 赤 5p                                            |
 
 **識別子を置き換える**: 上の対応表のとおり `Mspz` を `Mpsz` に置き換える。
 

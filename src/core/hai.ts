@@ -123,6 +123,43 @@ export function haiCodeToKindId(code: HaiCode): HaiKindId {
 }
 
 /**
+ * 理牌の整列順（Extended MPSZ 正規形 SPEC 7.1）での牌コードの順位。
+ * 牌種ID順を 2 倍し、赤 5 は同じ数字の 5 の直後に置く。
+ */
+function haiCodeSortKey(code: HaiCode): number {
+  return haiCodeToKindId(code) * 2 + (isAkaHai(code) ? 1 : 0);
+}
+
+/**
+ * 理牌の整列順で牌コードを比較する（牌の比較）。
+ *
+ * 色は萬子 → 筒子 → 索子 → 字牌（東南西北白發中）、色の中では
+ * 1, 2, 3, 4, 5, 0, 6, 7, 8, 9 の順（赤 5 は通常の 5 の直後）。
+ * `formatMpsz` の正規形と同じ順で、`Array.prototype.sort` にそのまま渡せる。
+ * 牌種ID（`HaiKindId`）どうしの比較では牌種IDの大小と一致する。
+ *
+ * @param a 牌コード
+ * @param b 牌コード
+ * @returns 負なら a が先、正なら b が先、0 なら同じ牌
+ */
+export function compareHaiCode(a: HaiCode, b: HaiCode): number {
+  return haiCodeSortKey(a) - haiCodeSortKey(b);
+}
+
+/**
+ * 牌の列を理牌して返す（理牌）。
+ *
+ * {@link compareHaiCode} の順に並べ替えた新しい配列を返し、引数の配列は
+ * 変更しない。牌種ID（`HaiKindId`）の列を渡せば牌種IDの列が返る。
+ *
+ * @param hais 牌コードの列
+ * @returns 理牌した牌の列
+ */
+export function sortHaiCodes<T extends HaiCode>(hais: readonly T[]): T[] {
+  return [...hais].sort(compareHaiCode);
+}
+
+/**
  * 牌種IDから牌種タイプを取得する
  */
 export function kindIdToHaiType(kind: HaiKindId): HaiType {

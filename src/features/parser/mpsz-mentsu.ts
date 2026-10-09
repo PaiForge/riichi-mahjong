@@ -1,7 +1,7 @@
 import { Result, ok, err } from "neverthrow";
 import { isTuple3, isTuple4 } from "../../utils/assertions";
 import { isValidShuntsu } from "../../core/mentsu";
-import { haiCodeToKindId } from "../../core/hai";
+import { compareHaiCode, haiCodeToKindId } from "../../core/hai";
 import { MpszParseError } from "../../errors";
 import {
   type CompletedMentsu,
@@ -10,7 +10,7 @@ import {
   Tacha,
 } from "../../types";
 import type { Annotation, ScannedBlock, ScannedTile } from "./mpsz-scanner";
-import { compareHaiCode, digitToHaiCode } from "./mpsz-hai";
+import { digitToHaiCode } from "./mpsz-hai";
 
 /** 方向注釈 → 鳴き元 */
 const TACHA_OF_DIRECTION: ReadonlyMap<Annotation, Tacha> = new Map([

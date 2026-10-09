@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { MahjongArgumentError } from "../errors";
 import {
   AkaHai,
+  HAI_KIND_IDS,
   type HaiCode,
   type HaiId,
   HaiKind,
@@ -9,9 +10,11 @@ import {
   HaiType,
 } from "../types";
 import {
+  compareHaiCode,
   haiCodeToKindId,
   haiIdToKindId,
   isAkaHai,
+  sortHaiCodes,
   validateHaiCode,
   haiKindToNumber,
   isJihai,
@@ -84,6 +87,87 @@ describe("isAkaHai / haiCodeToKindId (赤牌と牌コード)", () => {
     expect(haiCodeToKindId(AkaHai.SouZu5)).toBe(HaiKind.SouZu5);
     expect(haiCodeToKindId(HaiKind.ManZu1)).toBe(HaiKind.ManZu1);
     expect(haiCodeToKindId(HaiKind.Chun)).toBe(HaiKind.Chun);
+  });
+});
+
+describe("compareHaiCode / sortHaiCodes (牌の比較と理牌)", () => {
+  it("萬子 → 筒子 → 索子 → 字牌（東南西北白發中）の順に並べる", () => {
+    const hais: HaiCode[] = [
+      HaiKind.Chun,
+      HaiKind.SouZu1,
+      HaiKind.Ton,
+      HaiKind.PinZu9,
+      HaiKind.ManZu9,
+      HaiKind.Haku,
+      HaiKind.PinZu1,
+    ];
+    expect(sortHaiCodes(hais)).toEqual([
+      HaiKind.ManZu9,
+      HaiKind.PinZu1,
+      HaiKind.PinZu9,
+      HaiKind.SouZu1,
+      HaiKind.Ton,
+      HaiKind.Haku,
+      HaiKind.Chun,
+    ]);
+  });
+
+  it("赤 5 は同じ色の 5 の直後、6 の前に置く", () => {
+    const hais: HaiCode[] = [
+      AkaHai.ManZu5,
+      HaiKind.ManZu6,
+      HaiKind.ManZu5,
+      HaiKind.ManZu4,
+      AkaHai.ManZu5,
+    ];
+    expect(sortHaiCodes(hais)).toEqual([
+      HaiKind.ManZu4,
+      HaiKind.ManZu5,
+      AkaHai.ManZu5,
+      AkaHai.ManZu5,
+      HaiKind.ManZu6,
+    ]);
+  });
+
+  it("赤 5 は色の境を越えない（赤 5m は 9m より前、1p より前）", () => {
+    const hais: HaiCode[] = [HaiKind.PinZu1, AkaHai.ManZu5, HaiKind.ManZu9];
+    expect(sortHaiCodes(hais)).toEqual([
+      AkaHai.ManZu5,
+      HaiKind.ManZu9,
+      HaiKind.PinZu1,
+    ]);
+    expect(compareHaiCode(AkaHai.ManZu5, HaiKind.ManZu6)).toBeLessThan(0);
+    expect(compareHaiCode(AkaHai.SouZu5, HaiKind.Ton)).toBeLessThan(0);
+    expect(compareHaiCode(HaiKind.PinZu5, AkaHai.ManZu5)).toBeGreaterThan(0);
+  });
+
+  it("同じ牌は 0、赤 5 と通常の 5 は別の牌として比較する", () => {
+    expect(compareHaiCode(HaiKind.ManZu5, HaiKind.ManZu5)).toBe(0);
+    expect(compareHaiCode(AkaHai.PinZu5, AkaHai.PinZu5)).toBe(0);
+    expect(compareHaiCode(HaiKind.PinZu5, AkaHai.PinZu5)).toBeLessThan(0);
+    expect(compareHaiCode(AkaHai.PinZu5, HaiKind.PinZu5)).toBeGreaterThan(0);
+  });
+
+  it("牌種IDどうしの比較は牌種IDの大小と一致する", () => {
+    const sorted = [...HAI_KIND_IDS].sort(compareHaiCode);
+    expect(sorted).toEqual([...HAI_KIND_IDS]);
+    expect(compareHaiCode(HaiKind.ManZu1, HaiKind.ManZu2)).toBeLessThan(0);
+  });
+
+  it("引数の配列を変更せず、新しい配列を返す", () => {
+    const hais: HaiKindId[] = [HaiKind.SouZu3, HaiKind.ManZu1];
+    const sorted = sortHaiCodes(hais);
+    expect(sorted).toEqual([HaiKind.ManZu1, HaiKind.SouZu3]);
+    expect(hais).toEqual([HaiKind.SouZu3, HaiKind.ManZu1]);
+    expect(sorted).not.toBe(hais);
+    expect(sortHaiCodes([])).toEqual([]);
+  });
+
+  it("牌種IDの列を渡すと牌種IDの列が返る（型）", () => {
+    const hais: HaiKindId[] = [HaiKind.ManZu1];
+    expectTypeOf(sortHaiCodes(hais)).toEqualTypeOf<HaiKindId[]>();
+    const codes: HaiCode[] = [AkaHai.ManZu5];
+    expectTypeOf(sortHaiCodes(codes)).toEqualTypeOf<HaiCode[]>();
   });
 });
 
