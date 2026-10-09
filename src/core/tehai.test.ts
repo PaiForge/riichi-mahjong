@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   DuplicatedHaiIdError,
   InvalidHaiQuantityError,
@@ -12,11 +12,13 @@ import type {
   Kantsu,
   Shuntsu,
   Tehai,
+  Tehai14,
 } from "../types";
 import { AkaHai, HaiKind, MentsuType, Tacha } from "../types";
 import {
   isTehai13,
   isTehai14,
+  sortTehai,
   tehaiToHaiKindId,
   validateTehai,
   validateTehai13,
@@ -349,5 +351,88 @@ describe("tehaiToHaiKindId (牌コードの手牌を牌種IDに変換)", () => {
       exposed: [{ type: MentsuType.Kantsu, hais: [27, 27, 27, 27] }],
     });
     expect(converted.exposed[0]).not.toHaveProperty("furo");
+  });
+});
+
+describe("sortTehai (純手牌の理牌)", () => {
+  const pon: CompletedMentsu<HaiCode> = {
+    type: MentsuType.Koutsu,
+    hais: [HaiKind.Chun, HaiKind.Chun, HaiKind.Chun],
+    furo: { type: "Pon", from: Tacha.Toimen, nakiHai: HaiKind.Chun },
+  };
+  const chi: CompletedMentsu<HaiCode> = {
+    type: MentsuType.Shuntsu,
+    hais: [HaiKind.ManZu1, HaiKind.ManZu2, HaiKind.ManZu3],
+    furo: { type: "Chi", from: Tacha.Kamicha, nakiHai: HaiKind.ManZu1 },
+  };
+
+  it("純手牌を萬子 → 筒子 → 索子 → 字牌の順に並べ、赤 5 は 5 の直後に置く", () => {
+    const tehai: Tehai<HaiCode> = {
+      closed: [
+        HaiKind.Ton,
+        AkaHai.PinZu5,
+        HaiKind.SouZu1,
+        HaiKind.PinZu5,
+        HaiKind.ManZu9,
+        HaiKind.PinZu6,
+      ],
+      exposed: [],
+    };
+    expect(sortTehai(tehai)).toEqual({
+      closed: [
+        HaiKind.ManZu9,
+        HaiKind.PinZu5,
+        AkaHai.PinZu5,
+        HaiKind.PinZu6,
+        HaiKind.SouZu1,
+        HaiKind.Ton,
+      ],
+      exposed: [],
+    });
+  });
+
+  it("晒した面子は順も中身も変えない", () => {
+    const tehai: Tehai<HaiCode> = {
+      closed: [HaiKind.SouZu9, HaiKind.SouZu8],
+      exposed: [pon, chi],
+    };
+    const sorted = sortTehai(tehai);
+    expect(sorted.exposed).toEqual([pon, chi]);
+    expect(sorted.exposed[0]).toBe(pon);
+    expect(sorted.exposed[1]).toBe(chi);
+  });
+
+  it("引数の手牌を変更せず、新しい手牌を返す", () => {
+    const closed: HaiKindId[] = [HaiKind.SouZu9, HaiKind.ManZu1];
+    const tehai: Tehai = { closed, exposed: [] };
+    const sorted = sortTehai(tehai);
+    expect(sorted).not.toBe(tehai);
+    expect(tehai.closed).toEqual([HaiKind.SouZu9, HaiKind.ManZu1]);
+    expect(sorted.closed).toEqual([HaiKind.ManZu1, HaiKind.SouZu9]);
+  });
+
+  it("Tehai14 を渡すと Tehai14 のまま返る（ブランドを保つ）", () => {
+    const closed: HaiKindId[] = [
+      HaiKind.Chun,
+      HaiKind.Chun,
+      HaiKind.SouZu3,
+      HaiKind.SouZu2,
+      HaiKind.SouZu1,
+      HaiKind.PinZu6,
+      HaiKind.PinZu5,
+      HaiKind.PinZu4,
+      HaiKind.ManZu9,
+      HaiKind.ManZu8,
+      HaiKind.ManZu7,
+      HaiKind.ManZu3,
+      HaiKind.ManZu2,
+      HaiKind.ManZu1,
+    ];
+    const tehai14 = validateTehai14({ closed, exposed: [] });
+    if (tehai14.isErr()) throw tehai14.error;
+    const sorted = sortTehai(tehai14.value);
+    expectTypeOf(sorted).toEqualTypeOf<Tehai14>();
+    expect(isTehai14(sorted)).toBe(true);
+    expect(sorted.closed).toEqual([...closed].reverse());
   });
 });

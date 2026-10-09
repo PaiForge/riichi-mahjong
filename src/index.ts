@@ -102,6 +102,7 @@ export {
   isTehai13,
   isTehai14,
   tehaiToHaiKindId,
+  sortTehai,
 } from "./core/tehai";
 export type { TehaiError } from "./core/tehai";
 
