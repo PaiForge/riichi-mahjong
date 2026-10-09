@@ -107,6 +107,12 @@ export {
 export type { TehaiError } from "./core/tehai";
 
 // =============================================================================
+// Core - Tehai Layout (手牌配置)
+// =============================================================================
+export { sortBlocksByTehai, sortHouraBlocksByTehai } from "./core/tehai-layout";
+export type { TehaiBlock, HouraBlock } from "./core/tehai-layout";
+
+// =============================================================================
 // Core - Mentsu (Meld) Validation
 // =============================================================================
 export {
