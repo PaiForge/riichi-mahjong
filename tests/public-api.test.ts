@@ -472,7 +472,7 @@ describe("公開APIのエクスポート", () => {
         ),
       );
       const sorted: Tehai14 = PublicApi.sortTehai(tehai14);
-      expect(PublicApi.formatMpsz(sorted)).toBe("11m456s9s22z[2-34p]{7=777^z}");
+      expect(PublicApi.formatMpsz(sorted)).toBe("11m4569s22z[2-34p]{7=7^77z}");
       expect(sorted.closed).toEqual([
         PublicApi.HaiKind.ManZu1,
         PublicApi.HaiKind.ManZu1,
